@@ -4,4 +4,13 @@
  * This source code is licensed under the MIT license found in
  * the LICENSE file in the root directory of this source tree.
  ***************************************************************/
-import '@testing-library/jest-dom/extend-expect';
+.header {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  align-items: center;
+  justify-items: center;
+
+  height: 64px;
+  border-bottom: 1px solid #bec1c6;
+}
