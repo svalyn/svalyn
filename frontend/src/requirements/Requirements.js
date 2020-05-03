@@ -47,7 +47,8 @@ const LeftPanel = ({ requirements, onRequirementclick }) => {
 const RightPanel = ({ requirement }) => {
   return (
     <div className={styles.details}>
-      {requirement.description}
+      <h2>{requirement.label}</h2>
+      <p>{requirement.description}</p>
       <Tests tests={requirement.tests} />
     </div>
   );

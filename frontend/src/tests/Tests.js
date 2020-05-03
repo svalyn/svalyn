@@ -17,9 +17,9 @@ const Test = ({ test }) => {
       <p>{description}</p>
       <div>
         <input type="radio" id={`${id}-success`} name={`${id}-status`} value="success" />
-        <label for={`${id}-success`}>Success</label>
+        <label htmlFor={`${id}-success`}>Success</label>
         <input type="radio" id={`${id}-failure`} name={`${id}-status`} value="failure" />
-        <label for={`${id}-failure`}>Failure</label>
+        <label htmlFor={`${id}-failure`}>Failure</label>
       </div>
     </div>
   );
