@@ -6,10 +6,9 @@
  **************************************************************/
 package com.svalyn.application.configuration;
 
-import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
+import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
 import static org.springframework.web.reactive.function.server.RouterFunctions.resources;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
-import static org.springframework.web.reactive.function.server.ServerResponse.ok;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,16 +16,18 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
+import com.svalyn.application.graphql.GraphQLHandlerFunction;
+
 import reactor.core.publisher.Mono;
 
 @Configuration
 public class RouterConfiguration {
-	@Bean
-	public RouterFunction<ServerResponse> router() {
-		var staticResources = resources("/**", new ClassPathResource("static/")); //$NON-NLS-1$ //$NON-NLS-2$
-		var api = route(GET("/api/graphql"), req -> ok().bodyValue("API")); //$NON-NLS-1$ //$NON-NLS-2$
-		var redirectToFrontend = resources(req -> Mono.just(new ClassPathResource("static/index.html"))); //$NON-NLS-1$
+    @Bean
+    public RouterFunction<ServerResponse> router(GraphQLHandlerFunction graphQLHandlerFunction) {
+        var staticResources = resources("/**", new ClassPathResource("static/")); //$NON-NLS-1$ //$NON-NLS-2$
+        var api = route(POST("/api/graphql"), graphQLHandlerFunction); //$NON-NLS-1$
+        var redirectToFrontend = resources(req -> Mono.just(new ClassPathResource("static/index.html"))); //$NON-NLS-1$
 
-		return staticResources.and(api).and(redirectToFrontend);
-	}
+        return staticResources.and(api).and(redirectToFrontend);
+    }
 }

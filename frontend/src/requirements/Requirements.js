@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in
  * the LICENSE file in the root directory of this source tree.
  ***************************************************************/
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 import { requirementPropTypes } from '../propTypes/propTypes';
@@ -19,10 +19,14 @@ export const Requirements = ({ requirements }) => {
   const initialState = {
     selectedRequirement: null,
   };
-  const [state, setState] = useState(initialState);
+  const [{ selectedRequirement }, setState] = useState(initialState);
+
+  useEffect(() => {
+    const selectedRequirement = requirements[0];
+    setState({ selectedRequirement });
+  }, [requirements]);
 
   const onRequirementclick = (selectedRequirement) => setState({ selectedRequirement });
-  const { selectedRequirement } = state;
   return (
     <div className={styles.requirements}>
       <LeftPanel requirements={requirements} onRequirementclick={onRequirementclick} />

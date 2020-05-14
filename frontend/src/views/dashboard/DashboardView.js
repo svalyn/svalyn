@@ -4,39 +4,59 @@
  * This source code is licensed under the MIT license found in
  * the LICENSE file in the root directory of this source tree.
  ***************************************************************/
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { gql } from 'graphql.macro';
 
 import styles from './DashboardView.module.css';
 
+const {
+  loc: {
+    source: { body: query },
+  },
+} = gql`
+  query getProjects {
+    projects {
+      id
+      label
+    }
+  }
+`;
+
 export const DashboardView = () => {
+  const initialState = { loading: true, projects: [] };
+  const [{ projects }, setState] = useState(initialState);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      const body = JSON.stringify({
+        query,
+      });
+      const response = await fetch('http://localhost:8080/api/graphql', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+      });
+      const json = await response.json();
+      const {
+        data: { projects },
+      } = json;
+      setState({ loading: false, projects });
+    };
+
+    fetchProjects();
+  }, []);
+
   return (
     <div className={styles.dashboardView}>
       <ul className={styles.projects}>
-        <li>
-          <Link to="/projects/svalyn">S.V.A.L.Y.N</Link>
-        </li>
-        <li>
-          <Link to="/projects/homer">H.O.M.E.R</Link>
-        </li>
-        <li>
-          <Link to="/projects/plato">P.L.A.T.O</Link>
-        </li>
-        <li>
-          <Link to="/projects/virgil">V.I.R.G.I.L</Link>
-        </li>
-        <li>
-          <Link to="/projects/jokasta">J.O.K.A.S.T.A</Link>
-        </li>
-        <li>
-          <Link to="/projects/friday">F.R.I.D.A.Y</Link>
-        </li>
-        <li>
-          <Link to="/projects/jarvis">J.A.R.V.I.S</Link>
-        </li>
-        <li>
-          <Link to="/projects/helen">H.E.L.E.N</Link>
-        </li>
+        {projects.map((project) => {
+          return (
+            <li key={project.id}>
+              <Link to={`/projects/${project.id}`}>{project.label}</Link>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

@@ -12,8 +12,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class SvalynApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(SvalynApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(SvalynApplication.class, args);
+    }
 
 }

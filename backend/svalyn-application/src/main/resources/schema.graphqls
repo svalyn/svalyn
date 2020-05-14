@@ -1,0 +1,67 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+type Query {
+  projects: [Project!]!
+  project(projectId: ID!): Project
+}
+
+type Project {
+  id: ID!
+  label: String!
+  assessments: [Assessment!]!
+  assessment(assessmentId: ID!): Assessment
+}
+
+type Assessment {
+  id: ID!
+  label: String!
+  categories: [Category!]!
+}
+
+type Category {
+  id: ID!
+  label: String!
+  description: String!
+  requirements: [Requirement!]!
+}
+
+type Requirement {
+  id: ID!
+  label: String!
+  description: String!
+  tests: [Test!]!
+}
+
+type Test {
+  id: ID!
+  label: String!
+  description: String!
+  status: Status
+}
+
+enum Status {
+  SUCCESS
+  FAILURE
+}
+
+type Mutation {
+  createAssessment(input: CreateAssessmentInput!): CreateAssessmentPayload!
+}
+
+type ErrorPayload {
+  message: String!
+}
+
+input CreateAssessmentInput {
+  projectId: ID!
+  label: String!
+}
+
+type CreateAssessmentSuccessPayload {
+  assessment: Assessment!
+}
+
+union CreateAssessmentPayload = ErrorPayload | CreateAssessmentSuccessPayload
