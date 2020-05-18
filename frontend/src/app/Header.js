@@ -5,14 +5,31 @@
  * the LICENSE file in the root directory of this source tree.
  ***************************************************************/
 import React from 'react';
-import { Link } from 'react-router-dom';
+import AppBar from '@material-ui/core/AppBar';
+import Link from '@material-ui/core/Link';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import { makeStyles } from '@material-ui/core/styles';
+import { Link as RouterLink } from 'react-router-dom';
 
-import styles from './Header.module.css';
+const useStyles = makeStyles((theme) => ({
+  appBar: {
+    zIndex: theme.zIndex.drawer + 1,
+  },
+}));
 
 export const Header = () => {
+  const classes = useStyles();
   return (
-    <div className={styles.header}>
-      <Link to="/">Svalyn</Link>
-    </div>
+    <>
+      <AppBar position="fixed" className={classes.appBar}>
+        <Toolbar>
+          <Link color="inherit" component={RouterLink} to="/">
+            <Typography variant="h6">Svalyn</Typography>
+          </Link>
+        </Toolbar>
+      </AppBar>
+      <Toolbar />
+    </>
   );
 };

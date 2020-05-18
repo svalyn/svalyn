@@ -6,10 +6,11 @@
  ***************************************************************/
 import React from 'react';
 import PropTypes from 'prop-types';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
 
 import { categoryPropTypes } from '../propTypes/propTypes';
-
-import styles from './Categories.module.css';
 
 const propTypes = {
   categories: PropTypes.arrayOf(categoryPropTypes).isRequired,
@@ -17,13 +18,15 @@ const propTypes = {
 };
 export const Categories = ({ categories, onCategoryClick }) => {
   return (
-    <ul className={styles.categories}>
-      {categories.map((category) => (
-        <li className={styles.category} key={category.id} onClick={() => onCategoryClick(category)}>
-          {category.label}
-        </li>
-      ))}
-    </ul>
+    <List>
+      {categories.map((category) => {
+        return (
+          <ListItem button onClick={() => onCategoryClick(category)} key={category.id}>
+            <ListItemText primary={category.label} />
+          </ListItem>
+        );
+      })}
+    </List>
   );
 };
 Categories.propTypes = propTypes;

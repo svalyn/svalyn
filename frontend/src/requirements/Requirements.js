@@ -6,16 +6,34 @@
  ***************************************************************/
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import Typography from '@material-ui/core/Typography';
+import { makeStyles } from '@material-ui/core/styles';
 
 import { requirementPropTypes } from '../propTypes/propTypes';
 import { Tests } from '../tests/Tests';
 
-import styles from './Requirements.module.css';
+const useStyles = makeStyles((theme) => ({
+  requirements: {
+    display: 'grid',
+    gridTemplateColumns: '30% 70%',
+    gridTemplateRows: '1fr',
+  },
+  details: {
+    padding: '16px',
+  },
+  rightPanel: {
+    borderLeft: '1px solid rgba(255, 255, 255, 0.12)',
+  },
+}));
 
 const propTypes = {
   requirements: PropTypes.arrayOf(requirementPropTypes).isRequired,
 };
 export const Requirements = ({ requirements }) => {
+  const classes = useStyles();
   const initialState = {
     selectedRequirement: null,
   };
@@ -28,7 +46,7 @@ export const Requirements = ({ requirements }) => {
 
   const onRequirementclick = (selectedRequirement) => setState({ selectedRequirement });
   return (
-    <div className={styles.requirements}>
+    <div className={classes.requirements}>
       <LeftPanel requirements={requirements} onRequirementclick={onRequirementclick} />
       {selectedRequirement ? <RightPanel requirement={selectedRequirement} /> : <EmptyRightPanel />}
     </div>
@@ -38,21 +56,26 @@ Requirements.propTypes = propTypes;
 
 const LeftPanel = ({ requirements, onRequirementclick }) => {
   return (
-    <ul className={styles.master}>
+    <List>
       {requirements.map((requirement) => (
-        <li className={styles.entry} key={requirement.id} onClick={() => onRequirementclick(requirement)}>
-          {requirement.label}
-        </li>
+        <ListItem button onClick={() => onRequirementclick(requirement)} key={requirement.id}>
+          <ListItemText primary={requirement.label} />
+        </ListItem>
       ))}
-    </ul>
+    </List>
   );
 };
 
 const RightPanel = ({ requirement }) => {
+  const classes = useStyles();
   return (
-    <div className={styles.details}>
-      <h2>{requirement.label}</h2>
-      <p>{requirement.description}</p>
+    <div className={classes.rightPanel}>
+      <div className={classes.details}>
+        <Typography variant="h3" gutterBottom>
+          {requirement.label}
+        </Typography>
+        <Typography>{requirement.description}</Typography>
+      </div>
       <Tests tests={requirement.tests} />
     </div>
   );

@@ -6,17 +6,48 @@
  ***************************************************************/
 import React, { StrictMode } from 'react';
 import ReactDOM from 'react-dom';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
 import { BrowserRouter } from 'react-router-dom';
 
 import { App } from './app/App';
 
-import './reset.css';
+const theme = createMuiTheme({
+  palette: {
+    type: 'dark',
+  },
+  typography: {
+    h1: {
+      fontSize: '2.5rem',
+      fontWeight: 'normal',
+      letterSpacing: 'normal',
+    },
+    h2: {
+      fontSize: '1.875rem',
+      fontWeight: 'normal',
+      letterSpacing: '0.23px',
+    },
+    h3: {
+      fontSize: '1.5rem',
+      fontWeight: 'normal',
+      letterSpacing: '0.23px',
+    },
+    h4: {
+      fontSize: '1.3rem',
+      fontWeight: 'normal',
+      letterSpacing: '0.23px',
+    },
+  },
+});
 
 ReactDOM.render(
   <BrowserRouter>
-    <StrictMode>
-      <App />
-    </StrictMode>
+    <ThemeProvider theme={theme}>
+      <StrictMode>
+        <CssBaseline />
+        <App />
+      </StrictMode>
+    </ThemeProvider>
   </BrowserRouter>,
   document.getElementById('root')
 );

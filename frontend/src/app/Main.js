@@ -7,9 +7,9 @@
 import React from 'react';
 import { Switch, Route, Redirect } from 'react-router-dom';
 
-import { AssessmentView } from '../views/assessment/AssessmentView';
-import { DashboardView } from '../views/dashboard/DashboardView';
-import { ProjectView } from '../views/project/ProjectView';
+import { AssessmentView } from '../views/AssessmentView';
+import { DashboardView } from '../views/DashboardView';
+import { ProjectView } from '../views/ProjectView';
 
 export const Main = () => {
   return (

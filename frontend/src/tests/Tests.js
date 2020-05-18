@@ -6,21 +6,29 @@
  ***************************************************************/
 import React from 'react';
 import PropTypes from 'prop-types';
-
+import FormGroup from '@material-ui/core/FormGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import Radio from '@material-ui/core/Radio';
+import RadioGroup from '@material-ui/core/RadioGroup';
+import Typography from '@material-ui/core/Typography';
 import { testPropTypes } from '../propTypes/propTypes';
 
 const Test = ({ test }) => {
-  const { id, label, description } = test;
+  const { label, description } = test;
   return (
     <div>
-      <h3>{label}</h3>
-      <p>{description}</p>
-      <div>
-        <input type="radio" id={`${id}-success`} name={`${id}-status`} value="success" />
-        <label htmlFor={`${id}-success`}>Success</label>
-        <input type="radio" id={`${id}-failure`} name={`${id}-status`} value="failure" />
-        <label htmlFor={`${id}-failure`}>Failure</label>
-      </div>
+      <Typography variant="h4" gutterBottom>
+        {label}
+      </Typography>
+      <Typography>{description}</Typography>
+      <FormGroup row>
+        <RadioGroup aria-label="status" name="status">
+          <FormControlLabel value="success" control={<Radio />} label="Success" />
+          <FormControlLabel value="failure" control={<Radio />} label="Failure" />
+        </RadioGroup>
+      </FormGroup>
     </div>
   );
 };
@@ -30,13 +38,13 @@ const propTypes = {
 };
 export const Tests = ({ tests }) => {
   return (
-    <ul>
+    <List>
       {tests.map((test) => (
-        <li key={test.id}>
+        <ListItem key={test.id}>
           <Test test={test} />
-        </li>
+        </ListItem>
       ))}
-    </ul>
+    </List>
   );
 };
 Tests.propTypes = propTypes;
