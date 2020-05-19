@@ -94,7 +94,7 @@ export const ProjectView = () => {
           projectId,
         },
       });
-      const response = await fetch('http://localhost:8080/api/graphql', {
+      const response = await fetch('/api/graphql', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body,
@@ -113,7 +113,7 @@ export const ProjectView = () => {
 
   const onNewAssessmentClick = () => {
     const createAssessment = async () => {
-      const createAssessmentResponse = await fetch('http://localhost:8080/api/graphql', {
+      const createAssessmentResponse = await fetch('/api/graphql', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -131,7 +131,7 @@ export const ProjectView = () => {
         data: { createAssessment },
       } = createAssessmentJson;
       if (createAssessment.__typename === 'CreateAssessmentSuccessPayload') {
-        const fetchAssessmentsResponse = await fetch('http://localhost:8080/api/graphql', {
+        const fetchAssessmentsResponse = await fetch('/api/graphql', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

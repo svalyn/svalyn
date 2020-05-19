@@ -59,7 +59,7 @@ export const DashboardView = () => {
       const body = JSON.stringify({
         query,
       });
-      const response = await fetch('http://localhost:8080/api/graphql', {
+      const response = await fetch('/api/graphql', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body,

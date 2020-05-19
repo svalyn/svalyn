@@ -124,7 +124,7 @@ export const AssessmentView = () => {
           assessmentId,
         },
       });
-      const response = await fetch('http://localhost:8080/api/graphql', {
+      const response = await fetch('/api/graphql', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body,
