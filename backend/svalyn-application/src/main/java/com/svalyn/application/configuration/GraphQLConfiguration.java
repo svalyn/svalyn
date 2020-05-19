@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
 import com.svalyn.application.graphql.MutationCreateAssessmentDataFetcher;
+import com.svalyn.application.graphql.MutationUpdateTestDataFetcher;
 import com.svalyn.application.graphql.ProjectAssessmentDataFetcher;
 import com.svalyn.application.graphql.ProjectAssessmentsDataFetcher;
 import com.svalyn.application.graphql.QueryProjectDataFetcher;
@@ -68,6 +69,7 @@ public class GraphQLConfiguration {
             var runtimeWiring = RuntimeWiring.newRuntimeWiring()
                     .codeRegistry(graphQLCodeRegistry)
                     .type("CreateAssessmentPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
+                    .type("UpdateTestPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
                     .build();
 
             return new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, runtimeWiring);
@@ -80,15 +82,17 @@ public class GraphQLConfiguration {
             QueryProjectDataFetcher queryProjectDataFetcher,
             ProjectAssessmentsDataFetcher projectAssessmentsDataFetcher,
             ProjectAssessmentDataFetcher projectAssessmentDataFetcher,
-            MutationCreateAssessmentDataFetcher mutationCreateAssessmentDataFetcher) {
+            MutationCreateAssessmentDataFetcher mutationCreateAssessmentDataFetcher,
+            MutationUpdateTestDataFetcher mutationUpdateTestDataFetcher) {
 
         // @formatter:off
         return GraphQLCodeRegistry.newCodeRegistry()
-                .dataFetcher(coordinates("Query", "projects"), queryProjectsDataFetcher) //$NON-NLS-1$ //$NON-NLS-2$
-                .dataFetcher(coordinates("Query", "project"), queryProjectDataFetcher) //$NON-NLS-1$ //$NON-NLS-2$
-                .dataFetcher(coordinates("Mutation", "createAssessment"), mutationCreateAssessmentDataFetcher) //$NON-NLS-1$ //$NON-NLS-2$
-                .dataFetcher(coordinates("Project", "assessments"), projectAssessmentsDataFetcher) //$NON-NLS-1$ //$NON-NLS-2$
-                .dataFetcher(coordinates("Project", "assessment"), projectAssessmentDataFetcher) //$NON-NLS-1$ //$NON-NLS-2$
+                .dataFetcher(coordinates("Query", "projects"), queryProjectsDataFetcher)
+                .dataFetcher(coordinates("Query", "project"), queryProjectDataFetcher)
+                .dataFetcher(coordinates("Mutation", "createAssessment"), mutationCreateAssessmentDataFetcher)
+                .dataFetcher(coordinates("Mutation", "updateTest"), mutationUpdateTestDataFetcher)
+                .dataFetcher(coordinates("Project", "assessments"), projectAssessmentsDataFetcher)
+                .dataFetcher(coordinates("Project", "assessment"), projectAssessmentDataFetcher)
                 .build();
         // @formatter:on
     }

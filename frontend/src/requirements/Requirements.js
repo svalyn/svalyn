@@ -32,33 +32,55 @@ const useStyles = makeStyles((theme) => ({
 const propTypes = {
   requirements: PropTypes.arrayOf(requirementPropTypes).isRequired,
 };
-export const Requirements = ({ requirements }) => {
+export const Requirements = ({ assessmentId, requirements, onTestUpdated }) => {
   const classes = useStyles();
   const initialState = {
-    selectedRequirement: null,
+    selectedRequirementId: null,
   };
-  const [{ selectedRequirement }, setState] = useState(initialState);
+  const [{ selectedRequirementId }, setState] = useState(initialState);
 
   useEffect(() => {
     const selectedRequirement = requirements[0];
-    setState({ selectedRequirement });
+    setState((prevState) => {
+      if (
+        !prevState.selectedRequirementId ||
+        requirements.filter((requirement) => requirement.id === prevState.selectedRequirementId).length === 0
+      ) {
+        return { selectedRequirementId: selectedRequirement.id };
+      }
+      return prevState;
+    });
   }, [requirements]);
 
-  const onRequirementclick = (selectedRequirement) => setState({ selectedRequirement });
+  const onRequirementclick = (selectedRequirement) => setState({ selectedRequirementId: selectedRequirement.id });
+
+  const selectedRequirement = requirements.filter((requirement) => requirement.id === selectedRequirementId)[0];
   return (
     <div className={classes.requirements}>
-      <LeftPanel requirements={requirements} onRequirementclick={onRequirementclick} />
-      {selectedRequirement ? <RightPanel requirement={selectedRequirement} /> : <EmptyRightPanel />}
+      <LeftPanel
+        requirements={requirements}
+        selectedRequirementId={selectedRequirementId}
+        onRequirementclick={onRequirementclick}
+      />
+      {selectedRequirement ? (
+        <RightPanel assessmentId={assessmentId} requirement={selectedRequirement} onTestUpdated={onTestUpdated} />
+      ) : (
+        <EmptyRightPanel />
+      )}
     </div>
   );
 };
 Requirements.propTypes = propTypes;
 
-const LeftPanel = ({ requirements, onRequirementclick }) => {
+const LeftPanel = ({ requirements, selectedRequirementId, onRequirementclick }) => {
   return (
     <List>
       {requirements.map((requirement) => (
-        <ListItem button onClick={() => onRequirementclick(requirement)} key={requirement.id}>
+        <ListItem
+          button
+          onClick={() => onRequirementclick(requirement)}
+          selected={requirement.id === selectedRequirementId}
+          key={requirement.id}>
           <ListItemText primary={requirement.label} />
         </ListItem>
       ))}
@@ -66,7 +88,7 @@ const LeftPanel = ({ requirements, onRequirementclick }) => {
   );
 };
 
-const RightPanel = ({ requirement }) => {
+const RightPanel = ({ assessmentId, requirement, onTestUpdated }) => {
   const classes = useStyles();
   return (
     <div className={classes.rightPanel}>
@@ -76,7 +98,7 @@ const RightPanel = ({ requirement }) => {
         </Typography>
         <Typography>{requirement.description}</Typography>
       </div>
-      <Tests tests={requirement.tests} />
+      <Tests assessmentId={assessmentId} tests={requirement.tests} onTestUpdated={onTestUpdated} />
     </div>
   );
 };

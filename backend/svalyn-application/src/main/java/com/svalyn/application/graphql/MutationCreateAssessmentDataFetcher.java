@@ -7,18 +7,17 @@
 package com.svalyn.application.graphql;
 
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.svalyn.application.dto.input.CreateAssessmentInput;
-import com.svalyn.application.dto.output.Assessment;
 import com.svalyn.application.dto.output.CreateAssessmentSuccessPayload;
 import com.svalyn.application.dto.output.ErrorPayload;
-import com.svalyn.application.repositories.AssessmentRepository;
 import com.svalyn.application.repositories.ProjectRepository;
-import com.svalyn.application.services.AssessmentFactory;
+import com.svalyn.application.services.AssessmentService;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -32,24 +31,23 @@ public class MutationCreateAssessmentDataFetcher implements DataFetcher<Completa
 
     private final ProjectRepository projectRepository;
 
-    private final AssessmentRepository assessmentRepository;
-
-    private final AssessmentFactory assessmentFactory;
+    private final AssessmentService assessmentService;
 
     public MutationCreateAssessmentDataFetcher(ObjectMapper objectMapper, ProjectRepository projectRepository,
-            AssessmentRepository assessmentRepository, AssessmentFactory assessmentFactory) {
+            AssessmentService assessmentService) {
         this.objectMapper = Objects.requireNonNull(objectMapper);
         this.projectRepository = Objects.requireNonNull(projectRepository);
-        this.assessmentRepository = Objects.requireNonNull(assessmentRepository);
-        this.assessmentFactory = Objects.requireNonNull(assessmentFactory);
+        this.assessmentService = Objects.requireNonNull(assessmentService);
     }
 
     @Override
     public CompletableFuture<Object> get(DataFetchingEnvironment environment) throws Exception {
         var input = this.objectMapper.convertValue(environment.getArgument(INPUT), CreateAssessmentInput.class);
         if (this.projectRepository.existById(input.getProjectId())) {
-            Assessment assessment = this.assessmentFactory.createAssessment();
-            var future = this.assessmentRepository.save(assessment).map(CreateAssessmentSuccessPayload::new).toFuture();
+            UUID descriptionId = UUID.fromString("aab394ae-9074-44f6-b166-d24d3b747c4e");
+            var assessment = this.assessmentService.createAssessment(input.getProjectId(), descriptionId,
+                    input.getLabel());
+            var future = assessment.map(CreateAssessmentSuccessPayload::new).toFuture();
             return CompletableFuture.anyOf(future);
         }
         return CompletableFuture.completedFuture(new ErrorPayload("The project does not exist"));

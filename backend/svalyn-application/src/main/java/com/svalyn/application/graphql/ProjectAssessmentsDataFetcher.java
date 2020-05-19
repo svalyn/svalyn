@@ -13,7 +13,8 @@ import java.util.concurrent.CompletableFuture;
 import org.springframework.stereotype.Service;
 
 import com.svalyn.application.dto.output.Assessment;
-import com.svalyn.application.repositories.AssessmentRepository;
+import com.svalyn.application.dto.output.Project;
+import com.svalyn.application.services.AssessmentService;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -21,15 +22,16 @@ import graphql.schema.DataFetchingEnvironment;
 @Service
 public class ProjectAssessmentsDataFetcher implements DataFetcher<CompletableFuture<List<Assessment>>> {
 
-    private final AssessmentRepository assessmentRepository;
+    private final AssessmentService assessmentService;
 
-    public ProjectAssessmentsDataFetcher(AssessmentRepository assessmentRepository) {
-        this.assessmentRepository = Objects.requireNonNull(assessmentRepository);
+    public ProjectAssessmentsDataFetcher(AssessmentService assessmentService) {
+        this.assessmentService = Objects.requireNonNull(assessmentService);
     }
 
     @Override
     public CompletableFuture<List<Assessment>> get(DataFetchingEnvironment environment) throws Exception {
-        return this.assessmentRepository.findAll().collectList().toFuture();
+        Project project = environment.getSource();
+        return this.assessmentService.findByProjectId(project.getId()).collectList().toFuture();
     }
 
 }

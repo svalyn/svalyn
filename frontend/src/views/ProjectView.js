@@ -10,10 +10,12 @@ import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import Button from '@material-ui/core/Button';
 import Container from '@material-ui/core/Container';
 import FolderIcon from '@material-ui/icons/Folder';
+import FormGroup from '@material-ui/core/FormGroup';
 import HomeIcon from '@material-ui/icons/Home';
 import Link from '@material-ui/core/Link';
 import List from '@material-ui/core/List';
 import Paper from '@material-ui/core/Paper';
+import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import { Link as RouterLink, useParams } from 'react-router-dom';
@@ -82,9 +84,10 @@ export const ProjectView = () => {
   const initialState = {
     loading: true,
     label: null,
+    newAssessmentLabel: '',
     assessments: [],
   };
-  const [{ label, assessments }, setState] = useState(initialState);
+  const [{ label, newAssessmentLabel, assessments }, setState] = useState(initialState);
 
   useEffect(() => {
     const fetchAssissments = async () => {
@@ -105,11 +108,18 @@ export const ProjectView = () => {
           project: { label, assessments },
         },
       } = json;
-      setState({ loading: false, label, assessments });
+      setState({ loading: false, newAssessmentLabel: '', label, assessments });
     };
 
     fetchAssissments();
   }, [projectId]);
+
+  const onNewAssessmentLabel = (event) => {
+    const { value } = event.target;
+    setState((prevState) => {
+      return { ...prevState, newAssessmentLabel: value };
+    });
+  };
 
   const onNewAssessmentClick = () => {
     const createAssessment = async () => {
@@ -121,7 +131,7 @@ export const ProjectView = () => {
           variables: {
             input: {
               projectId,
-              label: '',
+              label: newAssessmentLabel,
             },
           },
         }),
@@ -147,7 +157,7 @@ export const ProjectView = () => {
             project: { label, assessments },
           },
         } = fetchAssessmentsJson;
-        setState({ loading: false, label, assessments });
+        setState({ loading: false, label, newAssessmentLabel: '', assessments });
       }
     };
 
@@ -168,9 +178,19 @@ export const ProjectView = () => {
             <FolderIcon className={classes.icon} /> {label}
           </Typography>
         </Breadcrumbs>
-        <Button variant="contained" color="primary" onClick={onNewAssessmentClick}>
-          New assessment
-        </Button>
+        <FormGroup row>
+          <TextField
+            label="Assessment label"
+            variant="outlined"
+            size="small"
+            value={newAssessmentLabel}
+            onChange={onNewAssessmentLabel}
+            required
+          />
+          <Button variant="contained" color="primary" onClick={onNewAssessmentClick}>
+            Create
+          </Button>
+        </FormGroup>
         <Paper>
           <List>
             {assessments.map((assessment) => {

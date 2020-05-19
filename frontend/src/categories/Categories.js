@@ -14,14 +14,19 @@ import { categoryPropTypes } from '../propTypes/propTypes';
 
 const propTypes = {
   categories: PropTypes.arrayOf(categoryPropTypes).isRequired,
+  selectedCategoryId: PropTypes.string.isRequired,
   onCategoryClick: PropTypes.func.isRequired,
 };
-export const Categories = ({ categories, onCategoryClick }) => {
+export const Categories = ({ categories, selectedCategoryId, onCategoryClick }) => {
   return (
     <List>
       {categories.map((category) => {
         return (
-          <ListItem button onClick={() => onCategoryClick(category)} key={category.id}>
+          <ListItem
+            button
+            onClick={() => onCategoryClick(category)}
+            selected={category.id === selectedCategoryId}
+            key={category.id}>
             <ListItemText primary={category.label} />
           </ListItem>
         );

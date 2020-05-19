@@ -19,7 +19,10 @@ import reactor.core.publisher.Mono;
 @Service
 public class ProjectRepository {
 
-    private final List<Project> projects = List.of(new Project(UUID.randomUUID(), "Westworld"));
+    private final List<Project> projects = List.of(
+            new Project(UUID.nameUUIDFromBytes("Westworld".getBytes()), "Westworld"),
+            new Project(UUID.nameUUIDFromBytes("Eastworld".getBytes()), "Eastworld"),
+            new Project(UUID.nameUUIDFromBytes("Jurassic World".getBytes()), "Jurassic World"));
 
     public Flux<Project> findAll() {
         return Flux.fromIterable(this.projects);

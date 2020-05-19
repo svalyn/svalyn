@@ -49,6 +49,7 @@ enum Status {
 
 type Mutation {
   createAssessment(input: CreateAssessmentInput!): CreateAssessmentPayload!
+  updateTest(input: UpdateTestInput!): UpdateTestPayload!
 }
 
 type ErrorPayload {
@@ -65,3 +66,16 @@ type CreateAssessmentSuccessPayload {
 }
 
 union CreateAssessmentPayload = ErrorPayload | CreateAssessmentSuccessPayload
+
+input UpdateTestInput {
+  assessmentId: ID!
+  testId: ID!
+  status: Status!
+}
+
+type UpdateTestSuccessPayload {
+  assessment: Assessment!
+}
+
+union UpdateTestPayload = ErrorPayload | UpdateTestSuccessPayload
+

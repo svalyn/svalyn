@@ -111,9 +111,9 @@ export const AssessmentView = () => {
     loading: true,
     label: null,
     assessment: null,
-    selectedCategory: null,
+    selectedCategoryId: null,
   };
-  const [{ label, assessment, selectedCategory }, setState] = useState(initialState);
+  const [{ label, assessment, selectedCategoryId }, setState] = useState(initialState);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -135,22 +135,35 @@ export const AssessmentView = () => {
           project: { label, assessment },
         },
       } = json;
-      setState({ loading: false, label, assessment, selectedCategory: assessment?.categories[0] });
+      setState({ loading: false, label, assessment, selectedCategoryId: assessment?.categories[0]?.id });
     };
 
     fetchProjects();
   }, [projectId, assessmentId]);
 
-  const onCategoryClick = (selectedCategory) => setState((prevState) => ({ ...prevState, selectedCategory }));
+  const onTestUpdated = (assessment) =>
+    setState((prevState) => {
+      const state = { ...prevState, assessment };
+      return state;
+    });
+
+  const onCategoryClick = (selectedCategory) =>
+    setState((prevState) => ({ ...prevState, selectedCategoryId: selectedCategory.id }));
   return (
     <div className={classes.assessmentView}>
-      <LeftPanel categories={assessment?.categories ?? []} onCategoryClick={onCategoryClick} />
-      {selectedCategory ? (
+      <LeftPanel
+        categories={assessment?.categories ?? []}
+        selectedCategoryId={selectedCategoryId}
+        onCategoryClick={onCategoryClick}
+      />
+      {selectedCategoryId ? (
         <RightPanel
           projectId={projectId}
           projectLabel={label}
+          assessmentId={assessment?.id}
           assessmentLabel={assessment?.label}
-          category={selectedCategory}
+          category={assessment?.categories.filter((category) => category.id === selectedCategoryId)[0]}
+          onTestUpdated={onTestUpdated}
         />
       ) : (
         <EmptyRightPanel />
@@ -159,7 +172,7 @@ export const AssessmentView = () => {
   );
 };
 
-const LeftPanel = ({ categories, onCategoryClick }) => {
+const LeftPanel = ({ categories, selectedCategoryId, onCategoryClick }) => {
   const classes = useStyles();
   return (
     <Drawer
@@ -169,12 +182,12 @@ const LeftPanel = ({ categories, onCategoryClick }) => {
         paper: classes.drawerPaper,
       }}>
       <Toolbar />
-      <Categories categories={categories} onCategoryClick={onCategoryClick} />
+      <Categories categories={categories} selectedCategoryId={selectedCategoryId} onCategoryClick={onCategoryClick} />
     </Drawer>
   );
 };
 
-const RightPanel = ({ projectId, projectLabel, assessmentLabel, category }) => {
+const RightPanel = ({ projectId, projectLabel, assessmentId, assessmentLabel, category, onTestUpdated }) => {
   const classes = useStyles();
   return (
     <Container maxWidth="xl" className={classes.container}>
@@ -199,7 +212,11 @@ const RightPanel = ({ projectId, projectLabel, assessmentLabel, category }) => {
         <Paper className={classes.requirements}>
           <Description category={category} />
           <Divider />
-          <Requirements requirements={category.requirements} />
+          <Requirements
+            assessmentId={assessmentId}
+            requirements={category.requirements}
+            onTestUpdated={onTestUpdated}
+          />
         </Paper>
       </div>
     </Container>
