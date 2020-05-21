@@ -19,6 +19,7 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import { Link as RouterLink, useParams } from 'react-router-dom';
 import { gql } from 'graphql.macro';
+import { ajax } from 'rxjs/ajax';
 
 import { Categories } from '../categories/Categories';
 import { Description } from '../description/Description';
@@ -55,6 +56,14 @@ const {
     }
   }
 `;
+
+const getAssessment = (variables) =>
+  ajax({
+    url: '/api/graphql',
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query, variables }),
+  });
 
 const drawerWidth = 240;
 
@@ -116,29 +125,18 @@ export const AssessmentView = () => {
   const [{ label, assessment, selectedCategoryId }, setState] = useState(initialState);
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      const body = JSON.stringify({
-        query,
-        variables: {
-          projectId,
-          assessmentId,
-        },
-      });
-      const response = await fetch('/api/graphql', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body,
-      });
-      const json = await response.json();
+    const variables = { projectId, assessmentId };
+    const subscription = getAssessment(variables).subscribe((ajaxResponse) => {
       const {
-        data: {
-          project: { label, assessment },
+        response: {
+          data: {
+            project: { label, assessment },
+          },
         },
-      } = json;
+      } = ajaxResponse;
       setState({ loading: false, label, assessment, selectedCategoryId: assessment?.categories[0]?.id });
-    };
-
-    fetchProjects();
+    });
+    return () => subscription.unsubscribe();
   }, [projectId, assessmentId]);
 
   const onTestUpdated = (assessment) =>
@@ -149,6 +147,8 @@ export const AssessmentView = () => {
 
   const onCategoryClick = (selectedCategory) =>
     setState((prevState) => ({ ...prevState, selectedCategoryId: selectedCategory.id }));
+
+  const selectedCategory = assessment?.categories.filter((category) => category.id === selectedCategoryId)[0];
   return (
     <div className={classes.assessmentView}>
       <LeftPanel
@@ -156,13 +156,13 @@ export const AssessmentView = () => {
         selectedCategoryId={selectedCategoryId}
         onCategoryClick={onCategoryClick}
       />
-      {selectedCategoryId ? (
+      {selectedCategory ? (
         <RightPanel
           projectId={projectId}
           projectLabel={label}
           assessmentId={assessment?.id}
           assessmentLabel={assessment?.label}
-          category={assessment?.categories.filter((category) => category.id === selectedCategoryId)[0]}
+          category={selectedCategory}
           onTestUpdated={onTestUpdated}
         />
       ) : (

@@ -14,7 +14,7 @@ import { categoryPropTypes } from '../propTypes/propTypes';
 
 const propTypes = {
   categories: PropTypes.arrayOf(categoryPropTypes).isRequired,
-  selectedCategoryId: PropTypes.string.isRequired,
+  selectedCategoryId: PropTypes.string,
   onCategoryClick: PropTypes.func.isRequired,
 };
 export const Categories = ({ categories, selectedCategoryId, onCategoryClick }) => {

@@ -14,6 +14,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import { gql } from 'graphql.macro';
+import { ajax } from 'rxjs/ajax';
 
 import { ListItemLink } from '../core/ListItemLink';
 
@@ -29,6 +30,14 @@ const {
     }
   }
 `;
+
+const getProjects = () =>
+  ajax({
+    url: '/api/graphql',
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query }),
+  });
 
 const useStyles = makeStyles((theme) => ({
   dashboardView: {
@@ -55,23 +64,15 @@ export const DashboardView = () => {
   const [{ projects }, setState] = useState(initialState);
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      const body = JSON.stringify({
-        query,
-      });
-      const response = await fetch('/api/graphql', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body,
-      });
-      const json = await response.json();
+    const subscription = getProjects().subscribe((ajaxResponse) => {
       const {
-        data: { projects },
-      } = json;
+        response: {
+          data: { projects },
+        },
+      } = ajaxResponse;
       setState({ loading: false, projects });
-    };
-
-    fetchProjects();
+    });
+    return () => subscription.unsubscribe();
   }, []);
 
   return (

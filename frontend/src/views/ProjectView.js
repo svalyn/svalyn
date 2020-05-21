@@ -20,6 +20,9 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import { Link as RouterLink, useParams } from 'react-router-dom';
 import { gql } from 'graphql.macro';
+import { empty } from 'rxjs';
+import { ajax } from 'rxjs/ajax';
+import { concatMap } from 'rxjs/operators';
 
 import { ListItemLink } from '../core/ListItemLink';
 
@@ -38,6 +41,13 @@ const {
     }
   }
 `;
+const getAssessments = (variables) =>
+  ajax({
+    url: '/api/graphql',
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: getAssessmentsQuery, variables }),
+  });
 
 const {
   loc: {
@@ -58,6 +68,13 @@ const {
     }
   }
 `;
+const createAssessment = (variables) =>
+  ajax({
+    url: '/api/graphql',
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: createAssessmentMutation, variables }),
+  });
 
 const useStyles = makeStyles((theme) => ({
   projectView: {
@@ -90,28 +107,19 @@ export const ProjectView = () => {
   const [{ label, newAssessmentLabel, assessments }, setState] = useState(initialState);
 
   useEffect(() => {
-    const fetchAssissments = async () => {
-      const body = JSON.stringify({
-        query: getAssessmentsQuery,
-        variables: {
-          projectId,
-        },
-      });
-      const response = await fetch('/api/graphql', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body,
-      });
-      const json = await response.json();
+    const variables = { projectId };
+    const subscription = getAssessments(variables).subscribe((ajaxResponse) => {
       const {
-        data: {
-          project: { label, assessments },
+        response: {
+          data: {
+            project: { label, assessments },
+          },
         },
-      } = json;
+      } = ajaxResponse;
       setState({ loading: false, newAssessmentLabel: '', label, assessments });
-    };
+    });
 
-    fetchAssissments();
+    return () => subscription.unsubscribe();
   }, [projectId]);
 
   const onNewAssessmentLabel = (event) => {
@@ -122,46 +130,34 @@ export const ProjectView = () => {
   };
 
   const onNewAssessmentClick = () => {
-    const createAssessment = async () => {
-      const createAssessmentResponse = await fetch('/api/graphql', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: createAssessmentMutation,
-          variables: {
-            input: {
-              projectId,
-              label: newAssessmentLabel,
-            },
-          },
-        }),
-      });
-      const createAssessmentJson = await createAssessmentResponse.json();
-      const {
-        data: { createAssessment },
-      } = createAssessmentJson;
-      if (createAssessment.__typename === 'CreateAssessmentSuccessPayload') {
-        const fetchAssessmentsResponse = await fetch('/api/graphql', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            query: getAssessmentsQuery,
-            variables: {
-              projectId,
-            },
-          }),
-        });
-        const fetchAssessmentsJson = await fetchAssessmentsResponse.json();
-        const {
-          data: {
-            project: { label, assessments },
-          },
-        } = fetchAssessmentsJson;
-        setState({ loading: false, label, newAssessmentLabel: '', assessments });
-      }
+    const createAssessmentVariables = {
+      input: {
+        projectId,
+        label: newAssessmentLabel,
+      },
     };
+    const subscription = createAssessment(createAssessmentVariables)
+      .pipe(
+        concatMap((createAssessmentAjaxResponse) => {
+          const { response } = createAssessmentAjaxResponse;
+          if (response?.data?.createAssessment.__typename === 'CreateAssessmentSuccessPayload') {
+            return getAssessments({ projectId });
+          }
+          return empty();
+        })
+      )
+      .subscribe((getAssessmentsAjaxResponse) => {
+        const {
+          response: {
+            data: {
+              project: { label, assessments },
+            },
+          },
+        } = getAssessmentsAjaxResponse;
+        setState({ loading: false, newAssessmentLabel: '', label, assessments });
+      });
 
-    createAssessment();
+    return () => subscription.unsubscribe();
   };
 
   return (

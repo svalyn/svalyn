@@ -15,6 +15,7 @@ import RadioGroup from '@material-ui/core/RadioGroup';
 import Typography from '@material-ui/core/Typography';
 import { testPropTypes } from '../propTypes/propTypes';
 import { gql } from 'graphql.macro';
+import { ajax } from 'rxjs/ajax';
 
 const {
   loc: {
@@ -53,6 +54,14 @@ const {
   }
 `;
 
+const updateTest = (variables) =>
+  ajax({
+    url: '/api/graphql',
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query, variables }),
+  });
+
 const testComponentPropTypes = {
   assessmentId: PropTypes.string.isRequired,
   test: testPropTypes.isRequired,
@@ -63,28 +72,24 @@ const Test = ({ assessmentId, test, onTestUpdated }) => {
 
   const onChange = async (event) => {
     const { value } = event.target;
-    const body = JSON.stringify({
-      query,
-      variables: {
-        input: {
-          assessmentId,
-          testId: id,
-          status: value,
-        },
+
+    const variables = {
+      input: {
+        assessmentId,
+        testId: id,
+        status: value,
       },
+    };
+    updateTest(variables).subscribe((ajaxResponse) => {
+      const {
+        response: {
+          data: { updateTest },
+        },
+      } = ajaxResponse;
+      if (updateTest.__typename === 'UpdateTestSuccessPayload') {
+        onTestUpdated(updateTest.assessment);
+      }
     });
-    const response = await fetch('/api/graphql', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body,
-    });
-    const json = await response.json();
-    const {
-      data: { updateTest },
-    } = json;
-    if (updateTest.__typename === 'UpdateTestSuccessPayload') {
-      onTestUpdated(updateTest.assessment);
-    }
   };
 
   return (
