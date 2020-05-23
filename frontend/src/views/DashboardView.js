@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in
  * the LICENSE file in the root directory of this source tree.
  ***************************************************************/
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import Container from '@material-ui/core/Container';
 import FolderIcon from '@material-ui/icons/Folder';
@@ -15,8 +15,10 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import { gql } from 'graphql.macro';
 import { ajax } from 'rxjs/ajax';
+import { useMachine } from '@xstate/react';
 
 import { ListItemLink } from '../core/ListItemLink';
+import { dashboardViewMachine } from './DashboardViewMachine';
 
 const {
   loc: {
@@ -60,20 +62,15 @@ const useStyles = makeStyles((theme) => ({
 
 export const DashboardView = () => {
   const classes = useStyles();
-  const initialState = { loading: true, projects: [] };
-  const [{ projects }, setState] = useState(initialState);
+
+  const [{ context }, dispatch] = useMachine(dashboardViewMachine);
+  const { projects } = context;
 
   useEffect(() => {
-    const subscription = getProjects().subscribe((ajaxResponse) => {
-      const {
-        response: {
-          data: { projects },
-        },
-      } = ajaxResponse;
-      setState({ loading: false, projects });
-    });
+    dispatch('FETCH');
+    const subscription = getProjects().subscribe(({ response }) => dispatch({ type: 'HANDLE_RESPONSE', response }));
     return () => subscription.unsubscribe();
-  }, []);
+  }, [dispatch]);
 
   return (
     <div className={classes.dashboardView}>

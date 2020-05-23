@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in
  * the LICENSE file in the root directory of this source tree.
  ***************************************************************/
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import Container from '@material-ui/core/Container';
@@ -20,10 +20,12 @@ import { makeStyles } from '@material-ui/core/styles';
 import { Link as RouterLink, useParams } from 'react-router-dom';
 import { gql } from 'graphql.macro';
 import { ajax } from 'rxjs/ajax';
+import { useMachine } from '@xstate/react';
 
 import { Categories } from '../categories/Categories';
 import { Description } from '../description/Description';
 import { Requirements } from '../requirements/Requirements';
+import { assessmentViewMachine } from './AssessmentViewMachine';
 
 const {
   loc: {
@@ -115,38 +117,20 @@ const useStyles = makeStyles((theme) => ({
 export const AssessmentView = () => {
   const classes = useStyles();
   const { projectId, assessmentId } = useParams();
-
-  const initialState = {
-    loading: true,
-    label: null,
-    assessment: null,
-    selectedCategoryId: null,
-  };
-  const [{ label, assessment, selectedCategoryId }, setState] = useState(initialState);
+  const [{ context }, dispatch] = useMachine(assessmentViewMachine);
+  const { label, assessment, selectedCategoryId } = context;
 
   useEffect(() => {
+    dispatch('FETCH');
     const variables = { projectId, assessmentId };
-    const subscription = getAssessment(variables).subscribe((ajaxResponse) => {
-      const {
-        response: {
-          data: {
-            project: { label, assessment },
-          },
-        },
-      } = ajaxResponse;
-      setState({ loading: false, label, assessment, selectedCategoryId: assessment?.categories[0]?.id });
-    });
+    const subscription = getAssessment(variables).subscribe(({ response }) =>
+      dispatch({ type: 'HANDLE_RESPONSE', response })
+    );
     return () => subscription.unsubscribe();
-  }, [projectId, assessmentId]);
+  }, [projectId, assessmentId, dispatch]);
 
-  const onTestUpdated = (assessment) =>
-    setState((prevState) => {
-      const state = { ...prevState, assessment };
-      return state;
-    });
-
-  const onCategoryClick = (selectedCategory) =>
-    setState((prevState) => ({ ...prevState, selectedCategoryId: selectedCategory.id }));
+  const onTestUpdated = (assessment) => dispatch({ type: 'REFRESH_ASSESSMENT', assessment });
+  const onCategoryClick = (selectedCategory) => dispatch({ type: 'SELECT_CATEGORY', selectedCategory });
 
   const selectedCategory = assessment?.categories.filter((category) => category.id === selectedCategoryId)[0];
   return (

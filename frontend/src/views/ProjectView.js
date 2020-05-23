@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in
  * the LICENSE file in the root directory of this source tree.
  ***************************************************************/
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import Button from '@material-ui/core/Button';
@@ -20,18 +20,19 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import { Link as RouterLink, useParams } from 'react-router-dom';
 import { gql } from 'graphql.macro';
-import { empty } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
 import { concatMap } from 'rxjs/operators';
+import { useMachine } from '@xstate/react';
 
 import { ListItemLink } from '../core/ListItemLink';
+import { projectViewMachine } from './ProjectViewMachine';
 
 const {
   loc: {
-    source: { body: getAssessmentsQuery },
+    source: { body: getProjectQuery },
   },
 } = gql`
-  query getAssessments($projectId: ID!) {
+  query getProject($projectId: ID!) {
     project(projectId: $projectId) {
       label
       assessments {
@@ -41,12 +42,12 @@ const {
     }
   }
 `;
-const getAssessments = (variables) =>
+const getProject = (variables) =>
   ajax({
     url: '/api/graphql',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query: getAssessmentsQuery, variables }),
+    body: JSON.stringify({ query: getProjectQuery, variables }),
   });
 
 const {
@@ -98,35 +99,23 @@ const useStyles = makeStyles((theme) => ({
 export const ProjectView = () => {
   const classes = useStyles();
   const { projectId } = useParams();
-  const initialState = {
-    loading: true,
-    label: null,
-    newAssessmentLabel: '',
-    assessments: [],
-  };
-  const [{ label, newAssessmentLabel, assessments }, setState] = useState(initialState);
+
+  const [{ context }, dispatch] = useMachine(projectViewMachine);
+  const { label, assessments, newAssessmentLabel } = context;
 
   useEffect(() => {
+    dispatch('FETCH_PROJECT');
     const variables = { projectId };
-    const subscription = getAssessments(variables).subscribe((ajaxResponse) => {
-      const {
-        response: {
-          data: {
-            project: { label, assessments },
-          },
-        },
-      } = ajaxResponse;
-      setState({ loading: false, newAssessmentLabel: '', label, assessments });
-    });
+    const subscription = getProject(variables).subscribe(({ response }) =>
+      dispatch({ type: 'HANDLE_PROJECT_RESPONSE', response })
+    );
 
     return () => subscription.unsubscribe();
-  }, [projectId]);
+  }, [projectId, dispatch]);
 
   const onNewAssessmentLabel = (event) => {
     const { value } = event.target;
-    setState((prevState) => {
-      return { ...prevState, newAssessmentLabel: value };
-    });
+    dispatch({ type: 'UPDATE_LABEL', newAssessmentLabel: value });
   };
 
   const onNewAssessmentClick = () => {
@@ -136,26 +125,10 @@ export const ProjectView = () => {
         label: newAssessmentLabel,
       },
     };
+    dispatch('CREATE_ASSESSMENT');
     const subscription = createAssessment(createAssessmentVariables)
-      .pipe(
-        concatMap((createAssessmentAjaxResponse) => {
-          const { response } = createAssessmentAjaxResponse;
-          if (response?.data?.createAssessment.__typename === 'CreateAssessmentSuccessPayload') {
-            return getAssessments({ projectId });
-          }
-          return empty();
-        })
-      )
-      .subscribe((getAssessmentsAjaxResponse) => {
-        const {
-          response: {
-            data: {
-              project: { label, assessments },
-            },
-          },
-        } = getAssessmentsAjaxResponse;
-        setState({ loading: false, newAssessmentLabel: '', label, assessments });
-      });
+      .pipe(concatMap(() => getProject({ projectId })))
+      .subscribe(({ response }) => dispatch({ type: 'HANDLE_PROJECT_RESPONSE', response }));
 
     return () => subscription.unsubscribe();
   };
