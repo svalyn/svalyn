@@ -49,6 +49,7 @@ type Test {
   id: ID!
   label: String!
   description: String!
+  steps: [String!]
   status: Status
 }
 

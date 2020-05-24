@@ -13,9 +13,11 @@ import ListItem from '@material-ui/core/ListItem';
 import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import Typography from '@material-ui/core/Typography';
-import { testPropTypes } from '../propTypes/propTypes';
+import { makeStyles } from '@material-ui/core/styles';
 import { gql } from 'graphql.macro';
 import { ajax } from 'rxjs/ajax';
+
+import { testPropTypes } from '../propTypes/propTypes';
 
 const {
   loc: {
@@ -54,6 +56,13 @@ const {
   }
 `;
 
+const useStyles = makeStyles((theme) => ({
+  steps: {
+    marginTop: '1rem',
+    marginBottom: '1rem',
+  },
+}));
+
 const updateTest = (variables) =>
   ajax({
     url: '/api/graphql',
@@ -68,7 +77,8 @@ const testComponentPropTypes = {
   onTestUpdated: PropTypes.func.isRequired,
 };
 const Test = ({ assessmentId, test, onTestUpdated }) => {
-  const { id, label, description, status } = test;
+  const classes = useStyles();
+  const { id, label, description, steps, status } = test;
 
   const onChange = async (event) => {
     const { value } = event.target;
@@ -92,12 +102,26 @@ const Test = ({ assessmentId, test, onTestUpdated }) => {
     });
   };
 
+  let stepsElement = null;
+  if (steps) {
+    stepsElement = (
+      <ul className={classes.steps}>
+        {steps.map((step, index) => (
+          <li key={index}>
+            <Typography>{step}</Typography>
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
   return (
     <div>
       <Typography variant="h4" gutterBottom>
         {label}
       </Typography>
       <Typography>{description}</Typography>
+      {stepsElement}
       <FormGroup row>
         <RadioGroup aria-label="status" name={`status-${id}`} value={status} onChange={onChange}>
           <FormControlLabel value="SUCCESS" control={<Radio />} label="Success" />

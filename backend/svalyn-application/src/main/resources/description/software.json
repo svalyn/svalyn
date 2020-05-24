@@ -15,7 +15,13 @@
             {
               "id":"a2068e7a-9f7c-487c-860c-2c6736ad2b01",
               "label":"Tests should be executed after each commit",
-              "description":"The tests must be stable and properly executed"
+              "description":"The tests must be stable and properly executed",
+              "steps": [
+                "Check that a continuous integration build has been configured",
+                "Check that it executes all necessary tests",
+                "Check that all tests need to be green for a commit to be merged",
+                "Check that the tests are stable"
+              ]
             }
           ]
         },

@@ -6,6 +6,7 @@
  **************************************************************/
 package com.svalyn.application.entities;
 
+import java.util.List;
 import java.util.UUID;
 
 public class TestEntity {
@@ -14,6 +15,8 @@ public class TestEntity {
     private String label;
 
     private String description;
+
+    private List<String> steps;
 
     public UUID getId() {
         return this.id;
@@ -37,5 +40,13 @@ public class TestEntity {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public List<String> getSteps() {
+        return this.steps;
+    }
+
+    public void setSteps(List<String> steps) {
+        this.steps = steps;
     }
 }

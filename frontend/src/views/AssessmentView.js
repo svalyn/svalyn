@@ -50,6 +50,7 @@ const {
               id
               label
               description
+              steps
               status
             }
           }

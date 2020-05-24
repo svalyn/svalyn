@@ -6,6 +6,7 @@
  **************************************************************/
 package com.svalyn.application.dto.output;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -17,12 +18,15 @@ public class Test {
 
     private final String description;
 
+    private final List<String> steps;
+
     private final Status status;
 
-    public Test(UUID id, String label, String description, Status status) {
+    public Test(UUID id, String label, String description, List<String> steps, Status status) {
         this.id = Objects.requireNonNull(id);
         this.label = Objects.requireNonNull(label);
         this.description = Objects.requireNonNull(description);
+        this.steps = steps;
         this.status = status;
     }
 
@@ -36,6 +40,10 @@ public class Test {
 
     public String getDescription() {
         return this.description;
+    }
+
+    public List<String> getSteps() {
+        return this.steps;
     }
 
     public Status getStatus() {

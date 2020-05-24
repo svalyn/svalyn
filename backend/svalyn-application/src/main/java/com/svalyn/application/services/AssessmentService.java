@@ -116,7 +116,8 @@ public class AssessmentService {
                     StatusEntity statusEntity = assessmentEntity.getResults().get(testEntity.getId());
                     Status status = this.convert(statusEntity);
 
-                    tests.add(new Test(testEntity.getId(), testEntity.getLabel(), testEntity.getDescription(), status));
+                    tests.add(new Test(testEntity.getId(), testEntity.getLabel(), testEntity.getDescription(),
+                            testEntity.getSteps(), status));
                 }
 
                 requirements.add(new Requirement(requirementEntity.getId(), requirementEntity.getLabel(),
