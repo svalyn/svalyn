@@ -99,7 +99,7 @@ const Test = ({ assessmentId, test, onTestUpdated }) => {
       </Typography>
       <Typography>{description}</Typography>
       <FormGroup row>
-        <RadioGroup aria-label="status" name="status" value={status} onChange={onChange}>
+        <RadioGroup aria-label="status" name={`status-${id}`} value={status} onChange={onChange}>
           <FormControlLabel value="SUCCESS" control={<Radio />} label="Success" />
           <FormControlLabel value="FAILURE" control={<Radio />} label="Failure" />
         </RadioGroup>
