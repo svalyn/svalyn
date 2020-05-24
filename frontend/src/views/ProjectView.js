@@ -10,11 +10,15 @@ import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import Button from '@material-ui/core/Button';
 import Container from '@material-ui/core/Container';
 import FolderIcon from '@material-ui/icons/Folder';
+import FormControl from '@material-ui/core/FormControl';
 import FormGroup from '@material-ui/core/FormGroup';
 import HomeIcon from '@material-ui/icons/Home';
+import InputLabel from '@material-ui/core/InputLabel';
 import Link from '@material-ui/core/Link';
 import List from '@material-ui/core/List';
+import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
+import Select from '@material-ui/core/Select';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
@@ -33,6 +37,10 @@ const {
   },
 } = gql`
   query getProject($projectId: ID!) {
+    descriptions {
+      id
+      label
+    }
     project(projectId: $projectId) {
       label
       assessments {
@@ -101,7 +109,7 @@ export const ProjectView = () => {
   const { projectId } = useParams();
 
   const [{ context }, dispatch] = useMachine(projectViewMachine);
-  const { label, assessments, newAssessmentLabel } = context;
+  const { descriptions, newAssessmentLabel, newAssessmentDescriptionId, label, assessments } = context;
 
   useEffect(() => {
     dispatch('FETCH_PROJECT');
@@ -122,6 +130,7 @@ export const ProjectView = () => {
     const createAssessmentVariables = {
       input: {
         projectId,
+        descriptionId: newAssessmentDescriptionId,
         label: newAssessmentLabel,
       },
     };
@@ -131,6 +140,11 @@ export const ProjectView = () => {
       .subscribe(({ response }) => dispatch({ type: 'HANDLE_PROJECT_RESPONSE', response }));
 
     return () => subscription.unsubscribe();
+  };
+
+  const onNewAssessmentDescriptionId = (event) => {
+    const { value } = event.target;
+    dispatch({ type: 'UPDATE_DESCRIPTION', newAssessmentDescriptionId: value });
   };
 
   return (
@@ -149,13 +163,28 @@ export const ProjectView = () => {
         </Breadcrumbs>
         <FormGroup row>
           <TextField
-            label="Assessment label"
+            label="Label"
             variant="outlined"
-            size="small"
             value={newAssessmentLabel}
             onChange={onNewAssessmentLabel}
             required
           />
+          <FormControl variant="outlined">
+            <InputLabel id="demo-simple-select-outlined-label">Description</InputLabel>
+            <Select
+              labelId="demo-simple-select-outlined-label"
+              id="demo-simple-select-outlined"
+              value={newAssessmentDescriptionId}
+              onChange={onNewAssessmentDescriptionId}
+              label="Description"
+              required>
+              {descriptions.map((description) => (
+                <MenuItem value={description.id} key={description.id}>
+                  {description.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <Button variant="contained" color="primary" onClick={onNewAssessmentClick}>
             Create
           </Button>

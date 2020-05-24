@@ -7,7 +7,6 @@
 package com.svalyn.application.graphql;
 
 import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import org.springframework.stereotype.Service;
@@ -44,8 +43,7 @@ public class MutationCreateAssessmentDataFetcher implements DataFetcher<Completa
     public CompletableFuture<Object> get(DataFetchingEnvironment environment) throws Exception {
         var input = this.objectMapper.convertValue(environment.getArgument(INPUT), CreateAssessmentInput.class);
         if (this.projectRepository.existById(input.getProjectId())) {
-            UUID descriptionId = UUID.fromString("aab394ae-9074-44f6-b166-d24d3b747c4e");
-            var assessment = this.assessmentService.createAssessment(input.getProjectId(), descriptionId,
+            var assessment = this.assessmentService.createAssessment(input.getProjectId(), input.getDescriptionId(),
                     input.getLabel());
             var future = assessment.map(CreateAssessmentSuccessPayload::new).toFuture();
             return CompletableFuture.anyOf(future);

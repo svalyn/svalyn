@@ -1,0 +1,42 @@
+{
+  "id":"7f3705b8-c31d-41b2-bb3c-12384585fdd0",
+  "label":"Software Assessment",
+  "categories":[
+    {
+      "id":"c98e0cbd-65ce-4296-9d23-e0202692e254",
+      "label":"Continuous deployment",
+      "description":"The code should be properly built and deployed after every commit",
+      "requirements":[
+        {
+          "id":"4080066d-d06f-4de9-8c92-5b40757952ee",
+          "label":"The project should use continuous integration",
+          "description":"Everything should be validated everytime a contribution is done",
+          "tests":[
+            {
+              "id":"a2068e7a-9f7c-487c-860c-2c6736ad2b01",
+              "label":"Tests should be executed after each commit",
+              "description":"The tests must be stable and properly executed"
+            }
+          ]
+        },
+        {
+          "id":"496a65d1-b72f-46ec-a8f0-5414b3c4b67f",
+          "label":"The project should be deployed automatically",
+          "description":"The production version of the application should be up to date",
+          "tests":[
+            {
+              "id":"054c1ed7-f7fe-479b-be96-a8fb529ae880",
+              "label":"The project should use continous deployment",
+              "description":"Each commit should trigger a deployment in production"
+            },
+            {
+              "id":"ee4cf3cf-e71a-4a5c-ac23-8adeea312dcb",
+              "label":"A blue / green deployment should be setup",
+              "description":"Commits should alternatively deployed on the green or blue server"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

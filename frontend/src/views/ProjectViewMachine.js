@@ -11,6 +11,10 @@ const newAssessmentFormMachine = {
   states: {
     pristine: {
       on: {
+        UPDATE_DESCRIPTION: {
+          target: 'invalid',
+          actions: ['updateNewAssessmentDescription'],
+        },
         UPDATE_LABEL: [
           {
             cond: 'isNewAssessmentLabelInvalid',
@@ -26,6 +30,10 @@ const newAssessmentFormMachine = {
     },
     invalid: {
       on: {
+        UPDATE_DESCRIPTION: {
+          target: 'invalid',
+          actions: ['updateNewAssessmentDescription'],
+        },
         UPDATE_LABEL: [
           {
             cond: 'isNewAssessmentLabelInvalid',
@@ -41,6 +49,10 @@ const newAssessmentFormMachine = {
     },
     valid: {
       on: {
+        UPDATE_DESCRIPTION: {
+          target: 'valid',
+          actions: ['updateNewAssessmentDescription'],
+        },
         UPDATE_LABEL: [
           {
             cond: 'isNewAssessmentLabelInvalid',
@@ -62,9 +74,11 @@ export const projectViewMachine = Machine(
     id: 'ProjectView',
     initial: 'idle',
     context: {
+      descriptions: [{ id: '', label: '' }],
+      newAssessmentLabel: '',
+      newAssessmentDescriptionId: '',
       label: '',
       assessments: [],
-      newAssessmentLabel: '',
     },
     states: {
       idle: {
@@ -136,6 +150,10 @@ export const projectViewMachine = Machine(
       },
     },
     actions: {
+      updateNewAssessmentDescription: assign((_, event) => {
+        const { newAssessmentDescriptionId } = event;
+        return { newAssessmentDescriptionId };
+      }),
       updateNewAssessmentLabel: assign((_, event) => {
         const { newAssessmentLabel } = event;
         return { newAssessmentLabel };
@@ -145,8 +163,11 @@ export const projectViewMachine = Machine(
       }),
       updateProject: assign((_, event) => {
         const { response } = event;
-        const { label, assessments } = response.data.project;
+        const { descriptions, project } = response.data;
+        const { label, assessments } = project;
         return {
+          descriptions,
+          newAssessmentDescriptionId: descriptions[0]?.id,
           label,
           assessments,
         };

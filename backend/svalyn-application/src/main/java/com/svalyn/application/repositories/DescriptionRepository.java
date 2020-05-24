@@ -21,16 +21,26 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.svalyn.application.entities.DescriptionEntity;
 
+import reactor.core.publisher.Flux;
+
 @Service
 public class DescriptionRepository {
+
+    private final ObjectMapper objectMapper;
 
     private final List<DescriptionEntity> descriptionEntities = new ArrayList<>();
 
     private final Logger logger = LoggerFactory.getLogger(DescriptionRepository.class);
 
     public DescriptionRepository(ObjectMapper objectMapper) {
-        try (InputStream inputStream = new ClassPathResource("/description/park.json").getInputStream()) {
-            DescriptionEntity descriptionEntity = objectMapper.readValue(inputStream, DescriptionEntity.class);
+        this.objectMapper = objectMapper;
+        this.addDescription("/description/park.json");
+        this.addDescription("/description/software.json");
+    }
+
+    public void addDescription(String path) {
+        try (InputStream inputStream = new ClassPathResource(path).getInputStream()) {
+            DescriptionEntity descriptionEntity = this.objectMapper.readValue(inputStream, DescriptionEntity.class);
             this.descriptionEntities.add(descriptionEntity);
         } catch (IOException exception) {
             this.logger.warn(exception.getMessage(), exception);
@@ -43,5 +53,9 @@ public class DescriptionRepository {
                 .filter(description -> description.getId().equals(descriptionId))
                 .findFirst();
         // @formatter:on
+    }
+
+    public Flux<DescriptionEntity> findAll() {
+        return Flux.fromIterable(this.descriptionEntities);
     }
 }

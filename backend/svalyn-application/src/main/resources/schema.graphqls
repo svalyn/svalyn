@@ -4,8 +4,14 @@ schema {
 }
 
 type Query {
+  descriptions: [Description!]!
   projects: [Project!]!
   project(projectId: ID!): Project
+}
+
+type Description {
+  id: ID!
+  label: String!
 }
 
 type Project {
@@ -58,6 +64,7 @@ type ErrorPayload {
 
 input CreateAssessmentInput {
   projectId: ID!
+  descriptionId: ID!
   label: String!
 }
 
