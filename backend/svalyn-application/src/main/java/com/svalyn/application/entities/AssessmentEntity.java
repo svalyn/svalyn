@@ -6,6 +6,7 @@
  **************************************************************/
 package com.svalyn.application.entities;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
@@ -19,6 +20,10 @@ public class AssessmentEntity {
     private String label;
 
     private Map<UUID, StatusEntity> results;
+
+    private LocalDateTime createdOn;
+
+    private LocalDateTime lastModifiedOn;
 
     public UUID getId() {
         return this.id;
@@ -58,5 +63,21 @@ public class AssessmentEntity {
 
     public void setResults(Map<UUID, StatusEntity> results) {
         this.results = results;
+    }
+
+    public LocalDateTime getCreatedOn() {
+        return this.createdOn;
+    }
+
+    public void setCreatedOn(LocalDateTime createdOn) {
+        this.createdOn = createdOn;
+    }
+
+    public LocalDateTime getLastModifiedOn() {
+        return this.lastModifiedOn;
+    }
+
+    public void setLastModifiedOn(LocalDateTime lastModifiedOn) {
+        this.lastModifiedOn = lastModifiedOn;
     }
 }

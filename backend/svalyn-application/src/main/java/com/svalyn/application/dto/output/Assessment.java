@@ -6,6 +6,7 @@
  **************************************************************/
 package com.svalyn.application.dto.output;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -17,10 +18,17 @@ public class Assessment {
 
     private final List<Category> categories;
 
-    public Assessment(UUID id, String label, List<Category> categories) {
+    private final LocalDateTime createdOn;
+
+    private final LocalDateTime lastModifiedOn;
+
+    public Assessment(UUID id, String label, List<Category> categories, LocalDateTime createdOn,
+            LocalDateTime lastModifiedOn) {
         this.id = Objects.requireNonNull(id);
         this.label = Objects.requireNonNull(label);
         this.categories = Objects.requireNonNull(categories);
+        this.createdOn = Objects.requireNonNull(createdOn);
+        this.lastModifiedOn = Objects.requireNonNull(lastModifiedOn);
     }
 
     public UUID getId() {
@@ -33,6 +41,14 @@ public class Assessment {
 
     public List<Category> getCategories() {
         return this.categories;
+    }
+
+    public LocalDateTime getCreatedOn() {
+        return this.createdOn;
+    }
+
+    public LocalDateTime getLastModifiedOn() {
+        return this.lastModifiedOn;
     }
 
 }

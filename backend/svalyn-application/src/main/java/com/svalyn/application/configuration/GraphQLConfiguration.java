@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
+import com.svalyn.application.graphql.GraphQLDateCoercing;
 import com.svalyn.application.graphql.MutationCreateAssessmentDataFetcher;
 import com.svalyn.application.graphql.MutationUpdateTestDataFetcher;
 import com.svalyn.application.graphql.ProjectAssessmentDataFetcher;
@@ -28,6 +29,7 @@ import com.svalyn.application.graphql.QueryProjectsDataFetcher;
 
 import graphql.GraphQL;
 import graphql.schema.GraphQLCodeRegistry;
+import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.TypeResolver;
 import graphql.schema.idl.RuntimeWiring;
@@ -69,6 +71,7 @@ public class GraphQLConfiguration {
 
             var runtimeWiring = RuntimeWiring.newRuntimeWiring()
                     .codeRegistry(graphQLCodeRegistry)
+                    .scalar(this.getGraphQLDate())
                     .type("CreateAssessmentPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
                     .type("UpdateTestPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
                     .build();
@@ -95,6 +98,15 @@ public class GraphQLConfiguration {
                 .dataFetcher(coordinates("Mutation", "updateTest"), mutationUpdateTestDataFetcher)
                 .dataFetcher(coordinates("Project", "assessments"), projectAssessmentsDataFetcher)
                 .dataFetcher(coordinates("Project", "assessment"), projectAssessmentDataFetcher)
+                .build();
+        // @formatter:on
+    }
+
+    private GraphQLScalarType getGraphQLDate() {
+        // @formatter:off
+        return GraphQLScalarType.newScalar()
+                .name("Date") //$NON-NLS-1$
+                .coercing(new GraphQLDateCoercing())
                 .build();
         // @formatter:on
     }

@@ -3,6 +3,8 @@ schema {
   mutation: Mutation
 }
 
+scalar Date
+
 type Query {
   descriptions: [Description!]!
   projects: [Project!]!
@@ -25,6 +27,8 @@ type Assessment {
   id: ID!
   label: String!
   categories: [Category!]!
+  createdOn: Date!
+  lastModifiedOn: Date!
 }
 
 type Category {

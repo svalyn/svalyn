@@ -6,6 +6,8 @@
  **************************************************************/
 package com.svalyn.application.services;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,6 +58,8 @@ public class AssessmentService {
             assessmentEntity.setProjectId(projectId);
             assessmentEntity.setLabel(label);
             assessmentEntity.setResults(new HashMap<>());
+            assessmentEntity.setCreatedOn(LocalDateTime.now(ZoneOffset.UTC));
+            assessmentEntity.setLastModifiedOn(LocalDateTime.now(ZoneOffset.UTC));
 
             return this.assessmentRepository.save(assessmentEntity)
                     .map(savedAssessmentEntity -> this.convert(descriptionEntity, savedAssessmentEntity));
@@ -92,6 +96,7 @@ public class AssessmentService {
                 .flatMap(assessmentEntity -> {
                     var statusEntity = this.convert(status);
                     assessmentEntity.getResults().put(testId, statusEntity);
+                    assessmentEntity.setLastModifiedOn(LocalDateTime.now(ZoneOffset.UTC));
                     return this.assessmentRepository.save(assessmentEntity);
                 }).flatMap(assessmentEntity -> {
                     var optionalDescriptionEntity = this.descriptionRepository.findDescriptionById(assessmentEntity.getDescriptionId());
@@ -121,7 +126,8 @@ public class AssessmentService {
             categories.add(new Category(categoryEntity.getId(), categoryEntity.getLabel(),
                     categoryEntity.getDescription(), requirements));
         }
-        Assessment assessment = new Assessment(assessmentEntity.getId(), assessmentEntity.getLabel(), categories);
+        Assessment assessment = new Assessment(assessmentEntity.getId(), assessmentEntity.getLabel(), categories,
+                assessmentEntity.getCreatedOn(), assessmentEntity.getLastModifiedOn());
         return assessment;
     }
 
