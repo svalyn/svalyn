@@ -13,7 +13,7 @@ import ListItem from '@material-ui/core/ListItem';
 import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, withStyles } from '@material-ui/core/styles';
 import { gql } from 'graphql.macro';
 import { ajax } from 'rxjs/ajax';
 
@@ -74,6 +74,26 @@ const updateTest = (variables) =>
     body: JSON.stringify({ query, variables }),
   });
 
+const SuccessRadio = withStyles((theme) => ({
+  root: {
+    color: theme.palette.grey[400],
+    '&$checked': {
+      color: theme.palette.success[theme.palette.type],
+    },
+  },
+  checked: {},
+}))((props) => <Radio color="default" {...props} />);
+
+const FailureRadio = withStyles((theme) => ({
+  root: {
+    color: theme.palette.grey[400],
+    '&$checked': {
+      color: theme.palette.error[theme.palette.type],
+    },
+  },
+  checked: {},
+}))((props) => <Radio color="default" {...props} />);
+
 const testComponentPropTypes = {
   assessmentId: PropTypes.string.isRequired,
   test: testPropTypes.isRequired,
@@ -127,8 +147,8 @@ const Test = ({ assessmentId, test, onTestUpdated }) => {
       {stepsElement}
       <FormGroup row>
         <RadioGroup aria-label="status" name={`status-${id}`} value={status} onChange={onChange}>
-          <FormControlLabel value="SUCCESS" control={<Radio />} label="Success" />
-          <FormControlLabel value="FAILURE" control={<Radio />} label="Failure" />
+          <FormControlLabel value="SUCCESS" control={<SuccessRadio />} label="Success" />
+          <FormControlLabel value="FAILURE" control={<FailureRadio />} label="Failure" />
         </RadioGroup>
       </FormGroup>
     </div>
