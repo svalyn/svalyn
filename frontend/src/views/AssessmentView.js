@@ -132,10 +132,10 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.grey[theme.palette.type === 'dark' ? 700 : 200],
   },
   successLinearProgress: {
-    backgroundColor: theme.palette.success.dark,
+    backgroundColor: theme.palette.success[theme.palette.type],
   },
   errorLinearProgress: {
-    backgroundColor: theme.palette.error.dark,
+    backgroundColor: theme.palette.error[theme.palette.type],
   },
   requirements: {
     display: 'grid',
