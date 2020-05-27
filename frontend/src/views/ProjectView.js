@@ -48,6 +48,8 @@ const {
         label
         createdOn
         lastModifiedOn
+        success
+        failure
       }
     }
   }
@@ -198,7 +200,7 @@ export const ProjectView = () => {
                 <ListItemLink
                   key={assessment.id}
                   to={`/projects/${projectId}/assessments/${assessment.id}`}
-                  primary={`${assessment.label} - Created on ${assessment.createdOn} - Last modified on ${assessment.lastModifiedOn}`}
+                  primary={`${assessment.label} - Created on ${assessment.createdOn} - Last modified on ${assessment.lastModifiedOn} - Success ${assessment.success} - Failure ${assessment.failure}`}
                   icon={<AssignmentIcon />}
                 />
               );

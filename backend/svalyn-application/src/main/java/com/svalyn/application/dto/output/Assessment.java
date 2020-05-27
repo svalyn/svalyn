@@ -22,13 +22,22 @@ public class Assessment {
 
     private final LocalDateTime lastModifiedOn;
 
+    private final int success;
+
+    private final int failure;
+
+    private final int testCount;
+
     public Assessment(UUID id, String label, List<Category> categories, LocalDateTime createdOn,
-            LocalDateTime lastModifiedOn) {
+            LocalDateTime lastModifiedOn, int success, int failure, int testCount) {
         this.id = Objects.requireNonNull(id);
         this.label = Objects.requireNonNull(label);
         this.categories = Objects.requireNonNull(categories);
         this.createdOn = Objects.requireNonNull(createdOn);
         this.lastModifiedOn = Objects.requireNonNull(lastModifiedOn);
+        this.success = success;
+        this.failure = failure;
+        this.testCount = testCount;
     }
 
     public UUID getId() {
@@ -49,6 +58,18 @@ public class Assessment {
 
     public LocalDateTime getLastModifiedOn() {
         return this.lastModifiedOn;
+    }
+
+    public int getSuccess() {
+        return this.success;
+    }
+
+    public int getFailure() {
+        return this.failure;
+    }
+
+    public int getTestCount() {
+        return this.testCount;
     }
 
 }

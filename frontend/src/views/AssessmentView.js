@@ -6,7 +6,10 @@
  ***************************************************************/
 import React, { useEffect } from 'react';
 import AssignmentIcon from '@material-ui/icons/Assignment';
+import Badge from '@material-ui/core/Badge';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
+import CancelIcon from '@material-ui/icons/Cancel';
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import Container from '@material-ui/core/Container';
 import Divider from '@material-ui/core/Divider';
 import Drawer from '@material-ui/core/Drawer';
@@ -15,6 +18,7 @@ import HomeIcon from '@material-ui/icons/Home';
 import Link from '@material-ui/core/Link';
 import Paper from '@material-ui/core/Paper';
 import Toolbar from '@material-ui/core/Toolbar';
+import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import { Link as RouterLink, useParams } from 'react-router-dom';
@@ -38,6 +42,9 @@ const {
       assessment(assessmentId: $assessmentId) {
         id
         label
+        success
+        failure
+        testCount
         categories {
           id
           label
@@ -74,6 +81,18 @@ const useStyles = makeStyles((theme) => ({
   assessmentView: {
     display: 'flex',
     flexDirection: 'row',
+  },
+  header: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: '0.4rem',
+  },
+  headerTitle: {
+    marginRight: '1rem',
+  },
+  headerIcon: {
+    marginRight: '0.5rem',
   },
   drawer: {
     width: drawerWidth,
@@ -145,8 +164,7 @@ export const AssessmentView = () => {
         <RightPanel
           projectId={projectId}
           projectLabel={label}
-          assessmentId={assessment?.id}
-          assessmentLabel={assessment?.label}
+          assessment={assessment}
           category={selectedCategory}
           onTestUpdated={onTestUpdated}
         />
@@ -172,14 +190,26 @@ const LeftPanel = ({ categories, selectedCategoryId, onCategoryClick }) => {
   );
 };
 
-const RightPanel = ({ projectId, projectLabel, assessmentId, assessmentLabel, category, onTestUpdated }) => {
+const RightPanel = ({ projectId, projectLabel, assessment, category, onTestUpdated }) => {
   const classes = useStyles();
   return (
     <Container maxWidth="xl" className={classes.container}>
       <div className={classes.content}>
-        <Typography variant="h1" gutterBottom>
-          {assessmentLabel}
-        </Typography>
+        <div className={classes.header}>
+          <Typography variant="h1" className={classes.headerTitle}>
+            {assessment.label}
+          </Typography>
+          <Tooltip title={`${assessment.success} success`} placement="top" className={classes.headerIcon}>
+            <Badge badgeContent={assessment.success} showZero>
+              <CheckCircleIcon />
+            </Badge>
+          </Tooltip>
+          <Tooltip title={`${assessment.failure} failure`} placement="top" className={classes.headerIcon}>
+            <Badge badgeContent={assessment.failure} showZero>
+              <CancelIcon />
+            </Badge>
+          </Tooltip>
+        </div>
         <Breadcrumbs className={classes.breadcrumb} aria-label="breadcrumb">
           <Link color="inherit" component={RouterLink} to="/" className={classes.breadcrumbItem}>
             <HomeIcon className={classes.icon} />
@@ -191,14 +221,14 @@ const RightPanel = ({ projectId, projectLabel, assessmentId, assessmentLabel, ca
           </Link>
           <Typography color="textPrimary" className={classes.breadcrumbItem}>
             <AssignmentIcon />
-            {assessmentLabel}
+            {assessment.label}
           </Typography>
         </Breadcrumbs>
         <Paper className={classes.requirements}>
           <Description category={category} />
           <Divider />
           <Requirements
-            assessmentId={assessmentId}
+            assessmentId={assessment.id}
             requirements={category.requirements}
             onTestUpdated={onTestUpdated}
           />

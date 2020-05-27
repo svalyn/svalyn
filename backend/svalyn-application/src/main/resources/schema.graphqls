@@ -29,6 +29,9 @@ type Assessment {
   categories: [Category!]!
   createdOn: Date!
   lastModifiedOn: Date!
+  success: Int!
+  failure: Int!
+  testCount: Int!
 }
 
 type Category {

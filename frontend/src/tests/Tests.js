@@ -34,6 +34,9 @@ const {
         assessment {
           id
           label
+          success
+          failure
+          testCount
           categories {
             id
             label

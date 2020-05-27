@@ -107,6 +107,10 @@ public class AssessmentService {
     }
 
     private Assessment convert(DescriptionEntity descriptionEntity, AssessmentEntity assessmentEntity) {
+        int success = 0;
+        int failure = 0;
+        int testCount = 0;
+
         List<Category> categories = new ArrayList<>();
         for (CategoryEntity categoryEntity : descriptionEntity.getCategories()) {
             List<Requirement> requirements = new ArrayList<>();
@@ -116,8 +120,15 @@ public class AssessmentService {
                     StatusEntity statusEntity = assessmentEntity.getResults().get(testEntity.getId());
                     Status status = this.convert(statusEntity);
 
+                    if (status == Status.SUCCESS) {
+                        success = success + 1;
+                    } else if (status == Status.FAILURE) {
+                        failure = failure + 1;
+                    }
+
                     tests.add(new Test(testEntity.getId(), testEntity.getLabel(), testEntity.getDescription(),
                             testEntity.getSteps(), status));
+                    testCount = testCount + 1;
                 }
 
                 requirements.add(new Requirement(requirementEntity.getId(), requirementEntity.getLabel(),
@@ -127,9 +138,9 @@ public class AssessmentService {
             categories.add(new Category(categoryEntity.getId(), categoryEntity.getLabel(),
                     categoryEntity.getDescription(), requirements));
         }
-        Assessment assessment = new Assessment(assessmentEntity.getId(), assessmentEntity.getLabel(), categories,
-                assessmentEntity.getCreatedOn(), assessmentEntity.getLastModifiedOn());
-        return assessment;
+
+        return new Assessment(assessmentEntity.getId(), assessmentEntity.getLabel(), categories,
+                assessmentEntity.getCreatedOn(), assessmentEntity.getLastModifiedOn(), success, failure, testCount);
     }
 
     private Status convert(StatusEntity statusEntity) {
