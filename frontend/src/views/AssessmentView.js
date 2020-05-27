@@ -15,6 +15,7 @@ import Divider from '@material-ui/core/Divider';
 import Drawer from '@material-ui/core/Drawer';
 import FolderIcon from '@material-ui/icons/Folder';
 import HomeIcon from '@material-ui/icons/Home';
+import LinearProgress from '@material-ui/core/LinearProgress';
 import Link from '@material-ui/core/Link';
 import Paper from '@material-ui/core/Paper';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -111,7 +112,7 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     display: 'grid',
     gridTemplateColumns: '1fr',
-    gridTemplateRows: 'min-content min-content 1fr',
+    gridTemplateRows: 'min-content min-content min-content 1fr',
     paddingTop: '24px',
     paddingBottom: '24px',
   },
@@ -126,6 +127,15 @@ const useStyles = makeStyles((theme) => ({
     marginRight: theme.spacing(0.5),
     width: 20,
     height: 20,
+  },
+  linearProgressColorPrimary: {
+    backgroundColor: theme.palette.grey[theme.palette.type === 'dark' ? 700 : 200],
+  },
+  successLinearProgress: {
+    backgroundColor: theme.palette.success.dark,
+  },
+  errorLinearProgress: {
+    backgroundColor: theme.palette.error.dark,
   },
   requirements: {
     display: 'grid',
@@ -190,6 +200,13 @@ const LeftPanel = ({ categories, selectedCategoryId, onCategoryClick }) => {
   );
 };
 
+const findLinearProgressClasses = (classes, assessment) => {
+  return {
+    colorPrimary: classes.linearProgressColorPrimary,
+    barColorPrimary: assessment.failure > 0 ? classes.errorLinearProgress : classes.successLinearProgress,
+  };
+};
+
 const RightPanel = ({ projectId, projectLabel, assessment, category, onTestUpdated }) => {
   const classes = useStyles();
   return (
@@ -224,7 +241,12 @@ const RightPanel = ({ projectId, projectLabel, assessment, category, onTestUpdat
             {assessment.label}
           </Typography>
         </Breadcrumbs>
-        <Paper className={classes.requirements}>
+        <LinearProgress
+          variant="determinate"
+          value={((assessment.success + assessment.failure) / assessment.testCount) * 100}
+          classes={findLinearProgressClasses(classes, assessment)}
+        />
+        <Paper className={classes.requirements} square>
           <Description category={category} />
           <Divider />
           <Requirements
