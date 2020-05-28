@@ -32,6 +32,12 @@ type Assessment {
   success: Int!
   failure: Int!
   testCount: Int!
+  status: AssessmentStatus!
+}
+
+enum AssessmentStatus {
+  OPEN
+  CLOSED
 }
 
 type Category {
@@ -53,16 +59,17 @@ type Test {
   label: String!
   description: String!
   steps: [String!]
-  status: Status
+  status: TestStatus
 }
 
-enum Status {
+enum TestStatus {
   SUCCESS
   FAILURE
 }
 
 type Mutation {
   createAssessment(input: CreateAssessmentInput!): CreateAssessmentPayload!
+  updateAssessmentStatus(input: UpdateAssessmentStatusInput!): UpdateAssessmentStatusPayload!
   updateTest(input: UpdateTestInput!): UpdateTestPayload!
 }
 
@@ -82,10 +89,21 @@ type CreateAssessmentSuccessPayload {
 
 union CreateAssessmentPayload = ErrorPayload | CreateAssessmentSuccessPayload
 
+input UpdateAssessmentStatusInput {
+  assessmentId: ID!
+  status: AssessmentStatus!
+}
+
+type UpdateAssessmentStatusSuccessPayload {
+  assessment: Assessment!
+}
+
+union UpdateAssessmentStatusPayload = ErrorPayload | UpdateAssessmentStatusSuccessPayload 
+
 input UpdateTestInput {
   assessmentId: ID!
   testId: ID!
-  status: Status!
+  status: TestStatus!
 }
 
 type UpdateTestSuccessPayload {

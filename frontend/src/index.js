@@ -18,14 +18,14 @@ const theme = createMuiTheme({
   },
   typography: {
     h1: {
-      fontSize: '2.5rem',
-      fontWeight: 'normal',
-      letterSpacing: 'normal',
+      fontSize: '2rem',
+      fontWeight: '500',
+      letterSpacing: '0.6px',
     },
     h2: {
-      fontSize: '1.875rem',
-      fontWeight: 'normal',
-      letterSpacing: '0.23px',
+      fontSize: '1.625rem',
+      fontWeight: '500',
+      letterSpacing: '0.4px',
     },
     h3: {
       fontSize: '1.5rem',
@@ -33,9 +33,12 @@ const theme = createMuiTheme({
       letterSpacing: '0.23px',
     },
     h4: {
-      fontSize: '1.3rem',
+      fontSize: '1.25rem',
       fontWeight: 'normal',
       letterSpacing: '0.23px',
+    },
+    caption: {
+      fontSize: '0.875rem',
     },
   },
 });

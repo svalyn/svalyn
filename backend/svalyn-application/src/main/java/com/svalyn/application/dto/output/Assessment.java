@@ -28,8 +28,10 @@ public class Assessment {
 
     private final int testCount;
 
+    private final AssessmentStatus status;
+
     public Assessment(UUID id, String label, List<Category> categories, LocalDateTime createdOn,
-            LocalDateTime lastModifiedOn, int success, int failure, int testCount) {
+            LocalDateTime lastModifiedOn, int success, int failure, int testCount, AssessmentStatus status) {
         this.id = Objects.requireNonNull(id);
         this.label = Objects.requireNonNull(label);
         this.categories = Objects.requireNonNull(categories);
@@ -38,6 +40,7 @@ public class Assessment {
         this.success = success;
         this.failure = failure;
         this.testCount = testCount;
+        this.status = Objects.requireNonNull(status);
     }
 
     public UUID getId() {
@@ -70,6 +73,10 @@ public class Assessment {
 
     public int getTestCount() {
         return this.testCount;
+    }
+
+    public AssessmentStatus getStatus() {
+        return this.status;
     }
 
 }

@@ -18,16 +18,18 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import com.svalyn.application.dto.output.Assessment;
+import com.svalyn.application.dto.output.AssessmentStatus;
 import com.svalyn.application.dto.output.Category;
 import com.svalyn.application.dto.output.Requirement;
-import com.svalyn.application.dto.output.Status;
 import com.svalyn.application.dto.output.Test;
+import com.svalyn.application.dto.output.TestStatus;
 import com.svalyn.application.entities.AssessmentEntity;
+import com.svalyn.application.entities.AssessmentStatusEntity;
 import com.svalyn.application.entities.CategoryEntity;
 import com.svalyn.application.entities.DescriptionEntity;
 import com.svalyn.application.entities.RequirementEntity;
-import com.svalyn.application.entities.StatusEntity;
 import com.svalyn.application.entities.TestEntity;
+import com.svalyn.application.entities.TestStatusEntity;
 import com.svalyn.application.repositories.AssessmentRepository;
 import com.svalyn.application.repositories.DescriptionRepository;
 
@@ -60,6 +62,7 @@ public class AssessmentService {
             assessmentEntity.setResults(new HashMap<>());
             assessmentEntity.setCreatedOn(LocalDateTime.now(ZoneOffset.UTC));
             assessmentEntity.setLastModifiedOn(LocalDateTime.now(ZoneOffset.UTC));
+            assessmentEntity.setStatus(AssessmentStatusEntity.OPEN);
 
             return this.assessmentRepository.save(assessmentEntity)
                     .map(savedAssessmentEntity -> this.convert(descriptionEntity, savedAssessmentEntity));
@@ -90,13 +93,30 @@ public class AssessmentService {
         // @formatter:on
     }
 
-    public Mono<Assessment> updateTest(UUID assessmentId, UUID testId, Status status) {
+    public Mono<Assessment> updateAssessmentStatus(UUID assessmentId, AssessmentStatus status) {
         // @formatter:off
         return this.assessmentRepository.findById(assessmentId)
                 .flatMap(assessmentEntity -> {
-                    var statusEntity = this.convert(status);
-                    assessmentEntity.getResults().put(testId, statusEntity);
+                    assessmentEntity.setStatus(this.convert(status));
                     assessmentEntity.setLastModifiedOn(LocalDateTime.now(ZoneOffset.UTC));
+                    return this.assessmentRepository.save(assessmentEntity);
+                }).flatMap(assessmentEntity -> {
+                    var optionalDescriptionEntity = this.descriptionRepository.findDescriptionById(assessmentEntity.getDescriptionId());
+                    var optionalAssessment = optionalDescriptionEntity.map(descriptionEntity -> this.convert(descriptionEntity, assessmentEntity));
+                    return Mono.justOrEmpty(optionalAssessment);
+                });
+        // @formatter:on
+    }
+
+    public Mono<Assessment> updateTest(UUID assessmentId, UUID testId, TestStatus status) {
+        // @formatter:off
+        return this.assessmentRepository.findById(assessmentId)
+                .flatMap(assessmentEntity -> {
+                    if (assessmentEntity.getStatus() == AssessmentStatusEntity.OPEN) {
+                        var statusEntity = this.convert(status);
+                        assessmentEntity.getResults().put(testId, statusEntity);
+                        assessmentEntity.setLastModifiedOn(LocalDateTime.now(ZoneOffset.UTC));
+                    }
                     return this.assessmentRepository.save(assessmentEntity);
                 }).flatMap(assessmentEntity -> {
                     var optionalDescriptionEntity = this.descriptionRepository.findDescriptionById(assessmentEntity.getDescriptionId());
@@ -117,12 +137,12 @@ public class AssessmentService {
             for (RequirementEntity requirementEntity : categoryEntity.getRequirements()) {
                 List<Test> tests = new ArrayList<>();
                 for (TestEntity testEntity : requirementEntity.getTests()) {
-                    StatusEntity statusEntity = assessmentEntity.getResults().get(testEntity.getId());
-                    Status status = this.convert(statusEntity);
+                    TestStatusEntity statusEntity = assessmentEntity.getResults().get(testEntity.getId());
+                    TestStatus status = this.convert(statusEntity);
 
-                    if (status == Status.SUCCESS) {
+                    if (status == TestStatus.SUCCESS) {
                         success = success + 1;
-                    } else if (status == Status.FAILURE) {
+                    } else if (status == TestStatus.FAILURE) {
                         failure = failure + 1;
                     }
 
@@ -139,26 +159,42 @@ public class AssessmentService {
                     categoryEntity.getDescription(), requirements));
         }
 
+        AssessmentStatus status = this.convert(assessmentEntity.getStatus());
         return new Assessment(assessmentEntity.getId(), assessmentEntity.getLabel(), categories,
-                assessmentEntity.getCreatedOn(), assessmentEntity.getLastModifiedOn(), success, failure, testCount);
+                assessmentEntity.getCreatedOn(), assessmentEntity.getLastModifiedOn(), success, failure, testCount,
+                status);
     }
 
-    private Status convert(StatusEntity statusEntity) {
-        if (statusEntity == StatusEntity.SUCCESS) {
-            return Status.SUCCESS;
-        } else if (statusEntity == StatusEntity.FAILURE) {
-            return Status.FAILURE;
+    private TestStatus convert(TestStatusEntity statusEntity) {
+        if (statusEntity == TestStatusEntity.SUCCESS) {
+            return TestStatus.SUCCESS;
+        } else if (statusEntity == TestStatusEntity.FAILURE) {
+            return TestStatus.FAILURE;
         }
         return null;
     }
 
-    private StatusEntity convert(Status status) {
-        if (status == Status.SUCCESS) {
-            return StatusEntity.SUCCESS;
-        } else if (status == Status.FAILURE) {
-            return StatusEntity.FAILURE;
+    private TestStatusEntity convert(TestStatus status) {
+        if (status == TestStatus.SUCCESS) {
+            return TestStatusEntity.SUCCESS;
+        } else if (status == TestStatus.FAILURE) {
+            return TestStatusEntity.FAILURE;
         }
         return null;
+    }
+
+    private AssessmentStatus convert(AssessmentStatusEntity status) {
+        if (status == AssessmentStatusEntity.OPEN) {
+            return AssessmentStatus.OPEN;
+        }
+        return AssessmentStatus.CLOSED;
+    }
+
+    private AssessmentStatusEntity convert(AssessmentStatus status) {
+        if (status == AssessmentStatus.OPEN) {
+            return AssessmentStatusEntity.OPEN;
+        }
+        return AssessmentStatusEntity.CLOSED;
     }
 
 }

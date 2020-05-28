@@ -8,24 +8,19 @@ package com.svalyn.application.dto.input;
 
 import java.util.UUID;
 
-import com.svalyn.application.dto.output.TestStatus;
+import com.svalyn.application.dto.output.AssessmentStatus;
 
-public class UpdateTestInput {
+public class UpdateAssessmentStatusInput {
+
     private UUID assessmentId;
 
-    private UUID testId;
-
-    private TestStatus status;
+    private AssessmentStatus status;
 
     public UUID getAssessmentId() {
         return this.assessmentId;
     }
 
-    public UUID getTestId() {
-        return this.testId;
-    }
-
-    public TestStatus getStatus() {
+    public AssessmentStatus getStatus() {
         return this.status;
     }
 }

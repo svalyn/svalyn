@@ -37,7 +37,7 @@ public class GraphQLDateCoercing implements Coercing<LocalDateTime, String> {
     public String serialize(Object result) throws CoercingSerializeException {
         if (result instanceof LocalDateTime) {
             LocalDateTime localDateTime = (LocalDateTime) result;
-            return DateTimeFormatter.ISO_INSTANT.format(ZonedDateTime.of(localDateTime, ZoneOffset.UTC));
+            return DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.of(localDateTime, ZoneOffset.UTC));
         }
         return null;
     }

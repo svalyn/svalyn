@@ -34,9 +34,12 @@ const {
         assessment {
           id
           label
+          createdOn
+          lastModifiedOn
           success
           failure
           testCount
+          status
           categories {
             id
             label
@@ -97,9 +100,9 @@ const FailureRadio = withStyles((theme) => ({
 const testComponentPropTypes = {
   assessmentId: PropTypes.string.isRequired,
   test: testPropTypes.isRequired,
-  onTestUpdated: PropTypes.func.isRequired,
+  onAssessmentUpdated: PropTypes.func.isRequired,
 };
-const Test = ({ assessmentId, test, onTestUpdated }) => {
+const Test = ({ assessmentId, assessmentStatus, test, onAssessmentUpdated }) => {
   const classes = useStyles();
   const { id, label, description, steps, status } = test;
 
@@ -113,14 +116,12 @@ const Test = ({ assessmentId, test, onTestUpdated }) => {
         status: value,
       },
     };
-    updateTest(variables).subscribe((ajaxResponse) => {
+    updateTest(variables).subscribe(({ response }) => {
       const {
-        response: {
-          data: { updateTest },
-        },
-      } = ajaxResponse;
+        data: { updateTest },
+      } = response;
       if (updateTest.__typename === 'UpdateTestSuccessPayload') {
-        onTestUpdated(updateTest.assessment);
+        onAssessmentUpdated(updateTest.assessment);
       }
     });
   };
@@ -147,8 +148,18 @@ const Test = ({ assessmentId, test, onTestUpdated }) => {
       {stepsElement}
       <FormGroup row>
         <RadioGroup aria-label="status" name={`status-${id}`} value={status} onChange={onChange}>
-          <FormControlLabel value="SUCCESS" control={<SuccessRadio />} label="Success" />
-          <FormControlLabel value="FAILURE" control={<FailureRadio />} label="Failure" />
+          <FormControlLabel
+            value="SUCCESS"
+            control={<SuccessRadio />}
+            label="Success"
+            disabled={assessmentStatus === 'CLOSED'}
+          />
+          <FormControlLabel
+            value="FAILURE"
+            control={<FailureRadio />}
+            label="Failure"
+            disabled={assessmentStatus === 'CLOSED'}
+          />
         </RadioGroup>
       </FormGroup>
     </div>
@@ -159,14 +170,19 @@ Test.propTypes = testComponentPropTypes;
 const testsComponentPropTypes = {
   assessmentId: PropTypes.string.isRequired,
   tests: PropTypes.arrayOf(testPropTypes).isRequired,
-  onTestUpdated: PropTypes.func.isRequired,
+  onAssessmentUpdated: PropTypes.func.isRequired,
 };
-export const Tests = ({ assessmentId, tests, onTestUpdated }) => {
+export const Tests = ({ assessmentId, assessmentStatus, tests, onAssessmentUpdated }) => {
   return (
     <List>
       {tests.map((test) => (
         <ListItem key={test.id}>
-          <Test assessmentId={assessmentId} test={test} onTestUpdated={onTestUpdated} />
+          <Test
+            assessmentId={assessmentId}
+            assessmentStatus={assessmentStatus}
+            test={test}
+            onAssessmentUpdated={onAssessmentUpdated}
+          />
         </ListItem>
       ))}
     </List>

@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme) => ({
 const propTypes = {
   requirements: PropTypes.arrayOf(requirementPropTypes).isRequired,
 };
-export const Requirements = ({ assessmentId, requirements, onTestUpdated }) => {
+export const Requirements = ({ assessmentId, assessmentStatus, requirements, onAssessmentUpdated }) => {
   const classes = useStyles();
   const initialState = {
     selectedRequirementId: null,
@@ -63,7 +63,12 @@ export const Requirements = ({ assessmentId, requirements, onTestUpdated }) => {
         onRequirementclick={onRequirementclick}
       />
       {selectedRequirement ? (
-        <RightPanel assessmentId={assessmentId} requirement={selectedRequirement} onTestUpdated={onTestUpdated} />
+        <RightPanel
+          assessmentId={assessmentId}
+          assessmentStatus={assessmentStatus}
+          requirement={selectedRequirement}
+          onAssessmentUpdated={onAssessmentUpdated}
+        />
       ) : (
         <EmptyRightPanel />
       )}
@@ -88,7 +93,7 @@ const LeftPanel = ({ requirements, selectedRequirementId, onRequirementclick }) 
   );
 };
 
-const RightPanel = ({ assessmentId, requirement, onTestUpdated }) => {
+const RightPanel = ({ assessmentId, assessmentStatus, requirement, onAssessmentUpdated }) => {
   const classes = useStyles();
   return (
     <div className={classes.rightPanel}>
@@ -98,7 +103,12 @@ const RightPanel = ({ assessmentId, requirement, onTestUpdated }) => {
         </Typography>
         <Typography>{requirement.description}</Typography>
       </div>
-      <Tests assessmentId={assessmentId} tests={requirement.tests} onTestUpdated={onTestUpdated} />
+      <Tests
+        assessmentId={assessmentId}
+        assessmentStatus={assessmentStatus}
+        tests={requirement.tests}
+        onAssessmentUpdated={onAssessmentUpdated}
+      />
     </div>
   );
 };

@@ -19,11 +19,13 @@ public class AssessmentEntity {
 
     private String label;
 
-    private Map<UUID, StatusEntity> results;
+    private Map<UUID, TestStatusEntity> results;
 
     private LocalDateTime createdOn;
 
     private LocalDateTime lastModifiedOn;
+
+    private AssessmentStatusEntity status;
 
     public UUID getId() {
         return this.id;
@@ -57,11 +59,11 @@ public class AssessmentEntity {
         this.label = label;
     }
 
-    public Map<UUID, StatusEntity> getResults() {
+    public Map<UUID, TestStatusEntity> getResults() {
         return this.results;
     }
 
-    public void setResults(Map<UUID, StatusEntity> results) {
+    public void setResults(Map<UUID, TestStatusEntity> results) {
         this.results = results;
     }
 
@@ -79,5 +81,13 @@ public class AssessmentEntity {
 
     public void setLastModifiedOn(LocalDateTime lastModifiedOn) {
         this.lastModifiedOn = lastModifiedOn;
+    }
+
+    public AssessmentStatusEntity getStatus() {
+        return this.status;
+    }
+
+    public void setStatus(AssessmentStatusEntity status) {
+        this.status = status;
     }
 }

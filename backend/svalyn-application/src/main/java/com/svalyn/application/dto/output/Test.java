@@ -20,9 +20,9 @@ public class Test {
 
     private final List<String> steps;
 
-    private final Status status;
+    private final TestStatus status;
 
-    public Test(UUID id, String label, String description, List<String> steps, Status status) {
+    public Test(UUID id, String label, String description, List<String> steps, TestStatus status) {
         this.id = Objects.requireNonNull(id);
         this.label = Objects.requireNonNull(label);
         this.description = Objects.requireNonNull(description);
@@ -46,7 +46,7 @@ public class Test {
         return this.steps;
     }
 
-    public Status getStatus() {
+    public TestStatus getStatus() {
         return this.status;
     }
 

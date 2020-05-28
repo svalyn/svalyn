@@ -6,6 +6,16 @@
  **************************************************************/
 package com.svalyn.application.dto.output;
 
-public enum Status {
-    SUCCESS, FAILURE
+import java.util.Objects;
+
+public class UpdateAssessmentStatusSuccessPayload {
+    private final Assessment assessment;
+
+    public UpdateAssessmentStatusSuccessPayload(Assessment assessment) {
+        this.assessment = Objects.requireNonNull(assessment);
+    }
+
+    public Assessment getAssessment() {
+        return this.assessment;
+    }
 }
