@@ -4,14 +4,15 @@
  * This source code is licensed under the MIT license found in
  * the LICENSE file in the root directory of this source tree.
  ***************************************************************/
-import React, { useEffect } from 'react';
+import React, { Fragment, useEffect } from 'react';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import Button from '@material-ui/core/Button';
 import Container from '@material-ui/core/Container';
+import Divider from '@material-ui/core/Divider';
 import FolderIcon from '@material-ui/icons/Folder';
 import FormControl from '@material-ui/core/FormControl';
-import FormGroup from '@material-ui/core/FormGroup';
+import Grid from '@material-ui/core/Grid';
 import HomeIcon from '@material-ui/icons/Home';
 import InputLabel from '@material-ui/core/InputLabel';
 import Link from '@material-ui/core/Link';
@@ -29,7 +30,7 @@ import { concatMap } from 'rxjs/operators';
 import { useMachine } from '@xstate/react';
 
 import { ListItemLink } from '../core/ListItemLink';
-import { projectViewMachine } from './ProjectViewMachine';
+import { newAssessmentFormMachine, projectViewMachine } from './ProjectViewMachine';
 
 const {
   loc: {
@@ -50,6 +51,7 @@ const {
         lastModifiedOn
         success
         failure
+        testCount
         status
       }
     }
@@ -90,7 +92,7 @@ const createAssessment = (variables) =>
     body: JSON.stringify({ query: createAssessmentMutation, variables }),
   });
 
-const useStyles = makeStyles((theme) => ({
+const useProjectViewStyles = makeStyles((theme) => ({
   projectView: {
     paddingTop: '24px',
     paddingBottom: '24px',
@@ -110,11 +112,11 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export const ProjectView = () => {
-  const classes = useStyles();
+  const classes = useProjectViewStyles();
   const { projectId } = useParams();
 
   const [{ context }, dispatch] = useMachine(projectViewMachine);
-  const { descriptions, newAssessmentLabel, newAssessmentDescriptionId, label, assessments } = context;
+  const { label, assessments, descriptions } = context;
 
   useEffect(() => {
     dispatch('FETCH_PROJECT');
@@ -126,17 +128,12 @@ export const ProjectView = () => {
     return () => subscription.unsubscribe();
   }, [projectId, dispatch]);
 
-  const onNewAssessmentLabel = (event) => {
-    const { value } = event.target;
-    dispatch({ type: 'UPDATE_LABEL', newAssessmentLabel: value });
-  };
-
-  const onNewAssessmentClick = () => {
+  const onNewAssessmentClick = (label, descriptionId) => {
     const createAssessmentVariables = {
       input: {
         projectId,
-        descriptionId: newAssessmentDescriptionId,
-        label: newAssessmentLabel,
+        descriptionId,
+        label,
       },
     };
     dispatch('CREATE_ASSESSMENT');
@@ -145,11 +142,6 @@ export const ProjectView = () => {
       .subscribe(({ response }) => dispatch({ type: 'HANDLE_PROJECT_RESPONSE', response }));
 
     return () => subscription.unsubscribe();
-  };
-
-  const onNewAssessmentDescriptionId = (event) => {
-    const { value } = event.target;
-    dispatch({ type: 'UPDATE_DESCRIPTION', newAssessmentDescriptionId: value });
   };
 
   return (
@@ -166,49 +158,133 @@ export const ProjectView = () => {
             <FolderIcon className={classes.icon} /> {label}
           </Typography>
         </Breadcrumbs>
-        <FormGroup row>
-          <TextField
-            label="Label"
-            variant="outlined"
-            value={newAssessmentLabel}
-            onChange={onNewAssessmentLabel}
-            required
-          />
-          <FormControl variant="outlined">
-            <InputLabel id="demo-simple-select-outlined-label">Description</InputLabel>
-            <Select
-              labelId="demo-simple-select-outlined-label"
-              id="demo-simple-select-outlined"
-              value={newAssessmentDescriptionId}
-              onChange={onNewAssessmentDescriptionId}
-              label="Description"
-              required>
-              {descriptions.map((description) => (
-                <MenuItem value={description.id} key={description.id}>
-                  {description.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <Button variant="contained" color="primary" onClick={onNewAssessmentClick}>
-            Create
-          </Button>
-        </FormGroup>
-        <Paper>
-          <List>
-            {assessments.map((assessment) => {
-              return (
-                <ListItemLink
-                  key={assessment.id}
-                  to={`/projects/${projectId}/assessments/${assessment.id}`}
-                  primary={`${assessment.label} - Created on ${assessment.createdOn} - Last modified on ${assessment.lastModifiedOn} - Success ${assessment.success} - Failure ${assessment.failure} - Status ${assessment.status}`}
-                  icon={<AssignmentIcon />}
-                />
-              );
-            })}
-          </List>
-        </Paper>
+        <Grid container spacing={4}>
+          <Grid item xs={4}>
+            <NewAssessmentForm descriptions={descriptions} onNewAssessmentClick={onNewAssessmentClick} />
+          </Grid>
+          <Grid item xs={8}>
+            <Assessments projectId={projectId} assessments={assessments} />
+          </Grid>
+        </Grid>
       </Container>
     </div>
+  );
+};
+
+const useNewAssessmentFormStyles = makeStyles((theme) => ({
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    paddingTop: '0.5rem',
+    paddingLeft: '1rem',
+    paddingRight: '1rem',
+    '& > *': {
+      marginBottom: theme.spacing(2),
+    },
+  },
+}));
+
+const NewAssessmentForm = ({ descriptions, onNewAssessmentClick }) => {
+  const classes = useNewAssessmentFormStyles();
+
+  const [{ value, context }, dispatch] = useMachine(newAssessmentFormMachine);
+  const { label, descriptionId } = context;
+
+  useEffect(() => {
+    const newDescriptionId = descriptions[0].id;
+    if (descriptionId === '' && descriptionId !== newDescriptionId) {
+      dispatch({ type: 'UPDATE_DESCRIPTION', descriptionId: newDescriptionId });
+    }
+  }, [descriptionId, descriptions, dispatch]);
+
+  const onChangeLabel = (event) => {
+    const { value } = event.target;
+    dispatch({ type: 'UPDATE_LABEL', label: value });
+  };
+  const onChangeDescriptionId = (event) => {
+    const { value } = event.target;
+    dispatch({ type: 'UPDATE_DESCRIPTION', descriptionId: value });
+  };
+
+  const onSubmit = () => {
+    dispatch('CREATE_ASSESSMENT');
+    onNewAssessmentClick(label, descriptionId);
+  };
+  return (
+    <Paper>
+      <form onSubmit={onSubmit} className={classes.form}>
+        <TextField label="Label" value={label} onChange={onChangeLabel} required />
+        <FormControl>
+          <InputLabel id="description-label">Description</InputLabel>
+          <Select
+            labelId="description-label"
+            id="description"
+            value={descriptionId}
+            onChange={onChangeDescriptionId}
+            label="Description"
+            required>
+            {descriptions.map((description) => (
+              <MenuItem value={description.id} key={description.id}>
+                {description.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <Button type="submit" variant="contained" color="primary" disabled={value !== 'valid'}>
+          Create assessment
+        </Button>
+      </form>
+    </Paper>
+  );
+};
+
+const useAssessmentsStyles = makeStyles((theme) => ({
+  title: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '0.5rem',
+    '& > *:first-child': {
+      marginRight: '1rem',
+    },
+  },
+}));
+
+const Assessments = ({ projectId, assessments }) => {
+  const classes = useAssessmentsStyles();
+  const size = assessments.length;
+  return (
+    <Paper>
+      <List>
+        {assessments.map((assessment, index) => {
+          const primary = (
+            <div className={classes.title}>
+              <Typography variant="h4">{assessment.label}</Typography>
+              <Typography variant="subtitle2">{assessment.status}</Typography>
+            </div>
+          );
+          const secondary = (
+            <>
+              <Typography variant="subtitle2">{`Total ${assessment.testCount} · Success ${assessment.success} · Failure ${assessment.failure}`}</Typography>
+              <Typography variant="caption">{`Created on ${assessment.createdOn} · Last modified on ${assessment.lastModifiedOn}`}</Typography>
+            </>
+          );
+
+          return (
+            <Fragment key={assessment.id}>
+              <ListItemLink
+                to={`/projects/${projectId}/assessments/${assessment.id}`}
+                primary={primary}
+                secondary={secondary}
+                icon={<AssignmentIcon />}
+                disableTypography
+              />
+              {index <= size - 2 ? <Divider /> : null}
+            </Fragment>
+          );
+        })}
+      </List>
+    </Paper>
   );
 };

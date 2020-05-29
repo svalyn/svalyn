@@ -7,6 +7,7 @@
 import React, { StrictMode } from 'react';
 import ReactDOM from 'react-dom';
 import CssBaseline from '@material-ui/core/CssBaseline';
+import blue from '@material-ui/core/colors/blue';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
 import { BrowserRouter } from 'react-router-dom';
 
@@ -15,6 +16,7 @@ import { App } from './app/App';
 const theme = createMuiTheme({
   palette: {
     type: 'dark',
+    primary: blue,
   },
   typography: {
     h1: {

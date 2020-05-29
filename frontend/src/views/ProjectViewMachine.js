@@ -6,79 +6,110 @@
  ***************************************************************/
 import { assign, Machine } from 'xstate';
 
-const newAssessmentFormMachine = {
-  initial: 'pristine',
-  states: {
-    pristine: {
-      on: {
-        UPDATE_DESCRIPTION: {
-          target: 'invalid',
-          actions: ['updateNewAssessmentDescription'],
-        },
-        UPDATE_LABEL: [
-          {
-            cond: 'isNewAssessmentLabelInvalid',
-            target: 'invalid',
-            actions: ['updateNewAssessmentLabel'],
-          },
-          {
-            target: 'valid',
-            actions: ['updateNewAssessmentLabel'],
-          },
-        ],
-      },
+export const newAssessmentFormMachine = Machine(
+  {
+    initial: 'pristine',
+    context: {
+      label: '',
+      descriptionId: '',
     },
-    invalid: {
-      on: {
-        UPDATE_DESCRIPTION: {
-          target: 'invalid',
-          actions: ['updateNewAssessmentDescription'],
-        },
-        UPDATE_LABEL: [
-          {
-            cond: 'isNewAssessmentLabelInvalid',
+    states: {
+      pristine: {
+        on: {
+          UPDATE_DESCRIPTION: {
             target: 'invalid',
-            actions: ['updateNewAssessmentLabel'],
+            actions: ['updateDescription'],
           },
-          {
-            target: 'valid',
-            actions: ['updateNewAssessmentLabel'],
-          },
-        ],
+          UPDATE_LABEL: [
+            {
+              cond: 'isLabelInvalid',
+              target: 'invalid',
+              actions: ['updateLabel'],
+            },
+            {
+              target: 'valid',
+              actions: ['updateLabel'],
+            },
+          ],
+        },
       },
-    },
-    valid: {
-      on: {
-        UPDATE_DESCRIPTION: {
-          target: 'valid',
-          actions: ['updateNewAssessmentDescription'],
-        },
-        UPDATE_LABEL: [
-          {
-            cond: 'isNewAssessmentLabelInvalid',
+      invalid: {
+        on: {
+          UPDATE_DESCRIPTION: {
             target: 'invalid',
-            actions: ['updateNewAssessmentLabel'],
+            actions: ['updateDescription'],
           },
-          {
+          UPDATE_LABEL: [
+            {
+              cond: 'isLabelInvalid',
+              target: 'invalid',
+              actions: ['updateLabel'],
+            },
+            {
+              target: 'valid',
+              actions: ['updateLabel'],
+            },
+          ],
+        },
+      },
+      valid: {
+        on: {
+          UPDATE_DESCRIPTION: {
             target: 'valid',
-            actions: ['updateNewAssessmentLabel'],
+            actions: ['updateDescription'],
           },
-        ],
+          UPDATE_LABEL: [
+            {
+              cond: 'isLabelInvalid',
+              target: 'invalid',
+              actions: ['updateLabel'],
+            },
+            {
+              target: 'valid',
+              actions: ['updateLabel'],
+            },
+          ],
+          on: {
+            CREATE_ASSESSMENT: {
+              target: 'pristine',
+              actions: ['clearForm'],
+            },
+          },
+        },
       },
     },
   },
-};
+  {
+    guards: {
+      isLabelInvalid: (_, event) => {
+        const { label } = event;
+        return (label?.length ?? 0) === 0;
+      },
+    },
+    actions: {
+      updateDescription: assign((_, event) => {
+        const { descriptionId } = event;
+        return { descriptionId };
+      }),
+      updateLabel: assign((_, event) => {
+        const { label } = event;
+        return { label };
+      }),
+      clearForm: assign((_, event) => {
+        return { label: '' };
+      }),
+    },
+  }
+);
 
 export const projectViewMachine = Machine(
   {
     id: 'ProjectView',
     initial: 'idle',
     context: {
-      descriptions: [{ id: '', label: '' }],
-      newAssessmentLabel: '',
-      newAssessmentDescriptionId: '',
       label: '',
       assessments: [],
+      descriptions: [{ id: '', label: '' }],
     },
     states: {
       idle: {
@@ -106,29 +137,23 @@ export const projectViewMachine = Machine(
         },
       },
       projectEmpty: {
-        ...newAssessmentFormMachine,
         on: {
           CREATE_ASSESSMENT: {
             target: 'fetchingProject',
-            actions: ['clearAssessmentCreationForm'],
           },
         },
       },
       projectFetchedSuccess: {
-        ...newAssessmentFormMachine,
         on: {
           CREATE_ASSESSMENT: {
             target: 'fetchingProject',
-            actions: ['clearAssessmentCreationForm'],
           },
         },
       },
       projectFetchedError: {
-        ...newAssessmentFormMachine,
         on: {
           CREATE_ASSESSMENT: {
             target: 'fetchingProject',
-            actions: ['clearAssessmentCreationForm'],
           },
         },
       },
@@ -136,10 +161,6 @@ export const projectViewMachine = Machine(
   },
   {
     guards: {
-      isNewAssessmentLabelInvalid: (_, event) => {
-        const { label } = event;
-        return (label?.length ?? 0) === 0;
-      },
       isProjectFetchingError: (_, event) => {
         const { response } = event;
         return !!response?.error;
@@ -150,24 +171,12 @@ export const projectViewMachine = Machine(
       },
     },
     actions: {
-      updateNewAssessmentDescription: assign((_, event) => {
-        const { newAssessmentDescriptionId } = event;
-        return { newAssessmentDescriptionId };
-      }),
-      updateNewAssessmentLabel: assign((_, event) => {
-        const { newAssessmentLabel } = event;
-        return { newAssessmentLabel };
-      }),
-      clearAssessmentCreationForm: assign((_, event) => {
-        return { newAssessmentLabel: '' };
-      }),
       updateProject: assign((_, event) => {
         const { response } = event;
         const { descriptions, project } = response.data;
         const { label, assessments } = project;
         return {
           descriptions,
-          newAssessmentDescriptionId: descriptions[0]?.id,
           label,
           assessments,
         };

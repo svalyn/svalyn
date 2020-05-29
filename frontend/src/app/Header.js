@@ -25,7 +25,7 @@ export const Header = () => {
       <AppBar position="fixed" className={classes.appBar}>
         <Toolbar>
           <Link color="inherit" component={RouterLink} to="/">
-            <Typography variant="h6">Svalyn</Typography>
+            <Typography variant="h4">Svalyn</Typography>
           </Link>
         </Toolbar>
       </AppBar>
