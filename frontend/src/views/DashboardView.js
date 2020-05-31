@@ -6,23 +6,27 @@
  ***************************************************************/
 import React, { useEffect } from 'react';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
+import Button from '@material-ui/core/Button';
 import Container from '@material-ui/core/Container';
 import FolderIcon from '@material-ui/icons/Folder';
+import Grid from '@material-ui/core/Grid';
 import HomeIcon from '@material-ui/icons/Home';
 import List from '@material-ui/core/List';
 import Paper from '@material-ui/core/Paper';
+import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import { gql } from 'graphql.macro';
 import { ajax } from 'rxjs/ajax';
+import { concatMap } from 'rxjs/operators';
 import { useMachine } from '@xstate/react';
 
 import { ListItemLink } from '../core/ListItemLink';
-import { dashboardViewMachine } from './DashboardViewMachine';
+import { newProjectFormMachine, dashboardViewMachine } from './DashboardViewMachine';
 
 const {
   loc: {
-    source: { body: query },
+    source: { body: getProjectsQuery },
   },
 } = gql`
   query getProjects {
@@ -38,7 +42,34 @@ const getProjects = () =>
     url: '/api/graphql',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query }),
+    body: JSON.stringify({ query: getProjectsQuery }),
+  });
+
+const {
+  loc: {
+    source: { body: createProjectQuery },
+  },
+} = gql`
+  mutation createProject($input: CreateProjectInput!) {
+    createProject(input: $input) {
+      __typename
+      ... on ErrorPayload {
+        message
+      }
+      ... on CreateProjectSuccessPayload {
+        project {
+          id
+        }
+      }
+    }
+  }
+`;
+const createProject = (variables) =>
+  ajax({
+    url: '/api/graphql',
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: createProjectQuery, variables }),
   });
 
 const useStyles = makeStyles((theme) => ({
@@ -72,6 +103,18 @@ export const DashboardView = () => {
     return () => subscription.unsubscribe();
   }, [dispatch]);
 
+  const onNewProjectClick = (label) => {
+    const variables = {
+      input: {
+        label,
+      },
+    };
+    dispatch('CREATE_PROJECT');
+    createProject(variables)
+      .pipe(concatMap(() => getProjects()))
+      .subscribe(({ response }) => dispatch({ type: 'HANDLE_RESPONSE', response }));
+  };
+
   return (
     <div className={classes.dashboardView}>
       <Container>
@@ -83,21 +126,77 @@ export const DashboardView = () => {
             <HomeIcon className={classes.icon} /> Dashboard
           </Typography>
         </Breadcrumbs>
-        <Paper>
-          <List>
-            {projects.map((project) => {
-              return (
-                <ListItemLink
-                  key={project.id}
-                  to={`/projects/${project.id}`}
-                  primary={project.label}
-                  icon={<FolderIcon />}
-                />
-              );
-            })}
-          </List>
-        </Paper>
+        <Grid container spacing={4}>
+          <Grid item xs={3}>
+            <NewProjectForm onNewProjectClick={onNewProjectClick} />
+          </Grid>
+          <Grid item xs={9}>
+            <Projects projects={projects} />
+          </Grid>
+        </Grid>
       </Container>
     </div>
+  );
+};
+
+const useNewProjectFormStyles = makeStyles((theme) => ({
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    paddingTop: '0.5rem',
+    paddingLeft: '1rem',
+    paddingRight: '1rem',
+    '& > *': {
+      marginBottom: theme.spacing(2),
+    },
+  },
+}));
+
+const NewProjectForm = ({ onNewProjectClick }) => {
+  const classes = useNewProjectFormStyles();
+
+  const [{ value, context }, dispatch] = useMachine(newProjectFormMachine);
+  const { label } = context;
+
+  const onChangeLabel = (event) => {
+    const { value } = event.target;
+    dispatch({ type: 'UPDATE_LABEL', label: value });
+  };
+
+  const onSubmit = (event) => {
+    event.preventDefault();
+
+    dispatch('CREATE_PROJECT');
+    onNewProjectClick(label);
+  };
+
+  return (
+    <Paper>
+      <form onSubmit={onSubmit} className={classes.form}>
+        <TextField label="Label" value={label} onChange={onChangeLabel} required />
+        <Button type="submit" variant="contained" color="primary" disabled={value !== 'valid'}>
+          Create project
+        </Button>
+      </form>
+    </Paper>
+  );
+};
+
+const Projects = ({ projects }) => {
+  return (
+    <Paper>
+      <List>
+        {projects.map((project) => {
+          return (
+            <ListItemLink
+              key={project.id}
+              to={`/projects/${project.id}`}
+              primary={project.label}
+              icon={<FolderIcon />}
+            />
+          );
+        })}
+      </List>
+    </Paper>
   );
 };

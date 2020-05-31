@@ -6,6 +6,7 @@
  **************************************************************/
 package com.svalyn.application.repositories;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,10 +20,10 @@ import reactor.core.publisher.Mono;
 @Service
 public class ProjectRepository {
 
-    private final List<Project> projects = List.of(
-            new Project(UUID.nameUUIDFromBytes("Westworld".getBytes()), "Westworld"),
-            new Project(UUID.nameUUIDFromBytes("Eastworld".getBytes()), "Eastworld"),
-            new Project(UUID.nameUUIDFromBytes("Jurassic World".getBytes()), "Jurassic World"));
+    private final List<Project> projects = new ArrayList<>(
+            List.of(new Project(UUID.nameUUIDFromBytes("Westworld".getBytes()), "Westworld"),
+                    new Project(UUID.nameUUIDFromBytes("Eastworld".getBytes()), "Eastworld"),
+                    new Project(UUID.nameUUIDFromBytes("Jurassic World".getBytes()), "Jurassic World")));
 
     public Flux<Project> findAll() {
         return Flux.fromIterable(this.projects);
@@ -39,5 +40,12 @@ public class ProjectRepository {
 
     public boolean existById(UUID projectId) {
         return this.projects.stream().anyMatch(project -> project.getId().equals(projectId));
+    }
+
+    public Mono<Project> createProject(String label) {
+        Project project = new Project(UUID.randomUUID(), label);
+        this.projects.add(project);
+
+        return Mono.just(project);
     }
 }

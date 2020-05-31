@@ -137,11 +137,9 @@ export const ProjectView = () => {
       },
     };
     dispatch('CREATE_ASSESSMENT');
-    const subscription = createAssessment(createAssessmentVariables)
+    createAssessment(createAssessmentVariables)
       .pipe(concatMap(() => getProject({ projectId })))
       .subscribe(({ response }) => dispatch({ type: 'HANDLE_PROJECT_RESPONSE', response }));
-
-    return () => subscription.unsubscribe();
   };
 
   return (
@@ -159,10 +157,10 @@ export const ProjectView = () => {
           </Typography>
         </Breadcrumbs>
         <Grid container spacing={4}>
-          <Grid item xs={4}>
+          <Grid item xs={3}>
             <NewAssessmentForm descriptions={descriptions} onNewAssessmentClick={onNewAssessmentClick} />
           </Grid>
-          <Grid item xs={8}>
+          <Grid item xs={9}>
             <Assessments projectId={projectId} assessments={assessments} />
           </Grid>
         </Grid>
@@ -206,7 +204,9 @@ const NewAssessmentForm = ({ descriptions, onNewAssessmentClick }) => {
     dispatch({ type: 'UPDATE_DESCRIPTION', descriptionId: value });
   };
 
-  const onSubmit = () => {
+  const onSubmit = (event) => {
+    event.preventDefault();
+
     dispatch('CREATE_ASSESSMENT');
     onNewAssessmentClick(label, descriptionId);
   };

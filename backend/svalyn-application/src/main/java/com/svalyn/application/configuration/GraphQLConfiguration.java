@@ -20,6 +20,7 @@ import org.springframework.core.io.ClassPathResource;
 
 import com.svalyn.application.graphql.GraphQLDateCoercing;
 import com.svalyn.application.graphql.MutationCreateAssessmentDataFetcher;
+import com.svalyn.application.graphql.MutationCreateProjectDataFetcher;
 import com.svalyn.application.graphql.MutationUpdateAssessmentStatusDataFetcher;
 import com.svalyn.application.graphql.MutationUpdateTestDataFetcher;
 import com.svalyn.application.graphql.ProjectAssessmentDataFetcher;
@@ -73,6 +74,7 @@ public class GraphQLConfiguration {
             var runtimeWiring = RuntimeWiring.newRuntimeWiring()
                     .codeRegistry(graphQLCodeRegistry)
                     .scalar(this.getGraphQLDate())
+                    .type("CreateProjectPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
                     .type("CreateAssessmentPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
                     .type("UpdateAssessmentStatusPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
                     .type("UpdateTestPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
@@ -88,6 +90,7 @@ public class GraphQLConfiguration {
             QueryProjectsDataFetcher queryProjectsDataFetcher, QueryProjectDataFetcher queryProjectDataFetcher,
             ProjectAssessmentsDataFetcher projectAssessmentsDataFetcher,
             ProjectAssessmentDataFetcher projectAssessmentDataFetcher,
+            MutationCreateProjectDataFetcher mutationCreateProjectDataFetcher,
             MutationCreateAssessmentDataFetcher mutationCreateAssessmentDataFetcher,
             MutationUpdateAssessmentStatusDataFetcher mutationUpdateAssessmentStatusDataFetcher,
             MutationUpdateTestDataFetcher mutationUpdateTestDataFetcher) {
@@ -97,6 +100,7 @@ public class GraphQLConfiguration {
                 .dataFetcher(coordinates("Query", "descriptions"), queryDescriptionsDataFetcher)
                 .dataFetcher(coordinates("Query", "projects"), queryProjectsDataFetcher)
                 .dataFetcher(coordinates("Query", "project"), queryProjectDataFetcher)
+                .dataFetcher(coordinates("Mutation", "createProject"), mutationCreateProjectDataFetcher)
                 .dataFetcher(coordinates("Mutation", "createAssessment"), mutationCreateAssessmentDataFetcher)
                 .dataFetcher(coordinates("Mutation", "updateAssessmentStatus"), mutationUpdateAssessmentStatusDataFetcher)
                 .dataFetcher(coordinates("Mutation", "updateTest"), mutationUpdateTestDataFetcher)

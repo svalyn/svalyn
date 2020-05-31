@@ -6,6 +6,83 @@
  ***************************************************************/
 import { assign, Machine } from 'xstate';
 
+export const newProjectFormMachine = Machine(
+  {
+    initial: 'pristine',
+    context: {
+      label: '',
+    },
+    states: {
+      pristine: {
+        on: {
+          UPDATE_LABEL: [
+            {
+              cond: 'isLabelInvalid',
+              target: 'invalid',
+              actions: ['updateLabel'],
+            },
+            {
+              target: 'valid',
+              actions: ['updateLabel'],
+            },
+          ],
+        },
+      },
+      invalid: {
+        on: {
+          UPDATE_LABEL: [
+            {
+              cond: 'isLabelInvalid',
+              target: 'invalid',
+              actions: ['updateLabel'],
+            },
+            {
+              target: 'valid',
+              actions: ['updateLabel'],
+            },
+          ],
+        },
+      },
+      valid: {
+        on: {
+          UPDATE_LABEL: [
+            {
+              cond: 'isLabelInvalid',
+              target: 'invalid',
+              actions: ['updateLabel'],
+            },
+            {
+              target: 'valid',
+              actions: ['updateLabel'],
+            },
+          ],
+          CREATE_PROJECT: {
+            target: 'pristine',
+            actions: ['clearForm'],
+          },
+        },
+      },
+    },
+  },
+  {
+    guards: {
+      isLabelInvalid: (_, event) => {
+        const { label } = event;
+        return (label?.length ?? 0) === 0;
+      },
+    },
+    actions: {
+      updateLabel: assign((_, event) => {
+        const { label } = event;
+        return { label };
+      }),
+      clearForm: assign((_, event) => {
+        return { label: '' };
+      }),
+    },
+  }
+);
+
 export const dashboardViewMachine = Machine(
   {
     id: 'DashboardView',
@@ -38,13 +115,25 @@ export const dashboardViewMachine = Machine(
         },
       },
       empty: {
-        type: 'final',
+        on: {
+          CREATE_PROJECT: {
+            target: 'loading',
+          },
+        },
       },
       success: {
-        type: 'final',
+        on: {
+          CREATE_PROJECT: {
+            target: 'loading',
+          },
+        },
       },
       error: {
-        type: 'final',
+        on: {
+          CREATE_PROJECT: {
+            target: 'loading',
+          },
+        },
       },
     },
   },

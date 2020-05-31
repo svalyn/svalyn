@@ -68,6 +68,7 @@ enum TestStatus {
 }
 
 type Mutation {
+  createProject(input: CreateProjectInput!): CreateProjectPayload!
   createAssessment(input: CreateAssessmentInput!): CreateAssessmentPayload!
   updateAssessmentStatus(input: UpdateAssessmentStatusInput!): UpdateAssessmentStatusPayload!
   updateTest(input: UpdateTestInput!): UpdateTestPayload!
@@ -76,6 +77,16 @@ type Mutation {
 type ErrorPayload {
   message: String!
 }
+
+input CreateProjectInput {
+  label: String!
+}
+
+type CreateProjectSuccessPayload {
+  project: Project!
+}
+
+union CreateProjectPayload = ErrorPayload | CreateProjectSuccessPayload
 
 input CreateAssessmentInput {
   projectId: ID!

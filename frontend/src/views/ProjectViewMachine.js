@@ -69,11 +69,9 @@ export const newAssessmentFormMachine = Machine(
               actions: ['updateLabel'],
             },
           ],
-          on: {
-            CREATE_ASSESSMENT: {
-              target: 'pristine',
-              actions: ['clearForm'],
-            },
+          CREATE_ASSESSMENT: {
+            target: 'pristine',
+            actions: ['clearForm'],
           },
         },
       },
