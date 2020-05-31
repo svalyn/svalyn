@@ -17,8 +17,9 @@ import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import { gql } from 'graphql.macro';
+import { of } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
-import { concatMap } from 'rxjs/operators';
+import { concatMap, catchError } from 'rxjs/operators';
 import { useMachine } from '@xstate/react';
 
 import { ListItemLink } from '../core/ListItemLink';
@@ -94,12 +95,14 @@ const useStyles = makeStyles((theme) => ({
 export const DashboardView = () => {
   const classes = useStyles();
 
-  const [{ context }, dispatch] = useMachine(dashboardViewMachine);
+  const [{ value, context }, dispatch] = useMachine(dashboardViewMachine);
   const { projects } = context;
 
   useEffect(() => {
     dispatch('FETCH');
-    const subscription = getProjects().subscribe(({ response }) => dispatch({ type: 'HANDLE_RESPONSE', response }));
+    const subscription = getProjects()
+      .pipe(catchError((error) => of(error)))
+      .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
     return () => subscription.unsubscribe();
   }, [dispatch]);
 
@@ -112,8 +115,25 @@ export const DashboardView = () => {
     dispatch('CREATE_PROJECT');
     createProject(variables)
       .pipe(concatMap(() => getProjects()))
-      .subscribe(({ response }) => dispatch({ type: 'HANDLE_RESPONSE', response }));
+      .pipe(catchError((error) => of(error)))
+      .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
   };
+
+  let rightElement = null;
+  switch (value) {
+    case 'success':
+      rightElement = <Projects projects={projects} />;
+      break;
+    case 'empty':
+      rightElement = <Message content="You do not have any projects for the moment, start by creating one" />;
+      break;
+    case 'error':
+      rightElement = <Message content="An error has occurred while retrieving the projects" />;
+      break;
+    default:
+      rightElement = <Message content="An error has occurred while retrieving the projects" />;
+      break;
+  }
 
   return (
     <div className={classes.dashboardView}>
@@ -131,7 +151,7 @@ export const DashboardView = () => {
             <NewProjectForm onNewProjectClick={onNewProjectClick} />
           </Grid>
           <Grid item xs={9}>
-            <Projects projects={projects} />
+            {rightElement}
           </Grid>
         </Grid>
       </Container>
@@ -198,5 +218,22 @@ const Projects = ({ projects }) => {
         })}
       </List>
     </Paper>
+  );
+};
+
+const useMessageStyles = makeStyles((theme) => ({
+  message: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '300px',
+  },
+}));
+const Message = ({ content }) => {
+  const classes = useMessageStyles();
+  return (
+    <div className={classes.message}>
+      <Typography variant="h4">{content}</Typography>
+    </div>
   );
 };

@@ -25,8 +25,9 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import { Link as RouterLink, useParams } from 'react-router-dom';
 import { gql } from 'graphql.macro';
+import { of } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
-import { concatMap } from 'rxjs/operators';
+import { concatMap, catchError } from 'rxjs/operators';
 import { useMachine } from '@xstate/react';
 
 import { ListItemLink } from '../core/ListItemLink';
@@ -115,15 +116,15 @@ export const ProjectView = () => {
   const classes = useProjectViewStyles();
   const { projectId } = useParams();
 
-  const [{ context }, dispatch] = useMachine(projectViewMachine);
+  const [{ value, context }, dispatch] = useMachine(projectViewMachine);
   const { label, assessments, descriptions } = context;
 
   useEffect(() => {
     dispatch('FETCH_PROJECT');
     const variables = { projectId };
-    const subscription = getProject(variables).subscribe(({ response }) =>
-      dispatch({ type: 'HANDLE_PROJECT_RESPONSE', response })
-    );
+    const subscription = getProject(variables)
+      .pipe(catchError((error) => of(error)))
+      .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
 
     return () => subscription.unsubscribe();
   }, [projectId, dispatch]);
@@ -139,8 +140,28 @@ export const ProjectView = () => {
     dispatch('CREATE_ASSESSMENT');
     createAssessment(createAssessmentVariables)
       .pipe(concatMap(() => getProject({ projectId })))
-      .subscribe(({ response }) => dispatch({ type: 'HANDLE_PROJECT_RESPONSE', response }));
+      .pipe(catchError((error) => of(error)))
+      .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
   };
+
+  let rightElement = null;
+  switch (value) {
+    case 'success':
+      rightElement = <Assessments projectId={projectId} assessments={assessments} />;
+      break;
+    case 'error':
+      rightElement = <Message content="An error has occurred while retrieving the project" />;
+      break;
+    case 'missing':
+      rightElement = <Message content={`No project found with the id "${projectId}"`} />;
+      break;
+    case 'empty':
+      rightElement = <Message content="You do not have any assessments for the moment, start by creating one" />;
+      break;
+    default:
+      rightElement = <Message content="An error has occurred while retrieving the project" />;
+      break;
+  }
 
   return (
     <div className={classes.projectView}>
@@ -161,7 +182,7 @@ export const ProjectView = () => {
             <NewAssessmentForm descriptions={descriptions} onNewAssessmentClick={onNewAssessmentClick} />
           </Grid>
           <Grid item xs={9}>
-            <Assessments projectId={projectId} assessments={assessments} />
+            {rightElement}
           </Grid>
         </Grid>
       </Container>
@@ -286,5 +307,22 @@ const Assessments = ({ projectId, assessments }) => {
         })}
       </List>
     </Paper>
+  );
+};
+
+const useMessageStyles = makeStyles((theme) => ({
+  message: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '300px',
+  },
+}));
+const Message = ({ content }) => {
+  const classes = useMessageStyles();
+  return (
+    <div className={classes.message}>
+      <Typography variant="h4">{content}</Typography>
+    </div>
   );
 };

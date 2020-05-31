@@ -117,38 +117,49 @@ export const projectViewMachine = Machine(
       },
       fetchingProject: {
         on: {
-          HANDLE_PROJECT_RESPONSE: [
+          HANDLE_RESPONSE: [
             {
-              cond: 'isProjectFetchingError',
-              target: 'projectFetchedError',
+              cond: 'isError',
+              target: 'error',
             },
             {
-              cond: 'isProjectFetchingEmpty',
-              target: 'projectEmpty',
+              cond: 'isMissing',
+              target: 'missing',
+            },
+            {
+              cond: 'isEmpty',
+              target: 'empty',
               actions: ['updateProject'],
             },
             {
-              target: 'projectFetchedSuccess',
+              target: 'success',
               actions: ['updateProject'],
             },
           ],
         },
       },
-      projectEmpty: {
+      error: {
         on: {
           CREATE_ASSESSMENT: {
             target: 'fetchingProject',
           },
         },
       },
-      projectFetchedSuccess: {
+      missing: {
         on: {
           CREATE_ASSESSMENT: {
             target: 'fetchingProject',
           },
         },
       },
-      projectFetchedError: {
+      empty: {
+        on: {
+          CREATE_ASSESSMENT: {
+            target: 'fetchingProject',
+          },
+        },
+      },
+      success: {
         on: {
           CREATE_ASSESSMENT: {
             target: 'fetchingProject',
@@ -159,18 +170,30 @@ export const projectViewMachine = Machine(
   },
   {
     guards: {
-      isProjectFetchingError: (_, event) => {
-        const { response } = event;
-        return !!response?.error;
+      isError: (_, event) => {
+        const {
+          ajaxResponse: { response, status },
+        } = event;
+        return status !== 200 || response.errors;
       },
-      isProjectFetchingEmpty: (_, event) => {
-        const { response } = event;
-        return (response?.data?.project?.assessments?.length ?? 0) === 0;
+      isMissing: (_, event) => {
+        const {
+          ajaxResponse: { response },
+        } = event;
+        return !response.data.project;
+      },
+      isEmpty: (_, event) => {
+        const {
+          ajaxResponse: { response },
+        } = event;
+        return (response.data.project?.assessments?.length ?? 0) === 0;
       },
     },
     actions: {
       updateProject: assign((_, event) => {
-        const { response } = event;
+        const {
+          ajaxResponse: { response },
+        } = event;
         const { descriptions, project } = response.data;
         const { label, assessments } = project;
         return {

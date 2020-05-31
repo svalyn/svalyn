@@ -139,18 +139,24 @@ export const dashboardViewMachine = Machine(
   },
   {
     guards: {
-      isEmpty: (_, event) => {
-        const { response } = event;
-        return (response?.data?.projects?.length ?? 0) === 0;
-      },
       isError: (_, event) => {
-        const { response } = event;
-        return !!response?.error;
+        const {
+          ajaxResponse: { response, status },
+        } = event;
+        return status !== 200 || response.errors;
+      },
+      isEmpty: (_, event) => {
+        const {
+          ajaxResponse: { response },
+        } = event;
+        return (response?.data?.projects?.length ?? 0) === 0;
       },
     },
     actions: {
       updateProjects: assign((_, event) => {
-        const { response } = event;
+        const {
+          ajaxResponse: { response },
+        } = event;
         const { projects } = response.data;
         return {
           projects,

@@ -24,7 +24,9 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import { Link as RouterLink, useParams } from 'react-router-dom';
 import { gql } from 'graphql.macro';
+import { of } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
+import { catchError } from 'rxjs/operators';
 import { useMachine } from '@xstate/react';
 
 import { Description } from '../description/Description';
@@ -135,25 +137,55 @@ const useAssessmentViewStyles = makeStyles((theme) => ({
     display: 'flex',
     flexDirection: 'row',
   },
+  message: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '300px',
+  },
 }));
 
 export const AssessmentView = () => {
   const classes = useAssessmentViewStyles();
   const { projectId, assessmentId } = useParams();
-  const [{ context }, dispatch] = useMachine(assessmentViewMachine);
+  const [{ value, context }, dispatch] = useMachine(assessmentViewMachine);
   const { label, assessment, selectedCategoryId } = context;
 
   useEffect(() => {
     dispatch('FETCH');
     const variables = { projectId, assessmentId };
-    const subscription = getAssessment(variables).subscribe(({ response }) =>
-      dispatch({ type: 'HANDLE_RESPONSE', response })
-    );
+    const subscription = getAssessment(variables)
+      .pipe(catchError((error) => of(error)))
+      .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
     return () => subscription.unsubscribe();
   }, [projectId, assessmentId, dispatch]);
 
   const onAssessmentUpdated = (assessment) => dispatch({ type: 'REFRESH_ASSESSMENT', assessment });
   const onCategoryClick = (selectedCategory) => dispatch({ type: 'SELECT_CATEGORY', selectedCategory });
+
+  let message = null;
+  switch (value) {
+    case 'error':
+      message = 'An error has occurred while retrieving the assessment';
+      break;
+    case 'missing':
+      message = `No assessment found with the id "${assessmentId}" in the project`;
+      break;
+    case 'empty':
+      message = 'The assessment does not have any content';
+      break;
+    default:
+      break;
+  }
+  if (message) {
+    return (
+      <Container>
+        <div className={classes.message}>
+          <Typography variant="h4">{message}</Typography>
+        </div>
+      </Container>
+    );
+  }
 
   const selectedCategory = assessment?.categories.filter((category) => category.id === selectedCategoryId)[0];
   return (
@@ -171,9 +203,7 @@ export const AssessmentView = () => {
           category={selectedCategory}
           onAssessmentUpdated={onAssessmentUpdated}
         />
-      ) : (
-        <EmptyMainArea />
-      )}
+      ) : null}
     </div>
   );
 };
@@ -385,14 +415,4 @@ const Header = ({ projectId, projectLabel, assessment, onAssessmentUpdated }) =>
       </Breadcrumbs>
     </div>
   );
-};
-
-const useEmptyMainAreaStyles = makeStyles((theme) => ({
-  content: {
-    display: 'flex',
-  },
-}));
-const EmptyMainArea = () => {
-  const classes = useEmptyMainAreaStyles();
-  return <div className={classes.content}>Please select a category</div>;
 };
