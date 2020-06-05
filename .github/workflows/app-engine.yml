@@ -1,0 +1,45 @@
+name: Deploy to Google App Engine
+on:
+  push:
+    branches:
+      - master
+jobs:
+  setup-build-deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v1.4.2
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build the frontend
+        working-directory: frontend
+        run: npm run-script build
+
+      - name: Create the static folder for the frontend resources
+        run: mkdir -p backend/svalyn-application/src/main/resources/static
+
+      - name: Copy the frontend resources to the backend
+        run: cp -r frontend/build/* backend/svalyn-application/src/main/resources/static
+    
+      - name: Setup Java JDK
+        uses: actions/setup-java@v1.3.0
+        with:
+          java-version: 11
+
+      - name: Setup and configure gcloud CLI
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: '290.0.1'
+          project_id: ${{ secrets.GOOGLE_CLOUD_PLATFORM_PROJECT_ID }}
+          service_account_key: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+
+      - name: Build and publish the backend
+        working-directory: backend
+        run: mvn clean verify -Dapp.deploy.projectId=${{ secrets.GOOGLE_CLOUD_PLATFORM_PROJECT_ID }}

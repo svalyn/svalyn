@@ -69,6 +69,24 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<plugin>
+				<groupId>com.google.cloud.tools</groupId>
+				<artifactId>appengine-maven-plugin</artifactId>
+				<version>2.2.0</version>
+				<configuration>
+					<projectId>GCLOUD_CONFIG</projectId>
+					<version>GCLOUD_CONFIG</version>
+				</configuration>
+				<executions>
+					<execution>
+						<id>deploy</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>deploy</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
