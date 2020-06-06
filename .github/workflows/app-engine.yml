@@ -20,7 +20,7 @@ jobs:
 
       - name: Build the frontend
         working-directory: frontend
-        run: npm run-script build
+        run: npm run-script build -- --profile
 
       - name: Create the static folder for the frontend resources
         run: mkdir -p backend/svalyn-application/src/main/resources/static
