@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -26,6 +28,8 @@ import reactor.core.publisher.Mono;
 
 @Service
 public class GraphQLHandlerFunction implements HandlerFunction<ServerResponse> {
+
+    private final Logger logger = LoggerFactory.getLogger(GraphQLHandlerFunction.class);
 
     private final GraphQL graphQL;
 
@@ -56,6 +60,8 @@ public class GraphQLHandlerFunction implements HandlerFunction<ServerResponse> {
     }
 
     private Mono<ServerResponse> executionResultToServerResponse(ExecutionResult executionResult) {
+        executionResult.getErrors().stream().map(Object::toString).forEach(this.logger::warn);
+
         return ok().bodyValue(executionResult.toSpecification());
     }
 }
