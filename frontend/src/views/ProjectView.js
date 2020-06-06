@@ -159,7 +159,6 @@ export const ProjectView = () => {
       rightElement = <Message content="You do not have any assessments for the moment, start by creating one" />;
       break;
     default:
-      rightElement = <Message content="An error has occurred while retrieving the project" />;
       break;
   }
 

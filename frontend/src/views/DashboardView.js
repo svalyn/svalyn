@@ -131,7 +131,6 @@ export const DashboardView = () => {
       rightElement = <Message content="An error has occurred while retrieving the projects" />;
       break;
     default:
-      rightElement = <Message content="An error has occurred while retrieving the projects" />;
       break;
   }
 
