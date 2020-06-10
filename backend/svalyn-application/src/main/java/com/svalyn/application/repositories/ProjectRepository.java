@@ -35,8 +35,8 @@ public class ProjectRepository {
         return Mono.justOrEmpty(optionalProject);
     }
 
-    public boolean existById(UUID projectId) {
-        return this.projects.stream().anyMatch(project -> project.getId().equals(projectId));
+    public Mono<Boolean> existById(UUID projectId) {
+        return Mono.just(this.projects.stream().anyMatch(project -> project.getId().equals(projectId)));
     }
 
     public Mono<Project> createProject(String label) {
@@ -44,5 +44,14 @@ public class ProjectRepository {
         this.projects.add(project);
 
         return Mono.just(project);
+    }
+
+    public Mono<Void> deleteProject(UUID projectId) {
+        // @formatter:off
+        this.projects.stream().filter(project -> project.getId().equals(projectId))
+            .findFirst()
+            .ifPresent(this.projects::remove);
+        // @formatter:on
+        return Mono.empty();
     }
 }

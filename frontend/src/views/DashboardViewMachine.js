@@ -89,6 +89,8 @@ export const dashboardViewMachine = Machine(
     initial: 'idle',
     context: {
       projects: [],
+      anchorElement: null,
+      projectId: null,
     },
     states: {
       idle: {
@@ -126,6 +128,22 @@ export const dashboardViewMachine = Machine(
           CREATE_PROJECT: {
             target: 'loading',
           },
+          OPEN_MENU: {
+            target: 'menuOpened',
+            actions: ['openMenu'],
+          },
+        },
+      },
+      menuOpened: {
+        on: {
+          CLOSE_MENU: {
+            target: 'success',
+            actions: ['closeMenu'],
+          },
+          DELETE_PROJECT: {
+            target: 'loading',
+            actions: ['closeMenu'],
+          },
         },
       },
       error: {
@@ -161,6 +179,16 @@ export const dashboardViewMachine = Machine(
         return {
           projects,
         };
+      }),
+      openMenu: assign((_, event) => {
+        const {
+          anchorElement,
+          project: { id },
+        } = event;
+        return { anchorElement, projectId: id };
+      }),
+      closeMenu: assign(() => {
+        return { anchorElement: null, projectId: null };
       }),
     },
   }

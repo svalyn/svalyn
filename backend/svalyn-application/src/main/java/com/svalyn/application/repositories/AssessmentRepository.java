@@ -9,6 +9,7 @@ package com.svalyn.application.repositories;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -49,6 +50,13 @@ public class AssessmentRepository {
             this.assessmentEntities.add(0, assessmentEntity);
         }
         return Mono.just(assessmentEntity);
+    }
+
+    public Mono<Void> deleteAllByProjectId(UUID projectId) {
+        var assessments = this.assessmentEntities.stream()
+                .filter(assessment -> assessment.getProjectId().equals(projectId)).collect(Collectors.toList());
+        assessments.stream().forEach(this.assessmentEntities::remove);
+        return Mono.empty();
     }
 
 }

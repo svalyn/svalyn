@@ -11,7 +11,12 @@ import Container from '@material-ui/core/Container';
 import FolderIcon from '@material-ui/icons/Folder';
 import Grid from '@material-ui/core/Grid';
 import HomeIcon from '@material-ui/icons/Home';
+import IconButton from '@material-ui/core/IconButton';
 import List from '@material-ui/core/List';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+import MoreVertIcon from '@material-ui/icons/MoreVert';
 import Paper from '@material-ui/core/Paper';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
@@ -73,6 +78,28 @@ const createProject = (variables) =>
     body: JSON.stringify({ query: createProjectQuery, variables }),
   });
 
+const {
+  loc: {
+    source: { body: deleteProjectQuery },
+  },
+} = gql`
+  mutation deleteProject($input: DeleteProjectInput!) {
+    deleteProject(input: $input) {
+      __typename
+      ... on ErrorPayload {
+        message
+      }
+    }
+  }
+`;
+const deleteProject = (variables) =>
+  ajax({
+    url: '/api/graphql',
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: deleteProjectQuery, variables }),
+  });
+
 const useStyles = makeStyles((theme) => ({
   dashboardView: {
     paddingTop: '24px',
@@ -96,7 +123,7 @@ export const DashboardView = () => {
   const classes = useStyles();
 
   const [{ value, context }, dispatch] = useMachine(dashboardViewMachine);
-  const { projects } = context;
+  const { projects, anchorElement, projectId } = context;
 
   useEffect(() => {
     dispatch('FETCH');
@@ -119,10 +146,31 @@ export const DashboardView = () => {
       .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
   };
 
+  const onMoreClick = (event, project) => dispatch({ type: 'OPEN_MENU', anchorElement: event.target, project });
+  const onMenuClose = () => dispatch({ type: 'CLOSE_MENU' });
+  const onDelete = () => {
+    const variables = {
+      input: {
+        projectId,
+      },
+    };
+    dispatch('DELETE_PROJECT');
+    deleteProject(variables)
+      .pipe(concatMap(() => getProjects()))
+      .pipe(catchError((error) => of(error)))
+      .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
+  };
+
   let rightElement = null;
   switch (value) {
+    case 'loading':
+      rightElement = <Projects projects={projects} onMoreClick={onMoreClick} />;
+      break;
     case 'success':
-      rightElement = <Projects projects={projects} />;
+      rightElement = <Projects projects={projects} onMoreClick={onMoreClick} />;
+      break;
+    case 'menuOpened':
+      rightElement = <Projects projects={projects} onMoreClick={onMoreClick} />;
       break;
     case 'empty':
       rightElement = <Message content="You do not have any projects for the moment, start by creating one" />;
@@ -135,26 +183,32 @@ export const DashboardView = () => {
   }
 
   return (
-    <div className={classes.dashboardView}>
-      <Container>
-        <Typography variant="h1" gutterBottom>
-          Dashboard
-        </Typography>
-        <Breadcrumbs className={classes.breadcrumb} aria-label="breadcrumb">
-          <Typography color="textPrimary" className={classes.breadcrumbItem}>
-            <HomeIcon className={classes.icon} /> Dashboard
+    <>
+      <div className={classes.dashboardView}>
+        <Container>
+          <Typography variant="h1" gutterBottom>
+            Dashboard
           </Typography>
-        </Breadcrumbs>
-        <Grid container spacing={4}>
-          <Grid item xs={3}>
-            <NewProjectForm onNewProjectClick={onNewProjectClick} />
+          <Breadcrumbs className={classes.breadcrumb} aria-label="breadcrumb">
+            <Typography color="textPrimary" className={classes.breadcrumbItem}>
+              <HomeIcon className={classes.icon} /> Dashboard
+            </Typography>
+          </Breadcrumbs>
+          <Grid container spacing={4}>
+            <Grid item xs={3}>
+              <NewProjectForm onNewProjectClick={onNewProjectClick} />
+            </Grid>
+            <Grid item xs={9}>
+              {rightElement}
+            </Grid>
           </Grid>
-          <Grid item xs={9}>
-            {rightElement}
-          </Grid>
-        </Grid>
-      </Container>
-    </div>
+        </Container>
+      </div>
+
+      <Menu id="simple-menu" anchorEl={anchorElement} keepMounted open={Boolean(anchorElement)} onClose={onMenuClose}>
+        <MenuItem onClick={onDelete}>Delete</MenuItem>
+      </Menu>
+    </>
   );
 };
 
@@ -201,17 +255,25 @@ const NewProjectForm = ({ onNewProjectClick }) => {
   );
 };
 
-const Projects = ({ projects }) => {
+const Projects = ({ projects, onMoreClick }) => {
   return (
     <Paper>
       <List>
         {projects.map((project) => {
+          const onClick = (event) => onMoreClick(event, project);
           return (
             <ListItemLink
               key={project.id}
               to={`/projects/${project.id}`}
               primary={project.label}
               icon={<FolderIcon />}
+              action={
+                <ListItemSecondaryAction>
+                  <IconButton aria-label="more" aria-controls="long-menu" aria-haspopup="true" onClick={onClick}>
+                    <MoreVertIcon />
+                  </IconButton>
+                </ListItemSecondaryAction>
+              }
             />
           );
         })}

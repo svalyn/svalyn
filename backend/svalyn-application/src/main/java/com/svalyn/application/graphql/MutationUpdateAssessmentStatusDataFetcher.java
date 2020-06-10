@@ -13,14 +13,14 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.svalyn.application.dto.input.UpdateAssessmentStatusInput;
-import com.svalyn.application.dto.output.UpdateAssessmentStatusSuccessPayload;
+import com.svalyn.application.dto.output.IPayload;
 import com.svalyn.application.services.AssessmentService;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 
 @Service
-public class MutationUpdateAssessmentStatusDataFetcher implements DataFetcher<CompletableFuture<Object>> {
+public class MutationUpdateAssessmentStatusDataFetcher implements DataFetcher<CompletableFuture<IPayload>> {
 
     private static final String INPUT = "input";
 
@@ -34,12 +34,9 @@ public class MutationUpdateAssessmentStatusDataFetcher implements DataFetcher<Co
     }
 
     @Override
-    public CompletableFuture<Object> get(DataFetchingEnvironment environment) throws Exception {
+    public CompletableFuture<IPayload> get(DataFetchingEnvironment environment) throws Exception {
         var input = this.objectMapper.convertValue(environment.getArgument(INPUT), UpdateAssessmentStatusInput.class);
-        var future = this.assessmentService.updateAssessmentStatus(input.getAssessmentId(), input.getStatus())
-                .map(UpdateAssessmentStatusSuccessPayload::new).toFuture();
-
-        return CompletableFuture.anyOf(future);
+        return this.assessmentService.updateAssessmentStatus(input).toFuture();
     }
 
 }

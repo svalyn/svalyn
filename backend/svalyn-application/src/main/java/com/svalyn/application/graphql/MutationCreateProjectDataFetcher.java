@@ -13,32 +13,30 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.svalyn.application.dto.input.CreateProjectInput;
-import com.svalyn.application.dto.output.CreateProjectSuccessPayload;
-import com.svalyn.application.repositories.ProjectRepository;
+import com.svalyn.application.dto.output.IPayload;
+import com.svalyn.application.services.ProjectService;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 
 @Service
-public class MutationCreateProjectDataFetcher implements DataFetcher<CompletableFuture<Object>> {
+public class MutationCreateProjectDataFetcher implements DataFetcher<CompletableFuture<IPayload>> {
 
     private static final String INPUT = "input";
 
     private final ObjectMapper objectMapper;
 
-    private final ProjectRepository projectRepository;
+    private final ProjectService projectService;
 
-    public MutationCreateProjectDataFetcher(ObjectMapper objectMapper, ProjectRepository projectRepository) {
+    public MutationCreateProjectDataFetcher(ObjectMapper objectMapper, ProjectService projectService) {
         this.objectMapper = Objects.requireNonNull(objectMapper);
-        this.projectRepository = Objects.requireNonNull(projectRepository);
+        this.projectService = Objects.requireNonNull(projectService);
     }
 
     @Override
-    public CompletableFuture<Object> get(DataFetchingEnvironment environment) throws Exception {
+    public CompletableFuture<IPayload> get(DataFetchingEnvironment environment) throws Exception {
         var input = this.objectMapper.convertValue(environment.getArgument(INPUT), CreateProjectInput.class);
-        var project = this.projectRepository.createProject(input.getLabel());
-        var future = project.map(CreateProjectSuccessPayload::new).toFuture();
-        return CompletableFuture.anyOf(future);
+        return this.projectService.createProject(input).toFuture();
     }
 
 }

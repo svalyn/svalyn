@@ -8,7 +8,7 @@ package com.svalyn.application.dto.output;
 
 import java.util.Objects;
 
-public class UpdateTestSuccessPayload {
+public class UpdateTestSuccessPayload implements IPayload {
     private final Assessment assessment;
 
     public UpdateTestSuccessPayload(Assessment assessment) {

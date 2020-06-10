@@ -6,16 +6,6 @@
  **************************************************************/
 package com.svalyn.application.dto.output;
 
-import java.util.Objects;
-
-public class CreateProjectSuccessPayload implements IPayload {
-    private final Project project;
-
-    public CreateProjectSuccessPayload(Project project) {
-        this.project = Objects.requireNonNull(project);
-    }
-
-    public Project getProject() {
-        return this.project;
-    }
+public class DeleteProjectSuccessPayload {
+    // Nothing for now
 }

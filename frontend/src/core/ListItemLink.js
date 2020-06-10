@@ -10,17 +10,16 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { Link as RouterLink } from 'react-router-dom';
 
-export const ListItemLink = ({ icon, primary, secondary, to, disableTypography }) => {
+export const ListItemLink = ({ icon, primary, secondary, to, disableTypography, action }) => {
   const renderLink = useMemo(() => {
     return forwardRef((itemProps, ref) => <RouterLink to={to} ref={ref} {...itemProps} />);
   }, [to]);
 
   return (
-    <li>
-      <ListItem button component={renderLink}>
-        <ListItemIcon>{icon}</ListItemIcon>
-        <ListItemText primary={primary} secondary={secondary} disableTypography={disableTypography} />
-      </ListItem>
-    </li>
+    <ListItem button component={renderLink}>
+      <ListItemIcon>{icon}</ListItemIcon>
+      <ListItemText primary={primary} secondary={secondary} disableTypography={disableTypography} />
+      {action}
+    </ListItem>
   );
 };
