@@ -6,6 +6,6 @@
  **************************************************************/
 package com.svalyn.application.dto.output;
 
-public class DeleteProjectSuccessPayload implements IPayload {
-    // Nothing for now
+public class DeleteAssessmentSuccessPayload implements IPayload {
+    // Do nothing for now
 }

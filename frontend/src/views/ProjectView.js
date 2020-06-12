@@ -14,10 +14,14 @@ import FolderIcon from '@material-ui/icons/Folder';
 import FormControl from '@material-ui/core/FormControl';
 import Grid from '@material-ui/core/Grid';
 import HomeIcon from '@material-ui/icons/Home';
+import IconButton from '@material-ui/core/IconButton';
 import InputLabel from '@material-ui/core/InputLabel';
 import Link from '@material-ui/core/Link';
 import List from '@material-ui/core/List';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import MoreVertIcon from '@material-ui/icons/MoreVert';
 import Paper from '@material-ui/core/Paper';
 import Select from '@material-ui/core/Select';
 import TextField from '@material-ui/core/TextField';
@@ -93,6 +97,28 @@ const createAssessment = (variables) =>
     body: JSON.stringify({ query: createAssessmentMutation, variables }),
   });
 
+const {
+  loc: {
+    source: { body: deleteAssessmentMutation },
+  },
+} = gql`
+  mutation deleteAssessment($input: DeleteAssessmentInput!) {
+    deleteAssessment(input: $input) {
+      __typename
+      ... on ErrorPayload {
+        message
+      }
+    }
+  }
+`;
+const deleteAssessment = (variables) =>
+  ajax({
+    url: '/api/graphql',
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: deleteAssessmentMutation, variables }),
+  });
+
 const useProjectViewStyles = makeStyles((theme) => ({
   projectView: {
     paddingTop: '24px',
@@ -117,7 +143,7 @@ export const ProjectView = () => {
   const { projectId } = useParams();
 
   const [{ value, context }, dispatch] = useMachine(projectViewMachine);
-  const { label, assessments, descriptions } = context;
+  const { label, assessments, descriptions, anchorElement, assessmentId } = context;
 
   useEffect(() => {
     dispatch('FETCH_PROJECT');
@@ -144,10 +170,31 @@ export const ProjectView = () => {
       .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
   };
 
+  const onMoreClick = (event, assessment) => dispatch({ type: 'OPEN_MENU', anchorElement: event.target, assessment });
+  const onMenuClose = () => dispatch({ type: 'CLOSE_MENU' });
+  const onDelete = () => {
+    const variables = {
+      input: {
+        assessmentId,
+      },
+    };
+    dispatch('DELETE_ASSESSMENT');
+    deleteAssessment(variables)
+      .pipe(concatMap(() => getProject({ projectId })))
+      .pipe(catchError((error) => of(error)))
+      .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
+  };
+
   let rightElement = null;
   switch (value) {
+    case 'loading':
+      rightElement = <Assessments projectId={projectId} assessments={assessments} onMoreClick={onMoreClick} />;
+      break;
     case 'success':
-      rightElement = <Assessments projectId={projectId} assessments={assessments} />;
+      rightElement = <Assessments projectId={projectId} assessments={assessments} onMoreClick={onMoreClick} />;
+      break;
+    case 'menuOpened':
+      rightElement = <Assessments projectId={projectId} assessments={assessments} onMoreClick={onMoreClick} />;
       break;
     case 'error':
       rightElement = <Message content="An error has occurred while retrieving the project" />;
@@ -163,29 +210,35 @@ export const ProjectView = () => {
   }
 
   return (
-    <div className={classes.projectView}>
-      <Container>
-        <Typography variant="h1" gutterBottom>
-          {label}
-        </Typography>
-        <Breadcrumbs className={classes.breadcrumb} aria-label="breadcrumb">
-          <Link color="inherit" component={RouterLink} to="/" className={classes.breadcrumbItem}>
-            <HomeIcon className={classes.icon} /> Dashboard
-          </Link>
-          <Typography color="textPrimary" className={classes.breadcrumbItem}>
-            <FolderIcon className={classes.icon} /> {label}
+    <>
+      <div className={classes.projectView}>
+        <Container>
+          <Typography variant="h1" gutterBottom>
+            {label}
           </Typography>
-        </Breadcrumbs>
-        <Grid container spacing={4}>
-          <Grid item xs={3}>
-            <NewAssessmentForm descriptions={descriptions} onNewAssessmentClick={onNewAssessmentClick} />
+          <Breadcrumbs className={classes.breadcrumb} aria-label="breadcrumb">
+            <Link color="inherit" component={RouterLink} to="/" className={classes.breadcrumbItem}>
+              <HomeIcon className={classes.icon} /> Dashboard
+            </Link>
+            <Typography color="textPrimary" className={classes.breadcrumbItem}>
+              <FolderIcon className={classes.icon} /> {label}
+            </Typography>
+          </Breadcrumbs>
+          <Grid container spacing={4}>
+            <Grid item xs={3}>
+              <NewAssessmentForm descriptions={descriptions} onNewAssessmentClick={onNewAssessmentClick} />
+            </Grid>
+            <Grid item xs={9}>
+              {rightElement}
+            </Grid>
           </Grid>
-          <Grid item xs={9}>
-            {rightElement}
-          </Grid>
-        </Grid>
-      </Container>
-    </div>
+        </Container>
+      </div>
+
+      <Menu id="simple-menu" anchorEl={anchorElement} keepMounted open={Boolean(anchorElement)} onClose={onMenuClose}>
+        <MenuItem onClick={onDelete}>Delete</MenuItem>
+      </Menu>
+    </>
   );
 };
 
@@ -262,8 +315,7 @@ const useAssessmentsStyles = makeStyles((theme) => ({
   title: {
     display: 'flex',
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    alignItems: 'baseline',
     marginBottom: '0.5rem',
     '& > *:first-child': {
       marginRight: '1rem',
@@ -271,7 +323,7 @@ const useAssessmentsStyles = makeStyles((theme) => ({
   },
 }));
 
-const Assessments = ({ projectId, assessments }) => {
+const Assessments = ({ projectId, assessments, onMoreClick }) => {
   const classes = useAssessmentsStyles();
   const size = assessments.length;
   return (
@@ -291,6 +343,15 @@ const Assessments = ({ projectId, assessments }) => {
             </>
           );
 
+          const onClick = (event) => onMoreClick(event, assessment);
+          const action = (
+            <ListItemSecondaryAction>
+              <IconButton aria-label="more" aria-controls="long-menu" aria-haspopup="true" onClick={onClick}>
+                <MoreVertIcon />
+              </IconButton>
+            </ListItemSecondaryAction>
+          );
+
           return (
             <Fragment key={assessment.id}>
               <ListItemLink
@@ -298,6 +359,7 @@ const Assessments = ({ projectId, assessments }) => {
                 primary={primary}
                 secondary={secondary}
                 icon={<AssignmentIcon />}
+                action={action}
                 disableTypography
               />
               {index <= size - 2 ? <Divider /> : null}

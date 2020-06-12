@@ -18,12 +18,14 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import com.svalyn.application.dto.input.CreateAssessmentInput;
+import com.svalyn.application.dto.input.DeleteAssessmentInput;
 import com.svalyn.application.dto.input.UpdateAssessmentStatusInput;
 import com.svalyn.application.dto.input.UpdateTestInput;
 import com.svalyn.application.dto.output.Assessment;
 import com.svalyn.application.dto.output.AssessmentStatus;
 import com.svalyn.application.dto.output.Category;
 import com.svalyn.application.dto.output.CreateAssessmentSuccessPayload;
+import com.svalyn.application.dto.output.DeleteAssessmentSuccessPayload;
 import com.svalyn.application.dto.output.ErrorPayload;
 import com.svalyn.application.dto.output.IPayload;
 import com.svalyn.application.dto.output.Requirement;
@@ -89,6 +91,19 @@ public class AssessmentService {
         }).filter(IPayload.class::isInstance).map(IPayload.class::cast);
     }
 
+    public Mono<IPayload> deleteAssessment(DeleteAssessmentInput input) {
+        return this.assessmentRepository.existById(input.getAssessmentId()).flatMap(existById -> {
+            if (existById.booleanValue()) {
+                // @formatter:off
+                return this.assessmentRepository.deleteAssessment(input.getAssessmentId())
+                        .then(Mono.just(new DeleteAssessmentSuccessPayload()));
+                // @formatter:on
+            }
+            return Mono.just(new ErrorPayload("The assessment does not exist"));
+        }).filter(IPayload.class::isInstance).map(IPayload.class::cast);
+
+    }
+
     public Flux<Assessment> findByProjectId(UUID projectId) {
         // @formatter:off
         return this.assessmentRepository.findAll()
@@ -143,7 +158,7 @@ public class AssessmentService {
                     var optionalAssessment = optionalDescriptionEntity.map(descriptionEntity -> this.convert(descriptionEntity, assessmentEntity));
                     return Mono.justOrEmpty(optionalAssessment).map(UpdateTestSuccessPayload::new);
                 }).filter(IPayload.class::isInstance).map(IPayload.class::cast)
-                .switchIfEmpty(Mono.just(new ErrorPayload("The test does not exist")).filter(IPayload.class::isInstance).map(IPayload.class::cast));
+                .switchIfEmpty(Mono.just(new ErrorPayload("The test has not been updated")).filter(IPayload.class::isInstance).map(IPayload.class::cast));
         // @formatter:on
     }
 

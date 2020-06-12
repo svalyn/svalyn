@@ -8,7 +8,7 @@ package com.svalyn.application.dto.output;
 
 import java.util.Objects;
 
-public class ErrorPayload {
+public class ErrorPayload implements IPayload {
     private final String message;
 
     public ErrorPayload(String message) {

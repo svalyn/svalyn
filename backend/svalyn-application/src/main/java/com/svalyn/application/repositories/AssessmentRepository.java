@@ -36,6 +36,12 @@ public class AssessmentRepository {
         return Mono.justOrEmpty(optionalAssessment);
     }
 
+    public Mono<Boolean> existById(UUID assessmentId) {
+        boolean existById = this.assessmentEntities.stream()
+                .anyMatch(assessment -> assessment.getId().equals(assessmentId));
+        return Mono.just(existById);
+    }
+
     public Mono<AssessmentEntity> save(AssessmentEntity assessmentEntity) {
         var optionalAssessmentEntity = this.assessmentEntities.stream()
                 .filter(entity -> entity.getId().equals(assessmentEntity.getId())).findFirst();
@@ -50,6 +56,15 @@ public class AssessmentRepository {
             this.assessmentEntities.add(0, assessmentEntity);
         }
         return Mono.just(assessmentEntity);
+    }
+
+    public Mono<Void> deleteAssessment(UUID assessmentId) {
+        // @formatter:off
+        this.assessmentEntities.stream().filter(assessment -> assessment.getId().equals(assessmentId))
+            .findFirst()
+            .ifPresent(this.assessmentEntities::remove);
+        // @formatter:on
+        return Mono.empty();
     }
 
     public Mono<Void> deleteAllByProjectId(UUID projectId) {

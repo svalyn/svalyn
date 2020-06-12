@@ -53,7 +53,7 @@ const getProjects = () =>
 
 const {
   loc: {
-    source: { body: createProjectQuery },
+    source: { body: createProjectMutation },
   },
 } = gql`
   mutation createProject($input: CreateProjectInput!) {
@@ -75,12 +75,12 @@ const createProject = (variables) =>
     url: '/api/graphql',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query: createProjectQuery, variables }),
+    body: JSON.stringify({ query: createProjectMutation, variables }),
   });
 
 const {
   loc: {
-    source: { body: deleteProjectQuery },
+    source: { body: deleteProjectMutation },
   },
 } = gql`
   mutation deleteProject($input: DeleteProjectInput!) {
@@ -97,7 +97,7 @@ const deleteProject = (variables) =>
     url: '/api/graphql',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query: deleteProjectQuery, variables }),
+    body: JSON.stringify({ query: deleteProjectMutation, variables }),
   });
 
 const useStyles = makeStyles((theme) => ({

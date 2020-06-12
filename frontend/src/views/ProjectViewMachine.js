@@ -108,6 +108,8 @@ export const projectViewMachine = Machine(
       label: '',
       assessments: [],
       descriptions: [{ id: '', label: '' }],
+      anchorElement: null,
+      assessmentId: null,
     },
     states: {
       idle: {
@@ -164,6 +166,22 @@ export const projectViewMachine = Machine(
           CREATE_ASSESSMENT: {
             target: 'fetchingProject',
           },
+          OPEN_MENU: {
+            target: 'menuOpened',
+            actions: ['openMenu'],
+          },
+        },
+      },
+      menuOpened: {
+        on: {
+          CLOSE_MENU: {
+            target: 'success',
+            actions: ['closeMenu'],
+          },
+          DELETE_ASSESSMENT: {
+            target: 'fetchingProject',
+            actions: ['closeMenu'],
+          },
         },
       },
     },
@@ -201,6 +219,16 @@ export const projectViewMachine = Machine(
           label,
           assessments,
         };
+      }),
+      openMenu: assign((_, event) => {
+        const {
+          anchorElement,
+          assessment: { id },
+        } = event;
+        return { anchorElement, assessmentId: id };
+      }),
+      closeMenu: assign((_, event) => {
+        return { anchorElement: null, assessmentId: null };
       }),
     },
   }
