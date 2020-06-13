@@ -158,7 +158,7 @@ public class AssessmentService {
                     var optionalAssessment = optionalDescriptionEntity.map(descriptionEntity -> this.convert(descriptionEntity, assessmentEntity));
                     return Mono.justOrEmpty(optionalAssessment).map(UpdateTestSuccessPayload::new);
                 }).filter(IPayload.class::isInstance).map(IPayload.class::cast)
-                .switchIfEmpty(Mono.just(new ErrorPayload("The test has not been updated")).filter(IPayload.class::isInstance).map(IPayload.class::cast));
+                .switchIfEmpty(Mono.just(new ErrorPayload("The assessment or its test does not exist")).filter(IPayload.class::isInstance).map(IPayload.class::cast));
         // @formatter:on
     }
 

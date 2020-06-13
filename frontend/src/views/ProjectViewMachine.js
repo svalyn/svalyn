@@ -103,84 +103,111 @@ export const newAssessmentFormMachine = Machine(
 export const projectViewMachine = Machine(
   {
     id: 'ProjectView',
-    initial: 'idle',
+    type: 'parallel',
     context: {
       label: '',
       assessments: [],
       descriptions: [{ id: '', label: '' }],
       anchorElement: null,
       assessmentId: null,
+      message: null,
     },
     states: {
-      idle: {
-        on: {
-          FETCH_PROJECT: 'fetchingProject',
-        },
-      },
-      fetchingProject: {
-        on: {
-          HANDLE_RESPONSE: [
-            {
-              cond: 'isError',
-              target: 'error',
+      toast: {
+        initial: 'hidden',
+        states: {
+          hidden: {
+            on: {
+              SHOW_TOAST: {
+                target: 'visible',
+                actions: 'setMessage',
+              },
             },
-            {
-              cond: 'isMissing',
-              target: 'missing',
+          },
+          visible: {
+            on: {
+              HIDE_TOAST: {
+                target: 'hidden',
+                actions: 'clearMessage',
+              },
             },
-            {
-              cond: 'isEmpty',
-              target: 'empty',
-              actions: ['updateProject'],
+          },
+        },
+      },
+      projectView: {
+        initial: 'idle',
+        states: {
+          idle: {
+            on: {
+              FETCH_PROJECT: 'fetchingProject',
             },
-            {
-              target: 'success',
-              actions: ['updateProject'],
+          },
+          fetchingProject: {
+            on: {
+              HANDLE_RESPONSE: [
+                {
+                  cond: 'isError',
+                  target: 'error',
+                },
+                {
+                  cond: 'isMissing',
+                  target: 'missing',
+                },
+                {
+                  cond: 'isEmpty',
+                  target: 'empty',
+                  actions: ['updateProject'],
+                },
+                {
+                  target: 'success',
+                  actions: ['updateProject'],
+                },
+              ],
             },
-          ],
-        },
-      },
-      error: {
-        on: {
-          CREATE_ASSESSMENT: {
-            target: 'fetchingProject',
           },
-        },
-      },
-      missing: {
-        on: {
-          CREATE_ASSESSMENT: {
-            target: 'fetchingProject',
+          error: {
+            on: {
+              CREATE_ASSESSMENT: {
+                target: 'fetchingProject',
+              },
+            },
           },
-        },
-      },
-      empty: {
-        on: {
-          CREATE_ASSESSMENT: {
-            target: 'fetchingProject',
+          missing: {
+            on: {
+              CREATE_ASSESSMENT: {
+                target: 'fetchingProject',
+              },
+            },
           },
-        },
-      },
-      success: {
-        on: {
-          CREATE_ASSESSMENT: {
-            target: 'fetchingProject',
+          empty: {
+            on: {
+              CREATE_ASSESSMENT: {
+                target: 'fetchingProject',
+              },
+            },
           },
-          OPEN_MENU: {
-            target: 'menuOpened',
-            actions: ['openMenu'],
+          success: {
+            on: {
+              CREATE_ASSESSMENT: {
+                target: 'fetchingProject',
+              },
+              OPEN_MENU: {
+                target: 'menuOpened',
+                actions: ['openMenu'],
+              },
+            },
           },
-        },
-      },
-      menuOpened: {
-        on: {
-          CLOSE_MENU: {
-            target: 'success',
-            actions: ['closeMenu'],
-          },
-          DELETE_ASSESSMENT: {
-            target: 'fetchingProject',
-            actions: ['closeMenu'],
+          menuOpened: {
+            on: {
+              CLOSE_MENU: {
+                target: 'success',
+                actions: ['closeMenu'],
+              },
+              DELETE_ASSESSMENT: {
+                target: 'fetchingProject',
+                actions: ['closeMenu'],
+              },
+            },
           },
         },
       },
@@ -229,6 +256,13 @@ export const projectViewMachine = Machine(
       }),
       closeMenu: assign((_, event) => {
         return { anchorElement: null, assessmentId: null };
+      }),
+      setMessage: assign((_, event) => {
+        const { message } = event;
+        return { message };
+      }),
+      clearMessage: assign((_, event) => {
+        return { message: null };
       }),
     },
   }

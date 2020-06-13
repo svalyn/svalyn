@@ -7,6 +7,7 @@
 import React, { useEffect } from 'react';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import Button from '@material-ui/core/Button';
+import CloseIcon from '@material-ui/icons/Close';
 import Container from '@material-ui/core/Container';
 import FolderIcon from '@material-ui/icons/Folder';
 import Grid from '@material-ui/core/Grid';
@@ -18,6 +19,7 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import Paper from '@material-ui/core/Paper';
+import Snackbar from '@material-ui/core/Snackbar';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
@@ -123,7 +125,8 @@ export const DashboardView = () => {
   const classes = useStyles();
 
   const [{ value, context }, dispatch] = useMachine(dashboardViewMachine);
-  const { projects, anchorElement, projectId } = context;
+  const { dashboardView, toast } = value;
+  const { projects, anchorElement, projectId, message } = context;
 
   useEffect(() => {
     dispatch('FETCH');
@@ -141,7 +144,17 @@ export const DashboardView = () => {
     };
     dispatch('CREATE_PROJECT');
     createProject(variables)
-      .pipe(concatMap(() => getProjects()))
+      .pipe(
+        concatMap((ajaxResponse) => {
+          const { data, errors } = ajaxResponse.response;
+          if (errors || ajaxResponse.status !== 200) {
+            dispatch({ type: 'SHOW_TOAST', message: 'An unexpected error has occurred, please refresh the page' });
+          } else if (data.createProject.__typename === 'ErrorPayload') {
+            dispatch({ type: 'SHOW_TOAST', message: data.createProject.message });
+          }
+          return getProjects();
+        })
+      )
       .pipe(catchError((error) => of(error)))
       .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
   };
@@ -156,30 +169,26 @@ export const DashboardView = () => {
     };
     dispatch('DELETE_PROJECT');
     deleteProject(variables)
-      .pipe(concatMap(() => getProjects()))
+      .pipe(
+        concatMap((ajaxResponse) => {
+          const { data, errors } = ajaxResponse.response;
+          if (errors || ajaxResponse.status !== 200) {
+            dispatch({ type: 'SHOW_TOAST', message: 'An unexpected error has occurred, please refresh the page' });
+          } else if (data.deleteProject.__typename === 'ErrorPayload') {
+            dispatch({ type: 'SHOW_TOAST', message: data.deleteProject.message });
+          }
+          return getProjects();
+        })
+      )
       .pipe(catchError((error) => of(error)))
       .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
   };
 
-  let rightElement = null;
-  switch (value) {
-    case 'loading':
-      rightElement = <Projects projects={projects} onMoreClick={onMoreClick} />;
-      break;
-    case 'success':
-      rightElement = <Projects projects={projects} onMoreClick={onMoreClick} />;
-      break;
-    case 'menuOpened':
-      rightElement = <Projects projects={projects} onMoreClick={onMoreClick} />;
-      break;
-    case 'empty':
-      rightElement = <Message content="You do not have any projects for the moment, start by creating one" />;
-      break;
-    case 'error':
-      rightElement = <Message content="An error has occurred while retrieving the projects" />;
-      break;
-    default:
-      break;
+  let rightElement = <Projects projects={projects} onMoreClick={onMoreClick} />;
+  if (dashboardView === 'empty') {
+    rightElement = <Message content="You do not have any projects for the moment, start by creating one" />;
+  } else if (dashboardView === 'error') {
+    rightElement = <Message content="An error has occurred, please refresh the page" />;
   }
 
   return (
@@ -208,6 +217,22 @@ export const DashboardView = () => {
       <Menu id="simple-menu" anchorEl={anchorElement} keepMounted open={Boolean(anchorElement)} onClose={onMenuClose}>
         <MenuItem onClick={onDelete}>Delete</MenuItem>
       </Menu>
+
+      <Snackbar
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        open={toast === 'visible'}
+        autoHideDuration={3000}
+        onClose={() => dispatch({ type: 'HIDE_TOAST' })}
+        message={message}
+        action={
+          <IconButton size="small" aria-label="close" color="inherit" onClick={() => dispatch({ type: 'HIDE_TOAST' })}>
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        }
+      />
     </>
   );
 };
@@ -246,7 +271,7 @@ const NewProjectForm = ({ onNewProjectClick }) => {
   return (
     <Paper>
       <form onSubmit={onSubmit} className={classes.form}>
-        <TextField label="Label" value={label} onChange={onChangeLabel} required />
+        <TextField label="Label" value={label} onChange={onChangeLabel} autoFocus required />
         <Button type="submit" variant="contained" color="primary" disabled={value !== 'valid'}>
           Create project
         </Button>

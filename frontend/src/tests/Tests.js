@@ -25,7 +25,7 @@ const {
   },
 } = gql`
   mutation updateTest($input: UpdateTestInput!) {
-    updateTest(input: $input) {
+    updateAssessment: updateTest(input: $input) {
       __typename
       ... on ErrorPayload {
         message
@@ -116,14 +116,7 @@ const Test = ({ assessmentId, assessmentStatus, test, onAssessmentUpdated }) => 
         status: value,
       },
     };
-    updateTest(variables).subscribe(({ response }) => {
-      const {
-        data: { updateTest },
-      } = response;
-      if (updateTest.__typename === 'UpdateTestSuccessPayload') {
-        onAssessmentUpdated(updateTest.assessment);
-      }
-    });
+    updateTest(variables).subscribe((ajaxResponse) => onAssessmentUpdated(ajaxResponse));
   };
 
   let stepsElement = null;

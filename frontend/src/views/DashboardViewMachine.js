@@ -86,70 +86,97 @@ export const newProjectFormMachine = Machine(
 export const dashboardViewMachine = Machine(
   {
     id: 'DashboardView',
-    initial: 'idle',
+    type: 'parallel',
     context: {
       projects: [],
       anchorElement: null,
       projectId: null,
+      message: null,
     },
     states: {
-      idle: {
-        on: {
-          FETCH: 'loading',
-        },
-      },
-      loading: {
-        on: {
-          HANDLE_RESPONSE: [
-            {
-              cond: 'isError',
-              target: 'error',
+      toast: {
+        initial: 'hidden',
+        states: {
+          hidden: {
+            on: {
+              SHOW_TOAST: {
+                target: 'visible',
+                actions: 'setMessage',
+              },
             },
-            {
-              cond: 'isEmpty',
-              target: 'empty',
+          },
+          visible: {
+            on: {
+              HIDE_TOAST: {
+                target: 'hidden',
+                actions: 'clearMessage',
+              },
             },
-            {
-              target: 'success',
-              actions: ['updateProjects'],
+          },
+        },
+      },
+      dashboardView: {
+        initial: 'idle',
+        states: {
+          idle: {
+            on: {
+              FETCH: 'fetchingProjects',
             },
-          ],
-        },
-      },
-      empty: {
-        on: {
-          CREATE_PROJECT: {
-            target: 'loading',
           },
-        },
-      },
-      success: {
-        on: {
-          CREATE_PROJECT: {
-            target: 'loading',
+          fetchingProjects: {
+            on: {
+              HANDLE_RESPONSE: [
+                {
+                  cond: 'isError',
+                  target: 'error',
+                },
+                {
+                  cond: 'isEmpty',
+                  target: 'empty',
+                },
+                {
+                  target: 'success',
+                  actions: ['updateProjects'],
+                },
+              ],
+            },
           },
-          OPEN_MENU: {
-            target: 'menuOpened',
-            actions: ['openMenu'],
+          empty: {
+            on: {
+              CREATE_PROJECT: {
+                target: 'fetchingProjects',
+              },
+            },
           },
-        },
-      },
-      menuOpened: {
-        on: {
-          CLOSE_MENU: {
-            target: 'success',
-            actions: ['closeMenu'],
+          success: {
+            on: {
+              CREATE_PROJECT: {
+                target: 'fetchingProjects',
+              },
+              OPEN_MENU: {
+                target: 'menuOpened',
+                actions: ['openMenu'],
+              },
+            },
           },
-          DELETE_PROJECT: {
-            target: 'loading',
-            actions: ['closeMenu'],
+          menuOpened: {
+            on: {
+              CLOSE_MENU: {
+                target: 'success',
+                actions: ['closeMenu'],
+              },
+              DELETE_PROJECT: {
+                target: 'fetchingProjects',
+                actions: ['closeMenu'],
+              },
+            },
           },
-        },
-      },
-      error: {
-        on: {
-          CREATE_PROJECT: {
-            target: 'loading',
+          error: {
+            on: {
+              CREATE_PROJECT: {
+                target: 'fetchingProjects',
+              },
+            },
           },
         },
       },
@@ -189,6 +216,13 @@ export const dashboardViewMachine = Machine(
       }),
       closeMenu: assign(() => {
         return { anchorElement: null, projectId: null };
+      }),
+      setMessage: assign((_, event) => {
+        const { message } = event;
+        return { message };
+      }),
+      clearMessage: assign((_, event) => {
+        return { message: null };
       }),
     },
   }

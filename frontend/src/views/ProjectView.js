@@ -8,6 +8,7 @@ import React, { Fragment, useEffect } from 'react';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import Button from '@material-ui/core/Button';
+import CloseIcon from '@material-ui/icons/Close';
 import Container from '@material-ui/core/Container';
 import Divider from '@material-ui/core/Divider';
 import FolderIcon from '@material-ui/icons/Folder';
@@ -24,6 +25,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import Paper from '@material-ui/core/Paper';
 import Select from '@material-ui/core/Select';
+import Snackbar from '@material-ui/core/Snackbar';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
@@ -143,7 +145,8 @@ export const ProjectView = () => {
   const { projectId } = useParams();
 
   const [{ value, context }, dispatch] = useMachine(projectViewMachine);
-  const { label, assessments, descriptions, anchorElement, assessmentId } = context;
+  const { projectView, toast } = value;
+  const { label, assessments, descriptions, anchorElement, assessmentId, message } = context;
 
   useEffect(() => {
     dispatch('FETCH_PROJECT');
@@ -165,7 +168,17 @@ export const ProjectView = () => {
     };
     dispatch('CREATE_ASSESSMENT');
     createAssessment(createAssessmentVariables)
-      .pipe(concatMap(() => getProject({ projectId })))
+      .pipe(
+        concatMap((ajaxResponse) => {
+          const { data, errors } = ajaxResponse.response;
+          if (errors || ajaxResponse.status !== 200) {
+            dispatch({ type: 'SHOW_TOAST', message: 'An unexpected error has occurred, please refresh the page' });
+          } else if (data.createAssessment.__typename === 'ErrorPayload') {
+            dispatch({ type: 'SHOW_TOAST', message: data.createAssessment.message });
+          }
+          return getProject({ projectId });
+        })
+      )
       .pipe(catchError((error) => of(error)))
       .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
   };
@@ -180,33 +193,28 @@ export const ProjectView = () => {
     };
     dispatch('DELETE_ASSESSMENT');
     deleteAssessment(variables)
-      .pipe(concatMap(() => getProject({ projectId })))
+      .pipe(
+        concatMap((ajaxResponse) => {
+          const { data, errors } = ajaxResponse.response;
+          if (errors || ajaxResponse.status !== 200) {
+            dispatch({ type: 'SHOW_TOAST', message: 'An unexpected error has occurred, please refresh the page' });
+          } else if (data.deleteAssessment.__typename === 'ErrorPayload') {
+            dispatch({ type: 'SHOW_TOAST', message: data.deleteAssessment.message });
+          }
+          return getProject({ projectId });
+        })
+      )
       .pipe(catchError((error) => of(error)))
       .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
   };
 
-  let rightElement = null;
-  switch (value) {
-    case 'loading':
-      rightElement = <Assessments projectId={projectId} assessments={assessments} onMoreClick={onMoreClick} />;
-      break;
-    case 'success':
-      rightElement = <Assessments projectId={projectId} assessments={assessments} onMoreClick={onMoreClick} />;
-      break;
-    case 'menuOpened':
-      rightElement = <Assessments projectId={projectId} assessments={assessments} onMoreClick={onMoreClick} />;
-      break;
-    case 'error':
-      rightElement = <Message content="An error has occurred while retrieving the project" />;
-      break;
-    case 'missing':
-      rightElement = <Message content={`No project found with the id "${projectId}"`} />;
-      break;
-    case 'empty':
-      rightElement = <Message content="You do not have any assessments for the moment, start by creating one" />;
-      break;
-    default:
-      break;
+  let rightElement = <Assessments projectId={projectId} assessments={assessments} onMoreClick={onMoreClick} />;
+  if (projectView === 'error') {
+    rightElement = <Message content="An error has occurred, please refresh the page" />;
+  } else if (projectView === 'missing') {
+    rightElement = <Message content={`No project found with the id ${projectId}`} />;
+  } else if (projectView === 'empty') {
+    rightElement = <Message content="You do not have any assessments for the moment, start by creating one" />;
   }
 
   return (
@@ -238,6 +246,22 @@ export const ProjectView = () => {
       <Menu id="simple-menu" anchorEl={anchorElement} keepMounted open={Boolean(anchorElement)} onClose={onMenuClose}>
         <MenuItem onClick={onDelete}>Delete</MenuItem>
       </Menu>
+
+      <Snackbar
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        open={toast === 'visible'}
+        autoHideDuration={3000}
+        onClose={() => dispatch({ type: 'HIDE_TOAST' })}
+        message={message}
+        action={
+          <IconButton size="small" aria-label="close" color="inherit" onClick={() => dispatch({ type: 'HIDE_TOAST' })}>
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        }
+      />
     </>
   );
 };
@@ -286,7 +310,7 @@ const NewAssessmentForm = ({ descriptions, onNewAssessmentClick }) => {
   return (
     <Paper>
       <form onSubmit={onSubmit} className={classes.form}>
-        <TextField label="Label" value={label} onChange={onChangeLabel} required />
+        <TextField label="Label" value={label} onChange={onChangeLabel} autoFocus required />
         <FormControl>
           <InputLabel id="description-label">Description</InputLabel>
           <Select

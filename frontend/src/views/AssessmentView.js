@@ -8,17 +8,20 @@ import React, { useEffect } from 'react';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import Button from '@material-ui/core/Button';
+import CloseIcon from '@material-ui/icons/Close';
 import Container from '@material-ui/core/Container';
 import Divider from '@material-ui/core/Divider';
 import Drawer from '@material-ui/core/Drawer';
 import FolderIcon from '@material-ui/icons/Folder';
 import HomeIcon from '@material-ui/icons/Home';
+import IconButton from '@material-ui/core/IconButton';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import Link from '@material-ui/core/Link';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Paper from '@material-ui/core/Paper';
+import Snackbar from '@material-ui/core/Snackbar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
@@ -86,7 +89,7 @@ const {
   },
 } = gql`
   mutation updateAssessmentStatus($input: UpdateAssessmentStatusInput!) {
-    updateAssessmentStatus(input: $input) {
+    updateAssessment: updateAssessmentStatus(input: $input) {
       __typename
       ... on ErrorPayload {
         message
@@ -149,7 +152,8 @@ export const AssessmentView = () => {
   const classes = useAssessmentViewStyles();
   const { projectId, assessmentId } = useParams();
   const [{ value, context }, dispatch] = useMachine(assessmentViewMachine);
-  const { label, assessment, selectedCategoryId } = context;
+  const { assessmentView, toast } = value;
+  const { label, assessment, selectedCategoryId, message } = context;
 
   useEffect(() => {
     dispatch('FETCH');
@@ -160,28 +164,37 @@ export const AssessmentView = () => {
     return () => subscription.unsubscribe();
   }, [projectId, assessmentId, dispatch]);
 
-  const onAssessmentUpdated = (assessment) => dispatch({ type: 'REFRESH_ASSESSMENT', assessment });
+  const onAssessmentUpdated = (ajaxResponse) => {
+    const { data, errors } = ajaxResponse.response;
+    if (errors || ajaxResponse.status !== 200) {
+      dispatch({ type: 'SHOW_TOAST', message: 'An unexpected error has occurred, please refresh the page' });
+    } else if (data.updateAssessment.__typename === 'ErrorPayload') {
+      dispatch({ type: 'SHOW_TOAST', message: data.updateAssessment.message });
+    } else if (data.updateAssessment.assessment) {
+      dispatch({ type: 'REFRESH_ASSESSMENT', assessment: data.updateAssessment.assessment });
+    }
+  };
   const onCategoryClick = (selectedCategory) => dispatch({ type: 'SELECT_CATEGORY', selectedCategory });
 
-  let message = null;
-  switch (value) {
+  let content = null;
+  switch (assessmentView) {
     case 'error':
-      message = 'An error has occurred while retrieving the assessment';
+      content = 'An error has occurred while retrieving the assessment';
       break;
     case 'missing':
-      message = `No assessment found with the id "${assessmentId}" in the project`;
+      content = `No assessment found with the id ${assessmentId}`;
       break;
     case 'empty':
-      message = 'The assessment does not have any content';
+      content = 'The assessment does not have any content';
       break;
     default:
       break;
   }
-  if (message) {
+  if (content) {
     return (
       <Container>
         <div className={classes.message}>
-          <Typography variant="h4">{message}</Typography>
+          <Typography variant="h4">{content}</Typography>
         </div>
       </Container>
     );
@@ -189,22 +202,40 @@ export const AssessmentView = () => {
 
   const selectedCategory = assessment?.categories.filter((category) => category.id === selectedCategoryId)[0];
   return (
-    <div className={classes.assessmentView}>
-      <Categories
-        categories={assessment?.categories ?? []}
-        selectedCategoryId={selectedCategoryId}
-        onCategoryClick={onCategoryClick}
-      />
-      {selectedCategory ? (
-        <MainArea
-          projectId={projectId}
-          projectLabel={label}
-          assessment={assessment}
-          category={selectedCategory}
-          onAssessmentUpdated={onAssessmentUpdated}
+    <>
+      <div className={classes.assessmentView}>
+        <Categories
+          categories={assessment?.categories ?? []}
+          selectedCategoryId={selectedCategoryId}
+          onCategoryClick={onCategoryClick}
         />
-      ) : null}
-    </div>
+        {selectedCategory ? (
+          <MainArea
+            projectId={projectId}
+            projectLabel={label}
+            assessment={assessment}
+            category={selectedCategory}
+            onAssessmentUpdated={onAssessmentUpdated}
+          />
+        ) : null}
+      </div>
+
+      <Snackbar
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        open={toast === 'visible'}
+        autoHideDuration={3000}
+        onClose={() => dispatch({ type: 'HIDE_TOAST' })}
+        message={message}
+        action={
+          <IconButton size="small" aria-label="close" color="inherit" onClick={() => dispatch({ type: 'HIDE_TOAST' })}>
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        }
+      />
+    </>
   );
 };
 
@@ -370,14 +401,7 @@ const Header = ({ projectId, projectLabel, assessment, onAssessmentUpdated }) =>
         status: newStatus,
       },
     };
-    updateAssessmentStatus(variables).subscribe(({ response }) => {
-      const {
-        data: { updateAssessmentStatus },
-      } = response;
-      if (updateAssessmentStatus.__typename === 'UpdateAssessmentStatusSuccessPayload') {
-        onAssessmentUpdated(updateAssessmentStatus.assessment);
-      }
-    });
+    updateAssessmentStatus(variables).subscribe((ajaxResponse) => onAssessmentUpdated(ajaxResponse));
   };
 
   return (

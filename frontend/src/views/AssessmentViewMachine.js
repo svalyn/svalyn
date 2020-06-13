@@ -9,59 +9,86 @@ import { assign, Machine } from 'xstate';
 export const assessmentViewMachine = Machine(
   {
     id: 'AssessmentView',
-    initial: 'idle',
+    type: 'parallel',
     context: {
       label: null,
       assessment: null,
       selectedCategoryId: null,
+      message: null,
     },
     states: {
-      idle: {
-        on: {
-          FETCH: 'loading',
-        },
-      },
-      loading: {
-        on: {
-          HANDLE_RESPONSE: [
-            {
-              cond: 'isError',
-              target: 'error',
+      toast: {
+        initial: 'hidden',
+        states: {
+          hidden: {
+            on: {
+              SHOW_TOAST: {
+                target: 'visible',
+                actions: 'setMessage',
+              },
             },
-            {
-              cond: 'isMissing',
-              target: 'missing',
-            },
-            {
-              cond: 'isEmpty',
-              target: 'empty',
-              actions: ['updateAssessment'],
-            },
-            {
-              target: 'success',
-              actions: ['updateAssessment'],
-            },
-          ],
-        },
-      },
-      missing: {
-        type: 'final',
-      },
-      empty: {
-        type: 'final',
-      },
-      error: {
-        type: 'final',
-      },
-      success: {
-        on: {
-          REFRESH_ASSESSMENT: {
-            target: 'success',
-            actions: ['refreshAssessment'],
           },
-          SELECT_CATEGORY: {
-            target: 'success',
-            actions: ['selectCategory'],
+          visible: {
+            on: {
+              HIDE_TOAST: {
+                target: 'hidden',
+                actions: 'clearMessage',
+              },
+            },
+          },
+        },
+      },
+      assessmentView: {
+        initial: 'idle',
+        states: {
+          idle: {
+            on: {
+              FETCH: 'loading',
+            },
+          },
+          loading: {
+            on: {
+              HANDLE_RESPONSE: [
+                {
+                  cond: 'isError',
+                  target: 'error',
+                },
+                {
+                  cond: 'isMissing',
+                  target: 'missing',
+                },
+                {
+                  cond: 'isEmpty',
+                  target: 'empty',
+                  actions: ['updateAssessment'],
+                },
+                {
+                  target: 'success',
+                  actions: ['updateAssessment'],
+                },
+              ],
+            },
+          },
+          missing: {
+            type: 'final',
+          },
+          empty: {
+            type: 'final',
+          },
+          error: {
+            type: 'final',
+          },
+          success: {
+            on: {
+              REFRESH_ASSESSMENT: {
+                target: 'success',
+                actions: ['refreshAssessment'],
+              },
+              SELECT_CATEGORY: {
+                target: 'success',
+                actions: ['selectCategory'],
+              },
+            },
           },
         },
       },
@@ -109,6 +136,13 @@ export const assessmentViewMachine = Machine(
       selectCategory: assign((_, event) => {
         const { selectedCategory } = event;
         return { selectedCategoryId: selectedCategory.id };
+      }),
+      setMessage: assign((_, event) => {
+        const { message } = event;
+        return { message };
+      }),
+      clearMessage: assign((_, event) => {
+        return { message: null };
       }),
     },
   }
