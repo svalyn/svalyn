@@ -20,13 +20,15 @@
     "xstate": "^4.8.0"
   },
   "devDependencies": {
+    "cypress": "^4.8.0",
     "prettier": "^2.0.4"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "e2e": "cypress open"
   },
   "eslintConfig": {
     "extends": "react-app"

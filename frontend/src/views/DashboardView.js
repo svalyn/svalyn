@@ -215,7 +215,9 @@ export const DashboardView = () => {
       </div>
 
       <Menu id="simple-menu" anchorEl={anchorElement} keepMounted open={Boolean(anchorElement)} onClose={onMenuClose}>
-        <MenuItem onClick={onDelete}>Delete</MenuItem>
+        <MenuItem onClick={onDelete} data-testid="delete">
+          Delete
+        </MenuItem>
       </Menu>
 
       <Snackbar
@@ -271,8 +273,13 @@ const NewProjectForm = ({ onNewProjectClick }) => {
   return (
     <Paper>
       <form onSubmit={onSubmit} className={classes.form}>
-        <TextField label="Label" value={label} onChange={onChangeLabel} autoFocus required />
-        <Button type="submit" variant="contained" color="primary" disabled={value !== 'valid'}>
+        <TextField label="Label" value={label} onChange={onChangeLabel} autoFocus required data-testid="label" />
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          disabled={value !== 'valid'}
+          data-testid="create-project">
           Create project
         </Button>
       </form>
@@ -294,11 +301,17 @@ const Projects = ({ projects, onMoreClick }) => {
               icon={<FolderIcon />}
               action={
                 <ListItemSecondaryAction>
-                  <IconButton aria-label="more" aria-controls="long-menu" aria-haspopup="true" onClick={onClick}>
+                  <IconButton
+                    aria-label="more"
+                    aria-controls="long-menu"
+                    aria-haspopup="true"
+                    onClick={onClick}
+                    data-testid={`${project.label} - more`}>
                     <MoreVertIcon />
                   </IconButton>
                 </ListItemSecondaryAction>
               }
+              data-testid={project.label}
             />
           );
         })}

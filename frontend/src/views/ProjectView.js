@@ -244,7 +244,9 @@ export const ProjectView = () => {
       </div>
 
       <Menu id="simple-menu" anchorEl={anchorElement} keepMounted open={Boolean(anchorElement)} onClose={onMenuClose}>
-        <MenuItem onClick={onDelete}>Delete</MenuItem>
+        <MenuItem onClick={onDelete} data-testid="delete">
+          Delete
+        </MenuItem>
       </Menu>
 
       <Snackbar
@@ -310,7 +312,7 @@ const NewAssessmentForm = ({ descriptions, onNewAssessmentClick }) => {
   return (
     <Paper>
       <form onSubmit={onSubmit} className={classes.form}>
-        <TextField label="Label" value={label} onChange={onChangeLabel} autoFocus required />
+        <TextField label="Label" value={label} onChange={onChangeLabel} autoFocus required data-testid="label" />
         <FormControl>
           <InputLabel id="description-label">Description</InputLabel>
           <Select
@@ -319,7 +321,8 @@ const NewAssessmentForm = ({ descriptions, onNewAssessmentClick }) => {
             value={descriptionId}
             onChange={onChangeDescriptionId}
             label="Description"
-            required>
+            required
+            data-testid="description">
             {descriptions.map((description) => (
               <MenuItem value={description.id} key={description.id}>
                 {description.label}
@@ -327,7 +330,12 @@ const NewAssessmentForm = ({ descriptions, onNewAssessmentClick }) => {
             ))}
           </Select>
         </FormControl>
-        <Button type="submit" variant="contained" color="primary" disabled={value !== 'valid'}>
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          disabled={value !== 'valid'}
+          data-testid="create-assessment">
           Create assessment
         </Button>
       </form>
@@ -370,7 +378,12 @@ const Assessments = ({ projectId, assessments, onMoreClick }) => {
           const onClick = (event) => onMoreClick(event, assessment);
           const action = (
             <ListItemSecondaryAction>
-              <IconButton aria-label="more" aria-controls="long-menu" aria-haspopup="true" onClick={onClick}>
+              <IconButton
+                aria-label="more"
+                aria-controls="long-menu"
+                aria-haspopup="true"
+                onClick={onClick}
+                data-testid={`${assessment.label} - more`}>
                 <MoreVertIcon />
               </IconButton>
             </ListItemSecondaryAction>
@@ -385,6 +398,7 @@ const Assessments = ({ projectId, assessments, onMoreClick }) => {
                 icon={<AssignmentIcon />}
                 action={action}
                 disableTypography
+                data-testid={assessment.label}
               />
               {index <= size - 2 ? <Divider /> : null}
             </Fragment>

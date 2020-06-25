@@ -408,7 +408,7 @@ const Header = ({ projectId, projectLabel, assessment, onAssessmentUpdated }) =>
     <div className={classes.header}>
       <div className={classes.titleArea}>
         <div className={classes.title}>
-          <Typography variant="h1" className={classes.titleLabel}>
+          <Typography variant="h1" className={classes.titleLabel} data-testid="assessment-label">
             {assessmentLabel}
           </Typography>
           <Typography variant="subtitle2">{`${status}`}</Typography>
