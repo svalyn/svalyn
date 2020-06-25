@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "cypress": "^4.8.0",
+    "eslint-plugin-cypress": "^2.11.1",
     "prettier": "^2.0.4"
   },
   "scripts": {
