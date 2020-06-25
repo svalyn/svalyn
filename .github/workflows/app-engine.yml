@@ -40,6 +40,17 @@ jobs:
           project_id: ${{ secrets.GOOGLE_CLOUD_PLATFORM_PROJECT_ID }}
           service_account_key: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
 
-      - name: Build and publish the backend
+      - name: Build the backend
         working-directory: backend
-        run: mvn clean verify -Dapp.deploy.projectId=${{ secrets.GOOGLE_CLOUD_PLATFORM_PROJECT_ID }}
+        run: mvn clean verify
+
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v2
+        with:
+          start: java -jar ../backend/svalyn-application/target/appengine-staging/svalyn-application-0.0.1-SNAPSHOT.jar
+          wait-on: 'http://localhost:8080'
+          working-directory: frontend
+
+      - name: Publish the backend
+        working-directory: backend
+        run: mvn verify -Dapp.deploy.projectId=${{ secrets.GOOGLE_CLOUD_PLATFORM_PROJECT_ID }}
