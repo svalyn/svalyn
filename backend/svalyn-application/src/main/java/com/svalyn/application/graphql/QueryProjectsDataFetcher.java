@@ -10,8 +10,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.svalyn.application.dto.output.Connection;
+import com.svalyn.application.dto.output.Edge;
+import com.svalyn.application.dto.output.PageInfo;
 import com.svalyn.application.dto.output.Project;
 import com.svalyn.application.repositories.ProjectRepository;
 
@@ -19,7 +24,9 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 
 @Service
-public class QueryProjectsDataFetcher implements DataFetcher<CompletableFuture<List<Project>>> {
+public class QueryProjectsDataFetcher implements DataFetcher<CompletableFuture<Connection<Project>>> {
+
+    private static final String PAGE = "page";
 
     private final ProjectRepository projectRepository;
 
@@ -28,8 +35,31 @@ public class QueryProjectsDataFetcher implements DataFetcher<CompletableFuture<L
     }
 
     @Override
-    public CompletableFuture<List<Project>> get(DataFetchingEnvironment environment) throws Exception {
-        return this.projectRepository.findAll().collectList().toFuture();
+    public CompletableFuture<Connection<Project>> get(DataFetchingEnvironment environment) throws Exception {
+        Integer page = environment.getArgumentOrDefault(PAGE, 1);
+
+        // @formatter:off
+        Pageable pageable = PageRequest.of(page.intValue() - 1, 20);
+        var projectCountMono = this.projectRepository.count();
+        var projectEdgesMono = this.projectRepository.findAll(pageable)
+                .map(Edge::new)
+                .collectList();
+        // @formatter:on
+
+        var connectionMono = projectCountMono.zipWith(projectEdgesMono, (projectCount, projectEdges) -> {
+            return this.toConnection(pageable, projectCount, projectEdges);
+        });
+
+        return connectionMono.toFuture();
+    }
+
+    private Connection<Project> toConnection(Pageable pageable, Long count, List<Edge<Project>> edges) {
+        boolean hasPreviousPage = pageable.hasPrevious();
+        boolean hasNextPage = pageable.getOffset() + pageable.getPageSize() < count;
+        int pageCount = (int) Math.ceil(count.doubleValue() / 20);
+
+        var pageInfo = new PageInfo(hasPreviousPage, hasNextPage, pageCount);
+        return new Connection<>(edges, pageInfo);
     }
 
 }

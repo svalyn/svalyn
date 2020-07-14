@@ -36,4 +36,43 @@ describe('Dashboard - /', () => {
 
     cy.get('[data-testid=ProjectToDelete').should('not.be.visible');
   });
+
+  it('cannot navigate to the next page', () => {
+    cy.get('[data-testid=next]').should('have.attr', 'aria-disabled', 'true');
+  });
+
+  it('can navigate to the next page', () => {
+    for (let index = 0; index < 25; index++) {
+      cy.createProject(`Project ${index}`);
+    }
+    cy.reload();
+
+    cy.get('[data-testid="Project 24"').should('not.be.visible');
+
+    cy.get('[data-testid=previous]').should('have.attr', 'aria-disabled', 'true');
+    cy.get('[data-testid=next]').should('have.attr', 'aria-disabled', 'false');
+
+    cy.get('[data-testid=next]').click();
+
+    cy.get('[data-testid="Project 24"').should('be.visible');
+  });
+
+  it('cannot navigate to the previous page', () => {
+    cy.get('[data-testid=previous]').should('have.attr', 'aria-disabled', 'true');
+  });
+
+  it('can navigate to the previous page', () => {
+    for (let index = 0; index < 25; index++) {
+      cy.createProject(`Project ${index}`);
+    }
+    cy.visit('/?page=2');
+
+    cy.get('[data-testid=previous]').should('have.attr', 'aria-disabled', 'false');
+    cy.get('[data-testid=next]').should('have.attr', 'aria-disabled', 'true');
+    cy.get('[data-testid="Project 1"').should('not.be.visible');
+
+    cy.get('[data-testid=previous]').click();
+
+    cy.get('[data-testid="Project 1"').should('be.visible');
+  });
 });

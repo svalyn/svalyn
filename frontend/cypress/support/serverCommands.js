@@ -10,8 +10,19 @@ const url = Cypress.env('baseAPIUrl') + '/api/graphql';
 Cypress.Commands.add('deleteAllProjects', () => {
   const getProjectsQuery = `
   query getProjects {
-    projects {
-      id
+    firstPage: projects(page: 1) {
+      edges {
+        node {
+          id
+        }
+      }
+    }
+    secondPage: projects(page: 2) {
+      edges {
+        node {
+          id
+        }
+      }
     }
   }
   `;
@@ -21,7 +32,8 @@ Cypress.Commands.add('deleteAllProjects', () => {
     url,
     body: { query: getProjectsQuery },
   }).then((res) => {
-    const projectIds = res.body.data.projects.map((project) => project.id);
+    const firstPageProjectIds = res.body.data.firstPage.edges.map((edge) => edge.node.id);
+    const secondPageProjectIds = res.body.data.secondPage.edges.map((edge) => edge.node.id);
 
     const deleteProjectQuery = `
     mutation deleteProject($input: DeleteProjectInput!) {
@@ -30,7 +42,7 @@ Cypress.Commands.add('deleteAllProjects', () => {
       }
     }
     `;
-    projectIds.forEach((projectId) => {
+    firstPageProjectIds.concat(secondPageProjectIds).forEach((projectId) => {
       const variables = {
         input: { projectId },
       };

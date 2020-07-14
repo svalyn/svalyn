@@ -7,13 +7,28 @@ scalar Date
 
 type Query {
   descriptions: [Description!]!
-  projects: [Project!]!
+  projects(page: Int!): QueryProjectsConnection!
   project(projectId: ID!): Project
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  pageCount: Int!
 }
 
 type Description {
   id: ID!
   label: String!
+}
+
+type QueryProjectsConnection {
+  edges: [QueryProjectsEdge!]!
+  pageInfo: PageInfo!
+}
+
+type QueryProjectsEdge {
+  node: Project!
 }
 
 type Project {

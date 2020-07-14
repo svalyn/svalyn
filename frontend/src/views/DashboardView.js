@@ -5,6 +5,7 @@
  * the LICENSE file in the root directory of this source tree.
  ***************************************************************/
 import React, { useEffect } from 'react';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import Button from '@material-ui/core/Button';
 import CloseIcon from '@material-ui/icons/Close';
@@ -37,20 +38,29 @@ const {
     source: { body: getProjectsQuery },
   },
 } = gql`
-  query getProjects {
-    projects {
-      id
-      label
+  query getProjects($page: Int!) {
+    projects(page: $page) {
+      edges {
+        node {
+          id
+          label
+        }
+      }
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        pageCount
+      }
     }
   }
 `;
 
-const getProjects = () =>
+const getProjects = (variables) =>
   ajax({
     url: '/api/graphql',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query: getProjectsQuery }),
+    body: JSON.stringify({ query: getProjectsQuery, variables }),
   });
 
 const {
@@ -104,11 +114,11 @@ const deleteProject = (variables) =>
 
 const useStyles = makeStyles((theme) => ({
   dashboardView: {
-    paddingTop: '24px',
-    paddingBottom: '24px',
+    paddingTop: '1.5rem',
+    paddingBottom: '1.5rem',
   },
   breadcrumb: {
-    marginBottom: '24px',
+    marginBottom: '1.5rem',
   },
   breadcrumbItem: {
     display: 'flex',
@@ -119,22 +129,30 @@ const useStyles = makeStyles((theme) => ({
     width: 20,
     height: 20,
   },
+  paginationButtonsContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: '0.5rem',
+  },
 }));
 
 export const DashboardView = () => {
   const classes = useStyles();
+  const { search } = useLocation();
+  const page = parseInt(new URLSearchParams(search).get('page') ?? 1);
 
   const [{ value, context }, dispatch] = useMachine(dashboardViewMachine);
   const { dashboardView, toast } = value;
-  const { projects, anchorElement, projectId, message } = context;
+  const { projects, pageCount, hasPreviousPage, hasNextPage, anchorElement, projectId, message } = context;
 
   useEffect(() => {
     dispatch('FETCH');
-    const subscription = getProjects()
+    const subscription = getProjects({ page })
       .pipe(catchError((error) => of(error)))
       .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
     return () => subscription.unsubscribe();
-  }, [dispatch]);
+  }, [dispatch, page]);
 
   const onNewProjectClick = (label) => {
     const variables = {
@@ -152,7 +170,7 @@ export const DashboardView = () => {
           } else if (data.createProject.__typename === 'ErrorPayload') {
             dispatch({ type: 'SHOW_TOAST', message: data.createProject.message });
           }
-          return getProjects();
+          return getProjects({ page });
         })
       )
       .pipe(catchError((error) => of(error)))
@@ -177,7 +195,7 @@ export const DashboardView = () => {
           } else if (data.deleteProject.__typename === 'ErrorPayload') {
             dispatch({ type: 'SHOW_TOAST', message: data.deleteProject.message });
           }
-          return getProjects();
+          return getProjects({ page });
         })
       )
       .pipe(catchError((error) => of(error)))
@@ -186,7 +204,13 @@ export const DashboardView = () => {
 
   let rightElement = <Projects projects={projects} onMoreClick={onMoreClick} />;
   if (dashboardView === 'empty') {
-    rightElement = <Message content="You do not have any projects for the moment, start by creating one" />;
+    if (pageCount > 0 && page > pageCount) {
+      rightElement = (
+        <Message content={`You are trying to view the page n°${page} but there are only ${pageCount} pages`} />
+      );
+    } else {
+      rightElement = <Message content="You do not have any projects for the moment, start by creating one" />;
+    }
   } else if (dashboardView === 'error') {
     rightElement = <Message content="An error has occurred, please refresh the page" />;
   }
@@ -203,6 +227,18 @@ export const DashboardView = () => {
               <HomeIcon className={classes.icon} /> Dashboard
             </Typography>
           </Breadcrumbs>
+          <div className={classes.paginationButtonsContainer}>
+            <Button
+              component={RouterLink}
+              to={`/${page === 2 ? '' : `?page=${page - 1}`}`}
+              disabled={!hasPreviousPage}
+              data-testid="previous">
+              Previous
+            </Button>
+            <Button component={RouterLink} to={`/?page=${page + 1}`} disabled={!hasNextPage} data-testid="next">
+              Next
+            </Button>
+          </div>
           <Grid container spacing={4}>
             <Grid item xs={3}>
               <NewProjectForm onNewProjectClick={onNewProjectClick} />
@@ -289,34 +325,36 @@ const NewProjectForm = ({ onNewProjectClick }) => {
 
 const Projects = ({ projects, onMoreClick }) => {
   return (
-    <Paper>
-      <List>
-        {projects.map((project) => {
-          const onClick = (event) => onMoreClick(event, project);
-          return (
-            <ListItemLink
-              key={project.id}
-              to={`/projects/${project.id}`}
-              primary={project.label}
-              icon={<FolderIcon />}
-              action={
-                <ListItemSecondaryAction>
-                  <IconButton
-                    aria-label="more"
-                    aria-controls="long-menu"
-                    aria-haspopup="true"
-                    onClick={onClick}
-                    data-testid={`${project.label} - more`}>
-                    <MoreVertIcon />
-                  </IconButton>
-                </ListItemSecondaryAction>
-              }
-              data-testid={project.label}
-            />
-          );
-        })}
-      </List>
-    </Paper>
+    <div>
+      <Paper>
+        <List>
+          {projects.map((project) => {
+            const onClick = (event) => onMoreClick(event, project);
+            return (
+              <ListItemLink
+                key={project.id}
+                to={`/projects/${project.id}`}
+                primary={project.label}
+                icon={<FolderIcon />}
+                action={
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      aria-label="more"
+                      aria-controls="long-menu"
+                      aria-haspopup="true"
+                      onClick={onClick}
+                      data-testid={`${project.label} - more`}>
+                      <MoreVertIcon />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                }
+                data-testid={project.label}
+              />
+            );
+          })}
+        </List>
+      </Paper>
+    </div>
   );
 };
 

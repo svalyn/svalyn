@@ -110,10 +110,10 @@ public class GraphQLConfiguration {
                 .dataFetcher(coordinates("Mutation", "createAssessment"), mutationCreateAssessmentDataFetcher)
                 .dataFetcher(coordinates("Mutation", "updateAssessmentStatus"), mutationUpdateAssessmentStatusDataFetcher)
                 .dataFetcher(coordinates("Mutation", "updateTest"), mutationUpdateTestDataFetcher)
-                .dataFetcher(coordinates("Project", "assessments"), projectAssessmentsDataFetcher)
-                .dataFetcher(coordinates("Project", "assessment"), projectAssessmentDataFetcher)
                 .dataFetcher(coordinates("Mutation", "deleteProject"), mutationDeleteProjectDataFetcher)
                 .dataFetcher(coordinates("Mutation", "deleteAssessment"), mutationDeleteAssessmentDataFetcher)
+                .dataFetcher(coordinates("Project", "assessments"), projectAssessmentsDataFetcher)
+                .dataFetcher(coordinates("Project", "assessment"), projectAssessmentDataFetcher)
                 .build();
         // @formatter:on
     }

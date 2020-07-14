@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.svalyn.application.dto.output.Project;
@@ -22,8 +23,22 @@ public class ProjectRepository {
 
     private final List<Project> projects = new ArrayList<>();
 
-    public Flux<Project> findAll() {
-        return Flux.fromIterable(this.projects);
+    public Mono<Long> count() {
+        return Mono.just(Long.valueOf(this.projects.size()));
+    }
+
+    public Flux<Project> findAll(Pageable pageable) {
+        int start = Long.valueOf(pageable.getOffset()).intValue();
+        int end = start + pageable.getPageSize();
+
+        if (start > this.projects.size()) {
+            start = this.projects.size();
+        }
+        if (end > this.projects.size()) {
+            end = this.projects.size();
+        }
+
+        return Flux.fromIterable(this.projects.subList(start, end));
     }
 
     public Mono<Project> findById(UUID projectId) {

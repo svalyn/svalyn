@@ -89,6 +89,9 @@ export const dashboardViewMachine = Machine(
     type: 'parallel',
     context: {
       projects: [],
+      pageCount: 0,
+      hasPreviousPage: false,
+      hasNextPage: false,
       anchorElement: null,
       projectId: null,
       message: null,
@@ -133,6 +136,7 @@ export const dashboardViewMachine = Machine(
                 {
                   cond: 'isEmpty',
                   target: 'empty',
+                  actions: ['updateProjects'],
                 },
                 {
                   target: 'success',
@@ -146,6 +150,7 @@ export const dashboardViewMachine = Machine(
               CREATE_PROJECT: {
                 target: 'fetchingProjects',
               },
+              FETCH: 'fetchingProjects',
             },
           },
           success: {
@@ -157,6 +162,7 @@ export const dashboardViewMachine = Machine(
                 target: 'menuOpened',
                 actions: ['openMenu'],
               },
+              FETCH: 'fetchingProjects',
             },
           },
           menuOpened: {
@@ -194,7 +200,7 @@ export const dashboardViewMachine = Machine(
         const {
           ajaxResponse: { response },
         } = event;
-        return (response?.data?.projects?.length ?? 0) === 0;
+        return (response?.data?.projects?.edges.length ?? 0) === 0;
       },
     },
     actions: {
@@ -203,8 +209,12 @@ export const dashboardViewMachine = Machine(
           ajaxResponse: { response },
         } = event;
         const { projects } = response.data;
+        const { pageCount, hasPreviousPage, hasNextPage } = projects.pageInfo;
         return {
-          projects,
+          projects: projects.edges.map((edge) => edge.node),
+          pageCount,
+          hasPreviousPage,
+          hasNextPage,
         };
       }),
       openMenu: assign((_, event) => {
