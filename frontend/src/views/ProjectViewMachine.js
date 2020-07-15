@@ -107,6 +107,9 @@ export const projectViewMachine = Machine(
     context: {
       label: '',
       assessments: [],
+      pageCount: 0,
+      hasPreviousPage: false,
+      hasNextPage: false,
       descriptions: [{ id: '', label: '' }],
       anchorElement: null,
       assessmentId: null,
@@ -195,6 +198,7 @@ export const projectViewMachine = Machine(
                 target: 'menuOpened',
                 actions: ['openMenu'],
               },
+              FETCH_PROJECT: 'fetchingProject',
             },
           },
           menuOpened: {
@@ -231,7 +235,7 @@ export const projectViewMachine = Machine(
         const {
           ajaxResponse: { response },
         } = event;
-        return (response.data.project?.assessments?.length ?? 0) === 0;
+        return (response.data.project?.assessments?.edges.length ?? 0) === 0;
       },
     },
     actions: {
@@ -241,10 +245,14 @@ export const projectViewMachine = Machine(
         } = event;
         const { descriptions, project } = response.data;
         const { label, assessments } = project;
+        const { pageCount, hasPreviousPage, hasNextPage } = assessments.pageInfo;
         return {
           descriptions,
           label,
-          assessments,
+          assessments: assessments.edges.map((edge) => edge.node),
+          pageCount,
+          hasPreviousPage,
+          hasNextPage,
         };
       }),
       openMenu: assign((_, event) => {

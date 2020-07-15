@@ -29,7 +29,7 @@ import Snackbar from '@material-ui/core/Snackbar';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
-import { Link as RouterLink, useParams } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useParams } from 'react-router-dom';
 import { gql } from 'graphql.macro';
 import { of } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
@@ -44,22 +44,31 @@ const {
     source: { body: getProjectQuery },
   },
 } = gql`
-  query getProject($projectId: ID!) {
+  query getProject($projectId: ID!, $page: Int!) {
     descriptions {
       id
       label
     }
     project(projectId: $projectId) {
       label
-      assessments {
-        id
-        label
-        createdOn
-        lastModifiedOn
-        success
-        failure
-        testCount
-        status
+      assessments(page: $page) {
+        edges {
+          node {
+            id
+            label
+            createdOn
+            lastModifiedOn
+            success
+            failure
+            testCount
+            status
+          }
+        }
+        pageInfo {
+          hasPreviousPage
+          hasNextPage
+          pageCount
+        }
       }
     }
   }
@@ -138,25 +147,42 @@ const useProjectViewStyles = makeStyles((theme) => ({
     width: 20,
     height: 20,
   },
+  paginationButtonsContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: '0.5rem',
+  },
 }));
 
 export const ProjectView = () => {
   const classes = useProjectViewStyles();
   const { projectId } = useParams();
+  const { search } = useLocation();
+  const page = parseInt(new URLSearchParams(search).get('page') ?? 1);
 
   const [{ value, context }, dispatch] = useMachine(projectViewMachine);
   const { projectView, toast } = value;
-  const { label, assessments, descriptions, anchorElement, assessmentId, message } = context;
+  const {
+    label,
+    assessments,
+    pageCount,
+    hasPreviousPage,
+    hasNextPage,
+    descriptions,
+    anchorElement,
+    assessmentId,
+    message,
+  } = context;
 
   useEffect(() => {
     dispatch('FETCH_PROJECT');
-    const variables = { projectId };
-    const subscription = getProject(variables)
+    const subscription = getProject({ projectId, page })
       .pipe(catchError((error) => of(error)))
       .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
 
     return () => subscription.unsubscribe();
-  }, [projectId, dispatch]);
+  }, [projectId, page, dispatch]);
 
   const onNewAssessmentClick = (label, descriptionId) => {
     const createAssessmentVariables = {
@@ -176,7 +202,7 @@ export const ProjectView = () => {
           } else if (data.createAssessment.__typename === 'ErrorPayload') {
             dispatch({ type: 'SHOW_TOAST', message: data.createAssessment.message });
           }
-          return getProject({ projectId });
+          return getProject({ projectId, page });
         })
       )
       .pipe(catchError((error) => of(error)))
@@ -201,7 +227,7 @@ export const ProjectView = () => {
           } else if (data.deleteAssessment.__typename === 'ErrorPayload') {
             dispatch({ type: 'SHOW_TOAST', message: data.deleteAssessment.message });
           }
-          return getProject({ projectId });
+          return getProject({ projectId, page });
         })
       )
       .pipe(catchError((error) => of(error)))
@@ -214,7 +240,13 @@ export const ProjectView = () => {
   } else if (projectView === 'missing') {
     rightElement = <Message content={`No project found with the id ${projectId}`} />;
   } else if (projectView === 'empty') {
-    rightElement = <Message content="You do not have any assessments for the moment, start by creating one" />;
+    if (pageCount > 0 && page > pageCount) {
+      rightElement = (
+        <Message content={`You are trying to view the page n°${page} but there are only ${pageCount} pages`} />
+      );
+    } else {
+      rightElement = <Message content="You do not have any assessments for the moment, start by creating one" />;
+    }
   }
 
   return (
@@ -232,6 +264,22 @@ export const ProjectView = () => {
               <FolderIcon className={classes.icon} /> {label}
             </Typography>
           </Breadcrumbs>
+          <div className={classes.paginationButtonsContainer}>
+            <Button
+              component={RouterLink}
+              to={`/projects/${projectId}/${page === 2 ? '' : `?page=${page - 1}`}`}
+              disabled={!hasPreviousPage}
+              data-testid="previous">
+              Previous
+            </Button>
+            <Button
+              component={RouterLink}
+              to={`/projects/${projectId}/?page=${page + 1}`}
+              disabled={!hasNextPage}
+              data-testid="next">
+              Next
+            </Button>
+          </div>
           <Grid container spacing={4}>
             <Grid item xs={3}>
               <NewAssessmentForm descriptions={descriptions} onNewAssessmentClick={onNewAssessmentClick} />

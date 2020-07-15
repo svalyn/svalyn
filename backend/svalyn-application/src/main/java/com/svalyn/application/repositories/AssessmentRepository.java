@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.svalyn.application.entities.AssessmentEntity;
@@ -23,8 +24,25 @@ public class AssessmentRepository {
 
     private final List<AssessmentEntity> assessmentEntities = new ArrayList<>();
 
-    public Flux<AssessmentEntity> findAll() {
-        return Flux.fromIterable(this.assessmentEntities);
+    public Flux<AssessmentEntity> findAllByProjectId(UUID projectId, Pageable pageable) {
+        int start = Long.valueOf(pageable.getOffset()).intValue();
+        int end = start + pageable.getPageSize();
+
+        if (start > this.assessmentEntities.size()) {
+            start = this.assessmentEntities.size();
+        }
+        if (end > this.assessmentEntities.size()) {
+            end = this.assessmentEntities.size();
+        }
+
+        return Flux.fromIterable(this.assessmentEntities.subList(start, end))
+                .filter(assessmentEntity -> assessmentEntity.getProjectId().equals(projectId));
+    }
+
+    public Mono<Long> countByProjectId(UUID projectId) {
+        long count = this.assessmentEntities.stream().filter(assessment -> assessment.getProjectId().equals(projectId))
+                .count();
+        return Mono.just(count);
     }
 
     public Mono<AssessmentEntity> findById(UUID assessmentId) {

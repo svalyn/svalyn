@@ -150,7 +150,6 @@ export const dashboardViewMachine = Machine(
               CREATE_PROJECT: {
                 target: 'fetchingProjects',
               },
-              FETCH: 'fetchingProjects',
             },
           },
           success: {

@@ -34,8 +34,17 @@ type QueryProjectsEdge {
 type Project {
   id: ID!
   label: String!
-  assessments: [Assessment!]!
+  assessments(page: Int!): ProjectAssessmentsConnection!
   assessment(assessmentId: ID!): Assessment
+}
+
+type ProjectAssessmentsConnection {
+  edges: [ProjectAssessmentsEdge!]!
+  pageInfo: PageInfo!
+}
+
+type ProjectAssessmentsEdge {
+  node: Assessment!
 }
 
 type Assessment {

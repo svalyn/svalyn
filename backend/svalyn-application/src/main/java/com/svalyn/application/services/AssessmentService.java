@@ -15,6 +15,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.svalyn.application.dto.input.CreateAssessmentInput;
@@ -63,6 +64,10 @@ public class AssessmentService {
         this.assessmentRepository = Objects.requireNonNull(assessmentRepository);
     }
 
+    public Mono<Long> countByProjectId(UUID projectId) {
+        return this.assessmentRepository.countByProjectId(projectId);
+    }
+
     public Mono<IPayload> createAssessment(CreateAssessmentInput input) {
         return this.projectRepository.existById(input.getProjectId()).flatMap(existById -> {
             if (existById.booleanValue()) {
@@ -104,10 +109,9 @@ public class AssessmentService {
 
     }
 
-    public Flux<Assessment> findByProjectId(UUID projectId) {
+    public Flux<Assessment> findAllByProjectId(UUID projectId, Pageable pageable) {
         // @formatter:off
-        return this.assessmentRepository.findAll()
-                .filter(assessmentEntity -> assessmentEntity.getProjectId().equals(projectId))
+        return this.assessmentRepository.findAllByProjectId(projectId, pageable)
                 .flatMap(assessmentEntity -> {
                     var optionalDescriptionEntity = this.descriptionRepository.findDescriptionById(assessmentEntity.getDescriptionId());
                     var optionalAssessment = optionalDescriptionEntity.map(descriptionEntity -> this.convert(descriptionEntity, assessmentEntity));
