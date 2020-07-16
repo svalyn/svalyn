@@ -267,7 +267,8 @@ const Categories = ({ categories, selectedCategoryId, onCategoryClick }) => {
               button
               onClick={() => onCategoryClick(category)}
               selected={category.id === selectedCategoryId}
-              key={category.id}>
+              key={category.id}
+              data-testid={category.label}>
               <ListItemText primary={category.label} />
             </ListItem>
           );
@@ -420,7 +421,9 @@ const Header = ({ projectId, projectLabel, assessment, onAssessmentUpdated }) =>
         </div>
       </div>
       <div className={classes.descriptionArea}>
-        <Typography variant="subtitle1">{`Total ${testCount} · Success ${success} · Failure ${failure}`}</Typography>
+        <Typography
+          variant="subtitle1"
+          data-testid="results">{`Total ${testCount} · Success ${success} · Failure ${failure}`}</Typography>
         <Typography variant="caption">{`Created on ${createdOn} · Last modified on ${lastModifiedOn}`}</Typography>
       </div>
       <Breadcrumbs className={classes.breadcrumb} aria-label="breadcrumb">

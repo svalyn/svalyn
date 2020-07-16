@@ -143,13 +143,13 @@ const Test = ({ assessmentId, assessmentStatus, test, onAssessmentUpdated }) => 
         <RadioGroup aria-label="status" name={`status-${id}`} value={status} onChange={onChange}>
           <FormControlLabel
             value="SUCCESS"
-            control={<SuccessRadio />}
+            control={<SuccessRadio data-testid={`${label}-success`} />}
             label="Success"
             disabled={assessmentStatus === 'CLOSED'}
           />
           <FormControlLabel
             value="FAILURE"
-            control={<FailureRadio />}
+            control={<FailureRadio data-testid={`${label}-failure`} />}
             label="Failure"
             disabled={assessmentStatus === 'CLOSED'}
           />

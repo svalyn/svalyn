@@ -85,7 +85,8 @@ const LeftPanel = ({ requirements, selectedRequirementId, onRequirementclick }) 
           button
           onClick={() => onRequirementclick(requirement)}
           selected={requirement.id === selectedRequirementId}
-          key={requirement.id}>
+          key={requirement.id}
+          data-testid={requirement.label}>
           <ListItemText primary={requirement.label} />
         </ListItem>
       ))}

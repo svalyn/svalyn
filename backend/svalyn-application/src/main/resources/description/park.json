@@ -26,7 +26,7 @@
           "tests":[
             {
               "id":"f3ee3c03-d91f-40c4-8750-e87eeafbef90",
-              "label":"Hosts should be not break from their role",
+              "label":"Hosts should not break from their role",
               "description":"A host should also stay in character to perform its job"
             },
             {
@@ -113,7 +113,7 @@
         },
         {
           "id":"86f9585d-3c3a-4f13-91d4-27db781c626c",
-          "label":"The stories shoud be addictive",
+          "label":"The stories should be addictive",
           "description":"Our stories should always keep our guests on the edge to make them look for more",
           "tests":[
             {
