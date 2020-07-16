@@ -9,11 +9,13 @@ package com.svalyn.application.services;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -173,8 +175,14 @@ public class AssessmentService {
 
         List<Category> categories = new ArrayList<>();
         for (CategoryEntity categoryEntity : descriptionEntity.getCategories()) {
+            int previousCategorySuccess = success;
+            int previousCategoryFailure = failure;
+
             List<Requirement> requirements = new ArrayList<>();
             for (RequirementEntity requirementEntity : categoryEntity.getRequirements()) {
+                int previousRequirementSuccess = success;
+                int previousRequirementFailure = failure;
+
                 List<Test> tests = new ArrayList<>();
                 for (TestEntity testEntity : requirementEntity.getTests()) {
                     TestStatusEntity statusEntity = assessmentEntity.getResults().get(testEntity.getId());
@@ -191,12 +199,33 @@ public class AssessmentService {
                     testCount = testCount + 1;
                 }
 
+                TestStatus requirementStatus = null;
+                if (previousRequirementSuccess + requirementEntity.getTests().size() == success) {
+                    requirementStatus = TestStatus.SUCCESS;
+                } else if (previousRequirementFailure != failure) {
+                    requirementStatus = TestStatus.FAILURE;
+                }
+
                 requirements.add(new Requirement(requirementEntity.getId(), requirementEntity.getLabel(),
-                        requirementEntity.getDescription(), tests));
+                        requirementEntity.getDescription(), tests, requirementStatus));
+            }
+
+            // @formatter:off
+            var tests = categoryEntity.getRequirements().stream()
+                    .map(RequirementEntity::getTests)
+                    .flatMap(Collection::stream)
+                    .collect(Collectors.toList());
+            // @formatter:on
+
+            TestStatus categoryStatus = null;
+            if (previousCategorySuccess + tests.size() == success) {
+                categoryStatus = TestStatus.SUCCESS;
+            } else if (previousCategoryFailure != failure) {
+                categoryStatus = TestStatus.FAILURE;
             }
 
             categories.add(new Category(categoryEntity.getId(), categoryEntity.getLabel(),
-                    categoryEntity.getDescription(), requirements));
+                    categoryEntity.getDescription(), requirements, categoryStatus));
         }
 
         AssessmentStatus status = this.convert(assessmentEntity.getStatus());

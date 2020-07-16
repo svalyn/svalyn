@@ -8,9 +8,11 @@ import React, { useEffect } from 'react';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import Button from '@material-ui/core/Button';
+import ClearIcon from '@material-ui/icons/Clear';
 import CloseIcon from '@material-ui/icons/Close';
 import Container from '@material-ui/core/Container';
 import Divider from '@material-ui/core/Divider';
+import DoneIcon from '@material-ui/icons/Done';
 import Drawer from '@material-ui/core/Drawer';
 import FolderIcon from '@material-ui/icons/Folder';
 import HomeIcon from '@material-ui/icons/Home';
@@ -19,6 +21,7 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import Link from '@material-ui/core/Link';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Paper from '@material-ui/core/Paper';
 import Snackbar from '@material-ui/core/Snackbar';
@@ -57,10 +60,12 @@ const {
           id
           label
           description
+          status
           requirements {
             id
             label
             description
+            status
             tests {
               id
               label
@@ -239,7 +244,7 @@ export const AssessmentView = () => {
   );
 };
 
-const drawerWidth = 240;
+const drawerWidth = 300;
 const useCategoriesStyles = makeStyles((theme) => ({
   drawer: {
     width: drawerWidth,
@@ -262,6 +267,20 @@ const Categories = ({ categories, selectedCategoryId, onCategoryClick }) => {
       <Toolbar />
       <List>
         {categories.map((category) => {
+          let icon = null;
+          if (category.status === 'SUCCESS') {
+            icon = (
+              <ListItemIcon>
+                <DoneIcon />
+              </ListItemIcon>
+            );
+          } else if (category.status === 'FAILURE') {
+            icon = (
+              <ListItemIcon>
+                <ClearIcon />
+              </ListItemIcon>
+            );
+          }
           return (
             <ListItem
               button
@@ -269,7 +288,8 @@ const Categories = ({ categories, selectedCategoryId, onCategoryClick }) => {
               selected={category.id === selectedCategoryId}
               key={category.id}
               data-testid={category.label}>
-              <ListItemText primary={category.label} />
+              {icon}
+              <ListItemText inset={icon === null} primary={category.label} />
             </ListItem>
           );
         })}

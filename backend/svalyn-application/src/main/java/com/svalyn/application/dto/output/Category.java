@@ -20,11 +20,14 @@ public class Category {
 
     private final List<Requirement> requirements;
 
-    public Category(UUID id, String label, String description, List<Requirement> requirements) {
+    private final TestStatus status;
+
+    public Category(UUID id, String label, String description, List<Requirement> requirements, TestStatus status) {
         this.id = Objects.requireNonNull(id);
         this.label = Objects.requireNonNull(label);
         this.description = Objects.requireNonNull(description);
         this.requirements = Objects.requireNonNull(requirements);
+        this.status = status;
     }
 
     public UUID getId() {
@@ -41,6 +44,10 @@ public class Category {
 
     public List<Requirement> getRequirements() {
         return this.requirements;
+    }
+
+    public TestStatus getStatus() {
+        return this.status;
     }
 
 }

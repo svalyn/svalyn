@@ -20,11 +20,14 @@ public class Requirement {
 
     private final List<Test> tests;
 
-    public Requirement(UUID id, String label, String description, List<Test> tests) {
+    private final TestStatus status;
+
+    public Requirement(UUID id, String label, String description, List<Test> tests, TestStatus status) {
         this.id = Objects.requireNonNull(id);
         this.label = Objects.requireNonNull(label);
         this.description = Objects.requireNonNull(description);
         this.tests = Objects.requireNonNull(tests);
+        this.status = status;
     }
 
     public UUID getId() {
@@ -41,6 +44,10 @@ public class Requirement {
 
     public List<Test> getTests() {
         return this.tests;
+    }
+
+    public TestStatus getStatus() {
+        return this.status;
     }
 
 }

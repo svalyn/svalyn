@@ -6,8 +6,11 @@
  ***************************************************************/
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import ClearIcon from '@material-ui/icons/Clear';
+import DoneIcon from '@material-ui/icons/Done';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
@@ -80,16 +83,33 @@ Requirements.propTypes = propTypes;
 const LeftPanel = ({ requirements, selectedRequirementId, onRequirementclick }) => {
   return (
     <List>
-      {requirements.map((requirement) => (
-        <ListItem
-          button
-          onClick={() => onRequirementclick(requirement)}
-          selected={requirement.id === selectedRequirementId}
-          key={requirement.id}
-          data-testid={requirement.label}>
-          <ListItemText primary={requirement.label} />
-        </ListItem>
-      ))}
+      {requirements.map((requirement) => {
+        let icon = null;
+        if (requirement.status === 'SUCCESS') {
+          icon = (
+            <ListItemIcon>
+              <DoneIcon />
+            </ListItemIcon>
+          );
+        } else if (requirement.status === 'FAILURE') {
+          icon = (
+            <ListItemIcon>
+              <ClearIcon />
+            </ListItemIcon>
+          );
+        }
+        return (
+          <ListItem
+            button
+            onClick={() => onRequirementclick(requirement)}
+            selected={requirement.id === selectedRequirementId}
+            key={requirement.id}
+            data-testid={requirement.label}>
+            {icon}
+            <ListItemText inset={icon === null} primary={requirement.label} />
+          </ListItem>
+        );
+      })}
     </List>
   );
 };

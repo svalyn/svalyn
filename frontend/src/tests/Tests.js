@@ -44,14 +44,17 @@ const {
             id
             label
             description
+            status
             requirements {
               id
               label
               description
+              status
               tests {
                 id
                 label
                 description
+                steps
                 status
               }
             }
