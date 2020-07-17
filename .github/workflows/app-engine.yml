@@ -54,3 +54,13 @@ jobs:
       - name: Publish the backend
         working-directory: backend
         run: mvn verify -Dapp.deploy.projectId=${{ secrets.GOOGLE_CLOUD_PLATFORM_PROJECT_ID }}
+
+      - name: Build a Docker container
+        uses: docker/build-push-action@v1
+        with:
+          registry: docker.pkg.github.com
+          repository: ${{ github.repository }}/server
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          tag_with_ref: true
+          tags: latest
