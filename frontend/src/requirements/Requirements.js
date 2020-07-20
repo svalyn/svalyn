@@ -88,13 +88,13 @@ const LeftPanel = ({ requirements, selectedRequirementId, onRequirementclick }) 
         if (requirement.status === 'SUCCESS') {
           icon = (
             <ListItemIcon>
-              <DoneIcon />
+              <DoneIcon data-testid={`${requirement.label}-success`} />
             </ListItemIcon>
           );
         } else if (requirement.status === 'FAILURE') {
           icon = (
             <ListItemIcon>
-              <ClearIcon />
+              <ClearIcon data-testid={`${requirement.label}-failure`} />
             </ListItemIcon>
           );
         }

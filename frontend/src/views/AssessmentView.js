@@ -113,10 +113,12 @@ const {
             id
             label
             description
+            status
             requirements {
               id
               label
               description
+              status
               tests {
                 id
                 label
@@ -271,13 +273,13 @@ const Categories = ({ categories, selectedCategoryId, onCategoryClick }) => {
           if (category.status === 'SUCCESS') {
             icon = (
               <ListItemIcon>
-                <DoneIcon />
+                <DoneIcon data-testid={`${category.label}-success`} />
               </ListItemIcon>
             );
           } else if (category.status === 'FAILURE') {
             icon = (
               <ListItemIcon>
-                <ClearIcon />
+                <ClearIcon data-testid={`${category.label}-failure`} />
               </ListItemIcon>
             );
           }
@@ -435,7 +437,11 @@ const Header = ({ projectId, projectLabel, assessment, onAssessmentUpdated }) =>
           <Typography variant="subtitle2">{`${status}`}</Typography>
         </div>
         <div>
-          <Button variant="outlined" size="small" onClick={toggleAssessmentStatus}>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={toggleAssessmentStatus}
+            data-testid="toggle-assessment-status">
             {status === 'OPEN' ? 'Mark as closed' : 'Reopen'}
           </Button>
         </div>

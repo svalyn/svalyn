@@ -85,4 +85,71 @@ describe('Assessment - /projects/:projectId/assessments/:assessmentId', () => {
     cy.get('[data-testid="We need to be able to communicate with anybody in the park-failure"').click();
     cy.get('[data-testid="results"').should('have.text', `Total ${22} · Success ${17} · Failure ${5}`);
   });
+
+  it('Should mark a requirement as a success', () => {
+    cy.get('[data-testid="The hosts should be emotionally stable-success"').should('not.be.visible');
+    cy.get('[data-testid="The hosts should be emotionally stable-failure"').should('not.be.visible');
+
+    cy.get('[data-testid="The hosts should be emotionally stable"').click();
+    cy.get('[data-testid="Hosts should not break from their role-success"').click();
+
+    cy.get('[data-testid="The hosts should be emotionally stable-success"').should('not.be.visible');
+    cy.get('[data-testid="The hosts should be emotionally stable-failure"').should('not.be.visible');
+
+    cy.get('[data-testid="Hosts should act as human beings-success"').click();
+
+    cy.get('[data-testid="The hosts should be emotionally stable-success"').should('be.visible');
+  });
+
+  it('Should mark a category as a success', () => {
+    cy.get('[data-testid="Quality Assurance-success"').should('not.be.visible');
+    cy.get('[data-testid="Quality Assurance-failure"').should('not.be.visible');
+
+    cy.get('[data-testid="Quality Assurance"').click();
+    cy.get('[data-testid="The operation should be interruptible"').click();
+    cy.get('[data-testid="Our stories should be stoppable-success"').click();
+    cy.get('[data-testid="Our stories should be restartable-success"').click();
+
+    cy.get('[data-testid="The guests should be retrievable"').click();
+    cy.get('[data-testid="We should be able to evacuate our guests-success"').click();
+    cy.get('[data-testid="We should be able to provide medical assistance-success"').click();
+    cy.get('[data-testid="We should be able to extract guests from the park-success"').click();
+
+    cy.get('[data-testid="The parks should be monitored"').click();
+    cy.get('[data-testid="We need to be able to detect potential issues-success"').click();
+
+    cy.get('[data-testid="Quality Assurance-success"').should('not.be.visible');
+    cy.get('[data-testid="Quality Assurance-failure"').should('not.be.visible');
+
+    cy.get('[data-testid="We need to be able to communicate with anybody in the park-success"').click();
+
+    cy.get('[data-testid="Quality Assurance-success"').should('be.visible');
+  });
+
+  it('Should mark a requirement and a category as failures', () => {
+    cy.get('[data-testid="The hosts should be emotionally stable-success"').should('not.be.visible');
+    cy.get('[data-testid="The hosts should be emotionally stable-failure"').should('not.be.visible');
+
+    cy.get('[data-testid="The hosts should be emotionally stable"').click();
+    cy.get('[data-testid="Hosts should not break from their role-failure"').click();
+
+    cy.get('[data-testid="The hosts should be emotionally stable-failure"').should('be.visible');
+  });
+
+  it('Should keep completed element when the assessment is marked as done', () => {
+    cy.get('[data-testid="The hosts should be diagnosticable-success"').should('not.be.visible');
+    cy.get('[data-testid="The hosts should be diagnosticable-failure"').should('not.be.visible');
+
+    cy.get('[data-testid="Motor functions can be freezed-success"').click();
+
+    cy.get('[data-testid="The hosts should be diagnosticable-success"').should('be.visible');
+
+    cy.get('[data-testid="toggle-assessment-status"').click();
+
+    cy.get('[data-testid="The hosts should be diagnosticable-success"').should('be.visible');
+
+    cy.get('[data-testid="toggle-assessment-status"').click();
+
+    cy.get('[data-testid="The hosts should be diagnosticable-success"').should('be.visible');
+  });
 });
