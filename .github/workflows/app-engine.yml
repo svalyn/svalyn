@@ -50,6 +50,10 @@ jobs:
           start: java -jar ../backend/svalyn-application/target/appengine-staging/svalyn-application-0.0.1-SNAPSHOT.jar
           wait-on: 'http://localhost:8080'
           working-directory: frontend
+          record: true
+        env:
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish the backend
         working-directory: backend
