@@ -7,6 +7,7 @@
 
 describe('Assessment - /projects/:projectId/assessments/:assessmentId', () => {
   beforeEach(() => {
+    cy.login('user', '0123456789');
     cy.deleteAllProjects();
     cy.createProject('NewProject').then((res) => {
       const projectId = res.body.data.createProject.project.id;

@@ -5,7 +5,7 @@
  * the LICENSE file in the root directory of this source tree.
  ***************************************************************/
 import React, { useEffect } from 'react';
-import { Link as RouterLink, useLocation } from 'react-router-dom';
+import { Link as RouterLink, useLocation, Redirect } from 'react-router-dom';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import Button from '@material-ui/core/Button';
 import CloseIcon from '@material-ui/icons/Close';
@@ -213,6 +213,8 @@ export const DashboardView = () => {
     }
   } else if (dashboardView === 'error') {
     rightElement = <Message content="An error has occurred, please refresh the page" />;
+  } else if (dashboardView === 'unauthorized') {
+    return <Redirect to="/login" />;
   }
 
   return (

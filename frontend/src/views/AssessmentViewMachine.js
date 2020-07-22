@@ -46,9 +46,14 @@ export const assessmentViewMachine = Machine(
               FETCH: 'loading',
             },
           },
+          unauthorized: {},
           loading: {
             on: {
               HANDLE_RESPONSE: [
+                {
+                  cond: 'isUnauthorized',
+                  target: 'unauthorized',
+                },
                 {
                   cond: 'isError',
                   target: 'error',
@@ -96,11 +101,17 @@ export const assessmentViewMachine = Machine(
   },
   {
     guards: {
+      isUnauthorized: (_, event) => {
+        const {
+          ajaxResponse: { status },
+        } = event;
+        return status === 401;
+      },
       isError: (_, event) => {
         const {
           ajaxResponse: { response, status },
         } = event;
-        return status !== 200 || response.errors;
+        return status !== 200 || response?.errors;
       },
       isMissing: (_, event) => {
         const {

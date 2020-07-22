@@ -5,6 +5,7 @@
  * the LICENSE file in the root directory of this source tree.
  ***************************************************************/
 import React, { Fragment, useEffect } from 'react';
+import { Link as RouterLink, Redirect, useLocation, useParams } from 'react-router-dom';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import Button from '@material-ui/core/Button';
@@ -29,7 +30,6 @@ import Snackbar from '@material-ui/core/Snackbar';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
-import { Link as RouterLink, useLocation, useParams } from 'react-router-dom';
 import { gql } from 'graphql.macro';
 import { of } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
@@ -247,6 +247,8 @@ export const ProjectView = () => {
     } else {
       rightElement = <Message content="You do not have any assessments for the moment, start by creating one" />;
     }
+  } else if (projectView === 'unauthorized') {
+    return <Redirect to="/login" />;
   }
 
   return (

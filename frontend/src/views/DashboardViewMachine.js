@@ -126,9 +126,14 @@ export const dashboardViewMachine = Machine(
               FETCH: 'fetchingProjects',
             },
           },
+          unauthorized: {},
           fetchingProjects: {
             on: {
               HANDLE_RESPONSE: [
+                {
+                  cond: 'isUnauthorized',
+                  target: 'unauthorized',
+                },
                 {
                   cond: 'isError',
                   target: 'error',
@@ -189,11 +194,17 @@ export const dashboardViewMachine = Machine(
   },
   {
     guards: {
+      isUnauthorized: (_, event) => {
+        const {
+          ajaxResponse: { status },
+        } = event;
+        return status === 401;
+      },
       isError: (_, event) => {
         const {
           ajaxResponse: { response, status },
         } = event;
-        return status !== 200 || response.errors;
+        return status !== 200 || response?.errors;
       },
       isEmpty: (_, event) => {
         const {

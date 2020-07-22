@@ -7,6 +7,7 @@
 
 describe('Dashboard - /', () => {
   beforeEach(() => {
+    cy.login('user', '0123456789');
     cy.deleteAllProjects();
     cy.visit('/');
   });

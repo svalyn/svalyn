@@ -7,6 +7,17 @@
 
 const url = Cypress.env('baseAPIUrl') + '/api/graphql';
 
+Cypress.Commands.add('login', (username, password) => {
+  cy.request({
+    method: 'POST',
+    mode: 'cors',
+    url: Cypress.env('baseAPIUrl') + '/login',
+    body: `username=${username}&password=${password}`,
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+    followRedirect: false,
+  });
+});
+
 Cypress.Commands.add('deleteAllProjects', () => {
   const getProjectsQuery = `
   query getProjects {

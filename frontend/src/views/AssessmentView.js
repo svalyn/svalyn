@@ -5,6 +5,7 @@
  * the LICENSE file in the root directory of this source tree.
  ***************************************************************/
 import React, { useEffect } from 'react';
+import { Link as RouterLink, Redirect, useParams } from 'react-router-dom';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import Button from '@material-ui/core/Button';
@@ -28,7 +29,6 @@ import Snackbar from '@material-ui/core/Snackbar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
-import { Link as RouterLink, useParams } from 'react-router-dom';
 import { gql } from 'graphql.macro';
 import { of } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
@@ -205,6 +205,8 @@ export const AssessmentView = () => {
         </div>
       </Container>
     );
+  } else if (assessmentView === 'unauthorized') {
+    return <Redirect to="/login" />;
   }
 
   const selectedCategory = assessment?.categories.filter((category) => category.id === selectedCategoryId)[0];
