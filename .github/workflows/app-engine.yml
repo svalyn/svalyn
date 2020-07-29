@@ -47,7 +47,7 @@ jobs:
       - name: Run Cypress tests
         uses: cypress-io/github-action@v2
         with:
-          start: java -jar ../backend/svalyn-application/target/appengine-staging/svalyn-application-0.0.1-SNAPSHOT.jar
+          start: java -jar  -Dspring.profiles.active=test ../backend/svalyn-application/target/appengine-staging/svalyn-application-0.0.1-SNAPSHOT.jar
           wait-on: 'http://localhost:8080/login'
           working-directory: frontend
           record: true

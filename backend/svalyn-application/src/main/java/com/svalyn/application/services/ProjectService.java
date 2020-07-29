@@ -34,8 +34,12 @@ public class ProjectService {
     }
 
     public Mono<IPayload> createProject(CreateProjectInput input) {
-        return this.projectRepository.createProject(input.getLabel()).map(CreateProjectSuccessPayload::new)
-                .filter(IPayload.class::isInstance).map(IPayload.class::cast);
+        // @formatter:off
+        return this.projectRepository.createProject(input.getLabel())
+                .map(CreateProjectSuccessPayload::new)
+                .filter(IPayload.class::isInstance)
+                .map(IPayload.class::cast);
+        // @formatter:on
     }
 
     public Mono<IPayload> deleteProject(DeleteProjectInput input) {

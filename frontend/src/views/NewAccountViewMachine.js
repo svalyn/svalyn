@@ -6,7 +6,7 @@
  ***************************************************************/
 import { assign, Machine } from 'xstate';
 
-export const loginViewMachine = Machine(
+export const newAccountViewMachine = Machine(
   {
     initial: 'pristine',
     context: {
@@ -152,7 +152,7 @@ export const loginViewMachine = Machine(
         return { password, message: null };
       }),
       displayError: assign(() => {
-        return { message: 'Invalid username or password' };
+        return { message: 'Username already taken' };
       }),
       clearError: assign(() => {
         return { message: null };

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in
  * the LICENSE file in the root directory of this source tree.
  **************************************************************/
-package com.svalyn.application.graphql;
+package com.svalyn.application.handlers;
 
 import static org.springframework.web.reactive.function.server.ServerResponse.ok;
 

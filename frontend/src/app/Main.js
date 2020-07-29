@@ -10,6 +10,7 @@ import { Switch, Route, Redirect } from 'react-router-dom';
 import { AssessmentView } from '../views/AssessmentView';
 import { DashboardView } from '../views/DashboardView';
 import { LoginView } from '../views/LoginView';
+import { NewAccountView } from '../views/NewAccountView';
 import { ProjectView } from '../views/ProjectView';
 
 export const Main = () => {
@@ -17,6 +18,7 @@ export const Main = () => {
     <Switch>
       <Route exact path="/" component={DashboardView} />
       <Route exact path="/login" component={LoginView} />
+      <Route exact path="/new/account" component={NewAccountView} />
       <Route exact path="/projects/:projectId" component={ProjectView} />
       <Route exact path="/projects/:projectId/assessments/:assessmentId" component={AssessmentView} />
       <Redirect to="/" />

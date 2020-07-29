@@ -18,10 +18,20 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import { of } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
-import { catchError } from 'rxjs/operators';
+import { concatMap, catchError } from 'rxjs/operators';
 import { useMachine } from '@xstate/react';
 
-import { loginViewMachine } from './LoginViewMachine';
+import { newAccountViewMachine } from './NewAccountViewMachine';
+
+const createAccount = (username, password) => {
+  const body = `username=${username}&password=${password}`;
+  return ajax({
+    url: '/new/account',
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+    body,
+  });
+};
 
 const login = (username, password) => {
   const body = `username=${username}&password=${password}`;
@@ -35,7 +45,7 @@ const login = (username, password) => {
 };
 
 const useStyles = makeStyles((theme) => ({
-  loginView: {
+  newAccountView: {
     paddingTop: '4rem',
     paddingBottom: '1.5rem',
   },
@@ -61,9 +71,11 @@ const useStyles = makeStyles((theme) => ({
     paddingTop: '1rem',
   },
 }));
-export const LoginView = () => {
+
+export const NewAccountView = () => {
   const classes = useStyles();
-  const [{ value, context }, dispatch] = useMachine(loginViewMachine);
+
+  const [{ value, context }, dispatch] = useMachine(newAccountViewMachine);
   const { username, password, message } = context;
 
   const onUsernameChange = (event) => {
@@ -78,7 +90,13 @@ export const LoginView = () => {
 
   const onSubmit = (event) => {
     event.preventDefault();
-    login(username, password)
+
+    createAccount(username, password)
+      .pipe(
+        concatMap(() => {
+          return login(username, password);
+        })
+      )
       .pipe(catchError((error) => of(error)))
       .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
   };
@@ -89,10 +107,10 @@ export const LoginView = () => {
 
   return (
     <>
-      <div className={classes.loginView}>
+      <div className={classes.newAccountView}>
         <Container maxWidth="sm">
           <Typography variant="h1" gutterBottom className={classes.title}>
-            Sign in to Svalyn
+            Create a new account
           </Typography>
           <Paper>
             <form onSubmit={onSubmit} className={classes.form}>
@@ -110,7 +128,7 @@ export const LoginView = () => {
                 type="password"
                 value={password}
                 onChange={onPasswordChange}
-                autoComplete="current-password"
+                autoComplete="new-password"
                 required
                 data-testid="password"
               />
@@ -119,14 +137,14 @@ export const LoginView = () => {
                 variant="contained"
                 color="primary"
                 disabled={value !== 'valid'}
-                data-testid="login">
-                Login
+                data-testid="create-account">
+                New Account
               </Button>
             </form>
           </Paper>
           <div className={classes.link}>
-            <Link component={RouterLink} to="/new/account">
-              Create a new account
+            <Link component={RouterLink} to="/login">
+              Sign in Svalyn
             </Link>
           </div>
         </Container>

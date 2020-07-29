@@ -15,10 +15,6 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity.CorsSpec;
 import org.springframework.security.config.web.server.ServerHttpSecurity.CsrfSpec;
-import org.springframework.security.core.userdetails.MapReactiveUserDetailsService;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
 import org.springframework.security.web.server.authentication.RedirectServerAuthenticationEntryPoint;
@@ -27,25 +23,14 @@ import org.springframework.security.web.server.authentication.ServerAuthenticati
 @EnableWebFluxSecurity
 public class SecurityConfiguration {
     @Bean
-    public MapReactiveUserDetailsService userDetailsService() {
-        PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-        // @formatter:off
-        var userDetails = User.withUsername("user")
-                .password("0123456789")
-                .passwordEncoder(encoder::encode)
-                .roles("USER")
-                .build();
-        // @formatter:on
-        return new MapReactiveUserDetailsService(userDetails);
-    }
-
-    @Bean
     public SecurityWebFilterChain securityFilterChain(Environment environment, ServerHttpSecurity http) {
         boolean isDevProfileActive = Arrays.asList(environment.getActiveProfiles()).contains("dev");
         // @formatter:off
         http
             .authorizeExchange(exchanges -> {
                 exchanges.pathMatchers("/login").permitAll();
+                exchanges.pathMatchers("/new/account").permitAll();
+
                 exchanges.pathMatchers("/static/**").permitAll();
                 exchanges.pathMatchers("/favicon.ico").permitAll();
                 exchanges.pathMatchers("/manifest.json").permitAll();
