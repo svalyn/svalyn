@@ -28,6 +28,7 @@ import com.svalyn.application.graphql.MutationUpdateTestDataFetcher;
 import com.svalyn.application.graphql.ProjectAssessmentDataFetcher;
 import com.svalyn.application.graphql.ProjectAssessmentsDataFetcher;
 import com.svalyn.application.graphql.QueryDescriptionsDataFetcher;
+import com.svalyn.application.graphql.QueryPrincipalDataFetcher;
 import com.svalyn.application.graphql.QueryProjectDataFetcher;
 import com.svalyn.application.graphql.QueryProjectsDataFetcher;
 
@@ -90,7 +91,8 @@ public class GraphQLConfiguration {
     }
 
     @Bean
-    public GraphQLCodeRegistry graphQLCodeRegistry(QueryDescriptionsDataFetcher queryDescriptionsDataFetcher,
+    public GraphQLCodeRegistry graphQLCodeRegistry(QueryPrincipalDataFetcher queryPrincipalDataFetcher,
+            QueryDescriptionsDataFetcher queryDescriptionsDataFetcher,
             QueryProjectsDataFetcher queryProjectsDataFetcher, QueryProjectDataFetcher queryProjectDataFetcher,
             ProjectAssessmentsDataFetcher projectAssessmentsDataFetcher,
             ProjectAssessmentDataFetcher projectAssessmentDataFetcher,
@@ -103,6 +105,7 @@ public class GraphQLConfiguration {
 
         // @formatter:off
         return GraphQLCodeRegistry.newCodeRegistry()
+                .dataFetcher(coordinates("Query", "principal"), queryPrincipalDataFetcher)
                 .dataFetcher(coordinates("Query", "descriptions"), queryDescriptionsDataFetcher)
                 .dataFetcher(coordinates("Query", "projects"), queryProjectsDataFetcher)
                 .dataFetcher(coordinates("Query", "project"), queryProjectDataFetcher)

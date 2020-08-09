@@ -21,6 +21,7 @@ import { ajax } from 'rxjs/ajax';
 import { concatMap, catchError } from 'rxjs/operators';
 import { useMachine } from '@xstate/react';
 
+import { UnauthenticatedHeader } from '../headers/UnauthenticatedHeader';
 import { newAccountViewMachine } from './NewAccountViewMachine';
 
 const createAccount = (username, password) => {
@@ -45,6 +46,12 @@ const login = (username, password) => {
 };
 
 const useStyles = makeStyles((theme) => ({
+  view: {
+    display: 'grid',
+    gridTemplateColumns: '1fr',
+    gridTemplateRows: 'min-content 1fr',
+    minHeight: '100vh',
+  },
   newAccountView: {
     paddingTop: '4rem',
     paddingBottom: '1.5rem',
@@ -107,47 +114,50 @@ export const NewAccountView = () => {
 
   return (
     <>
-      <div className={classes.newAccountView}>
-        <Container maxWidth="sm">
-          <Typography variant="h1" gutterBottom className={classes.title}>
-            Create a new account
-          </Typography>
-          <Paper>
-            <form onSubmit={onSubmit} className={classes.form}>
-              <TextField
-                label="Username"
-                value={username}
-                onChange={onUsernameChange}
-                autoComplete="username"
-                autoFocus
-                required
-                data-testid="username"
-              />
-              <TextField
-                label="Password"
-                type="password"
-                value={password}
-                onChange={onPasswordChange}
-                autoComplete="new-password"
-                required
-                data-testid="password"
-              />
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                disabled={value !== 'valid'}
-                data-testid="create-account">
-                New Account
-              </Button>
-            </form>
-          </Paper>
-          <div className={classes.link}>
-            <Link component={RouterLink} to="/login">
-              Sign in Svalyn
-            </Link>
-          </div>
-        </Container>
+      <div className={classes.view}>
+        <UnauthenticatedHeader />
+        <div className={classes.newAccountView}>
+          <Container maxWidth="sm">
+            <Typography variant="h1" gutterBottom className={classes.title}>
+              Create a new account
+            </Typography>
+            <Paper>
+              <form onSubmit={onSubmit} className={classes.form}>
+                <TextField
+                  label="Username"
+                  value={username}
+                  onChange={onUsernameChange}
+                  autoComplete="username"
+                  autoFocus
+                  required
+                  data-testid="username"
+                />
+                <TextField
+                  label="Password"
+                  type="password"
+                  value={password}
+                  onChange={onPasswordChange}
+                  autoComplete="new-password"
+                  required
+                  data-testid="password"
+                />
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  disabled={value !== 'valid'}
+                  data-testid="create-account">
+                  New Account
+                </Button>
+              </form>
+            </Paper>
+            <div className={classes.link}>
+              <Link component={RouterLink} to="/login">
+                Sign in Svalyn
+              </Link>
+            </div>
+          </Container>
+        </div>
       </div>
       <Snackbar
         anchorOrigin={{

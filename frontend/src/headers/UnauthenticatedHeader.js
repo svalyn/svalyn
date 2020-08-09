@@ -18,7 +18,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export const Header = () => {
+export const UnauthenticatedHeader = () => {
   const classes = useStyles();
   return (
     <>

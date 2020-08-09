@@ -19,6 +19,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
 import org.springframework.security.web.server.authentication.RedirectServerAuthenticationEntryPoint;
 import org.springframework.security.web.server.authentication.ServerAuthenticationEntryPointFailureHandler;
+import org.springframework.security.web.server.authentication.logout.HttpStatusReturningServerLogoutSuccessHandler;
 
 @EnableWebFluxSecurity
 public class SecurityConfiguration {
@@ -54,6 +55,9 @@ public class SecurityConfiguration {
                 } else {
                     formLogin.authenticationEntryPoint(new RedirectServerAuthenticationEntryPoint("/login"));
                 }
+            })
+            .logout(logout -> {
+                logout.logoutSuccessHandler(new HttpStatusReturningServerLogoutSuccessHandler(HttpStatus.ACCEPTED));
             })
             .cors(CorsSpec::disable)
             .csrf(CsrfSpec::disable);

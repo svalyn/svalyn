@@ -36,6 +36,7 @@ import { catchError } from 'rxjs/operators';
 import { useMachine } from '@xstate/react';
 
 import { Description } from '../description/Description';
+import { AuthenticatedHeader } from '../headers/AuthenticatedHeader';
 import { Requirements } from '../requirements/Requirements';
 import { assessmentViewMachine } from './AssessmentViewMachine';
 
@@ -143,6 +144,12 @@ const updateAssessmentStatus = (variables) =>
   });
 
 const useAssessmentViewStyles = makeStyles((theme) => ({
+  view: {
+    display: 'grid',
+    gridTemplateColumns: '1fr',
+    gridTemplateRows: 'min-content 1fr',
+    minHeight: '100vh',
+  },
   assessmentView: {
     display: 'flex',
     flexDirection: 'row',
@@ -212,21 +219,24 @@ export const AssessmentView = () => {
   const selectedCategory = assessment?.categories.filter((category) => category.id === selectedCategoryId)[0];
   return (
     <>
-      <div className={classes.assessmentView}>
-        <Categories
-          categories={assessment?.categories ?? []}
-          selectedCategoryId={selectedCategoryId}
-          onCategoryClick={onCategoryClick}
-        />
-        {selectedCategory ? (
-          <MainArea
-            projectId={projectId}
-            projectLabel={label}
-            assessment={assessment}
-            category={selectedCategory}
-            onAssessmentUpdated={onAssessmentUpdated}
+      <div className={classes.view}>
+        <AuthenticatedHeader />
+        <div className={classes.assessmentView}>
+          <Categories
+            categories={assessment?.categories ?? []}
+            selectedCategoryId={selectedCategoryId}
+            onCategoryClick={onCategoryClick}
           />
-        ) : null}
+          {selectedCategory ? (
+            <MainArea
+              projectId={projectId}
+              projectLabel={label}
+              assessment={assessment}
+              category={selectedCategory}
+              onAssessmentUpdated={onAssessmentUpdated}
+            />
+          ) : null}
+        </div>
       </div>
 
       <Snackbar

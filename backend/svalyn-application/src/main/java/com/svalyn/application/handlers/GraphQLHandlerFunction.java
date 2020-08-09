@@ -14,6 +14,8 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -24,6 +26,7 @@ import com.svalyn.application.configuration.GraphQLPayload;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
+import graphql.GraphQLContext;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -40,21 +43,31 @@ public class GraphQLHandlerFunction implements HandlerFunction<ServerResponse> {
     @Override
     public Mono<ServerResponse> handle(ServerRequest request) {
         // @formatter:off
-        return request.bodyToMono(GraphQLPayload.class)
-                      .map(this::payloadToExecutionInput)
+        var authentication = request.principal()
+                .filter(UsernamePasswordAuthenticationToken.class::isInstance)
+                .map(UsernamePasswordAuthenticationToken.class::cast);
+
+        var payload = request.bodyToMono(GraphQLPayload.class);
+
+        return Mono.zip(authentication, payload, this::payloadToExecutionInput)
                       .map(this.graphQL::execute)
                       .flatMap(this::executionResultToServerResponse);
         // @formatter:on
     }
 
-    private ExecutionInput payloadToExecutionInput(GraphQLPayload graphQLPayload) {
+    private ExecutionInput payloadToExecutionInput(Authentication authentication, GraphQLPayload graphQLPayload) {
         var variables = Optional.ofNullable(graphQLPayload.getVariables()).orElse(Map.of());
 
         // @formatter:off
+        GraphQLContext context = GraphQLContext.newContext()
+                .of("principal", authentication.getPrincipal())
+                .build();
+
         return ExecutionInput.newExecutionInput()
                 .query(graphQLPayload.getQuery())
                 .variables(variables)
                 .operationName(graphQLPayload.getOperationName())
+                .context(context)
                 .build();
         // @formatter:on
     }

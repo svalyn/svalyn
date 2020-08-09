@@ -37,6 +37,7 @@ import { concatMap, catchError } from 'rxjs/operators';
 import { useMachine } from '@xstate/react';
 
 import { ListItemLink } from '../core/ListItemLink';
+import { AuthenticatedHeader } from '../headers/AuthenticatedHeader';
 import { newAssessmentFormMachine, projectViewMachine } from './ProjectViewMachine';
 
 const {
@@ -131,6 +132,12 @@ const deleteAssessment = (variables) =>
   });
 
 const useProjectViewStyles = makeStyles((theme) => ({
+  view: {
+    display: 'grid',
+    gridTemplateColumns: '1fr',
+    gridTemplateRows: 'min-content 1fr',
+    minHeight: '100vh',
+  },
   projectView: {
     paddingTop: '24px',
     paddingBottom: '24px',
@@ -253,44 +260,47 @@ export const ProjectView = () => {
 
   return (
     <>
-      <div className={classes.projectView}>
-        <Container>
-          <Typography variant="h1" gutterBottom>
-            {label}
-          </Typography>
-          <Breadcrumbs className={classes.breadcrumb} aria-label="breadcrumb">
-            <Link color="inherit" component={RouterLink} to="/" className={classes.breadcrumbItem}>
-              <HomeIcon className={classes.icon} /> Dashboard
-            </Link>
-            <Typography color="textPrimary" className={classes.breadcrumbItem}>
-              <FolderIcon className={classes.icon} /> {label}
+      <div className={classes.view}>
+        <AuthenticatedHeader />
+        <div className={classes.projectView}>
+          <Container>
+            <Typography variant="h1" gutterBottom>
+              {label}
             </Typography>
-          </Breadcrumbs>
-          <div className={classes.paginationButtonsContainer}>
-            <Button
-              component={RouterLink}
-              to={`/projects/${projectId}/${page === 2 ? '' : `?page=${page - 1}`}`}
-              disabled={!hasPreviousPage}
-              data-testid="previous">
-              Previous
-            </Button>
-            <Button
-              component={RouterLink}
-              to={`/projects/${projectId}/?page=${page + 1}`}
-              disabled={!hasNextPage}
-              data-testid="next">
-              Next
-            </Button>
-          </div>
-          <Grid container spacing={4}>
-            <Grid item xs={3}>
-              <NewAssessmentForm descriptions={descriptions} onNewAssessmentClick={onNewAssessmentClick} />
+            <Breadcrumbs className={classes.breadcrumb} aria-label="breadcrumb">
+              <Link color="inherit" component={RouterLink} to="/" className={classes.breadcrumbItem}>
+                <HomeIcon className={classes.icon} /> Dashboard
+              </Link>
+              <Typography color="textPrimary" className={classes.breadcrumbItem}>
+                <FolderIcon className={classes.icon} /> {label}
+              </Typography>
+            </Breadcrumbs>
+            <div className={classes.paginationButtonsContainer}>
+              <Button
+                component={RouterLink}
+                to={`/projects/${projectId}/${page === 2 ? '' : `?page=${page - 1}`}`}
+                disabled={!hasPreviousPage}
+                data-testid="previous">
+                Previous
+              </Button>
+              <Button
+                component={RouterLink}
+                to={`/projects/${projectId}/?page=${page + 1}`}
+                disabled={!hasNextPage}
+                data-testid="next">
+                Next
+              </Button>
+            </div>
+            <Grid container spacing={4}>
+              <Grid item xs={3}>
+                <NewAssessmentForm descriptions={descriptions} onNewAssessmentClick={onNewAssessmentClick} />
+              </Grid>
+              <Grid item xs={9}>
+                {rightElement}
+              </Grid>
             </Grid>
-            <Grid item xs={9}>
-              {rightElement}
-            </Grid>
-          </Grid>
-        </Container>
+          </Container>
+        </div>
       </div>
 
       <Menu id="simple-menu" anchorEl={anchorElement} keepMounted open={Boolean(anchorElement)} onClose={onMenuClose}>

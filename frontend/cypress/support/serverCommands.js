@@ -18,6 +18,15 @@ Cypress.Commands.add('login', (username, password) => {
   });
 });
 
+Cypress.Commands.add('logout', () => {
+  cy.request({
+    method: 'POST',
+    mode: 'cors',
+    url: Cypress.env('baseAPIUrl') + '/logout',
+    followRedirect: false,
+  });
+});
+
 Cypress.Commands.add('deleteAllProjects', () => {
   const getProjectsQuery = `
   query getProjects {

@@ -31,6 +31,7 @@ import { concatMap, catchError } from 'rxjs/operators';
 import { useMachine } from '@xstate/react';
 
 import { ListItemLink } from '../core/ListItemLink';
+import { AuthenticatedHeader } from '../headers/AuthenticatedHeader';
 import { newProjectFormMachine, dashboardViewMachine } from './DashboardViewMachine';
 
 const {
@@ -113,6 +114,12 @@ const deleteProject = (variables) =>
   });
 
 const useStyles = makeStyles((theme) => ({
+  view: {
+    display: 'grid',
+    gridTemplateColumns: '1fr',
+    gridTemplateRows: 'min-content 1fr',
+    minHeight: '100vh',
+  },
   dashboardView: {
     paddingTop: '1.5rem',
     paddingBottom: '1.5rem',
@@ -219,37 +226,40 @@ export const DashboardView = () => {
 
   return (
     <>
-      <div className={classes.dashboardView}>
-        <Container>
-          <Typography variant="h1" gutterBottom>
-            Dashboard
-          </Typography>
-          <Breadcrumbs className={classes.breadcrumb} aria-label="breadcrumb">
-            <Typography color="textPrimary" className={classes.breadcrumbItem}>
-              <HomeIcon className={classes.icon} /> Dashboard
+      <div className={classes.view}>
+        <AuthenticatedHeader />
+        <div className={classes.dashboardView}>
+          <Container>
+            <Typography variant="h1" gutterBottom>
+              Dashboard
             </Typography>
-          </Breadcrumbs>
-          <div className={classes.paginationButtonsContainer}>
-            <Button
-              component={RouterLink}
-              to={`/${page === 2 ? '' : `?page=${page - 1}`}`}
-              disabled={!hasPreviousPage}
-              data-testid="previous">
-              Previous
-            </Button>
-            <Button component={RouterLink} to={`/?page=${page + 1}`} disabled={!hasNextPage} data-testid="next">
-              Next
-            </Button>
-          </div>
-          <Grid container spacing={4}>
-            <Grid item xs={3}>
-              <NewProjectForm onNewProjectClick={onNewProjectClick} />
+            <Breadcrumbs className={classes.breadcrumb} aria-label="breadcrumb">
+              <Typography color="textPrimary" className={classes.breadcrumbItem}>
+                <HomeIcon className={classes.icon} /> Dashboard
+              </Typography>
+            </Breadcrumbs>
+            <div className={classes.paginationButtonsContainer}>
+              <Button
+                component={RouterLink}
+                to={`/${page === 2 ? '' : `?page=${page - 1}`}`}
+                disabled={!hasPreviousPage}
+                data-testid="previous">
+                Previous
+              </Button>
+              <Button component={RouterLink} to={`/?page=${page + 1}`} disabled={!hasNextPage} data-testid="next">
+                Next
+              </Button>
+            </div>
+            <Grid container spacing={4}>
+              <Grid item xs={3}>
+                <NewProjectForm onNewProjectClick={onNewProjectClick} />
+              </Grid>
+              <Grid item xs={9}>
+                {rightElement}
+              </Grid>
             </Grid>
-            <Grid item xs={9}>
-              {rightElement}
-            </Grid>
-          </Grid>
-        </Container>
+          </Container>
+        </div>
       </div>
 
       <Menu id="simple-menu" anchorEl={anchorElement} keepMounted open={Boolean(anchorElement)} onClose={onMenuClose}>

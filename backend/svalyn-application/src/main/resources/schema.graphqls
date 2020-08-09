@@ -6,6 +6,7 @@ schema {
 scalar Date
 
 type Query {
+  principal: User!
   descriptions: [Description!]!
   projects(page: Int!): QueryProjectsConnection!
   project(projectId: ID!): Project
@@ -15,6 +16,10 @@ type PageInfo {
   hasNextPage: Boolean!
   hasPreviousPage: Boolean!
   pageCount: Int!
+}
+
+type User {
+  username: String!
 }
 
 type Description {
