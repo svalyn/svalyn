@@ -6,9 +6,13 @@
  **************************************************************/
 package com.svalyn.application.graphql;
 
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 import org.springframework.stereotype.Service;
+
+import com.svalyn.application.services.UserDetails;
+import com.svalyn.application.services.UserDetailsService;
 
 import graphql.GraphQLContext;
 import graphql.schema.DataFetcher;
@@ -16,13 +20,19 @@ import graphql.schema.DataFetchingEnvironment;
 import reactor.core.publisher.Mono;
 
 @Service
-public class QueryPrincipalDataFetcher implements DataFetcher<CompletableFuture<Object>> {
+public class QueryPrincipalDataFetcher implements DataFetcher<CompletableFuture<UserDetails>> {
+
+    private final UserDetailsService userDetailsService;
+
+    public QueryPrincipalDataFetcher(UserDetailsService userDetailsService) {
+        this.userDetailsService = Objects.requireNonNull(userDetailsService);
+    }
 
     @Override
-    public CompletableFuture<Object> get(DataFetchingEnvironment environment) throws Exception {
+    public CompletableFuture<UserDetails> get(DataFetchingEnvironment environment) throws Exception {
         GraphQLContext context = environment.getContext();
-        Object principal = context.get("principal");
-        return Mono.just(principal).toFuture();
+
+        return Mono.justOrEmpty(this.userDetailsService.getUserDetails(context)).toFuture();
     }
 
 }

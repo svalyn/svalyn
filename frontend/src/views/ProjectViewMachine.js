@@ -105,14 +105,12 @@ export const projectViewMachine = Machine(
     id: 'ProjectView',
     type: 'parallel',
     context: {
+      page: 0,
       label: '',
       assessments: [],
-      pageCount: 0,
-      hasPreviousPage: false,
-      hasNextPage: false,
+      selectedAssessmentIds: [],
+      count: 0,
       descriptions: [{ id: '', label: '' }],
-      anchorElement: null,
-      assessmentId: null,
       message: null,
     },
     states: {
@@ -199,22 +197,21 @@ export const projectViewMachine = Machine(
               CREATE_ASSESSMENT: {
                 target: 'fetchingProject',
               },
-              OPEN_MENU: {
-                target: 'menuOpened',
-                actions: ['openMenu'],
-              },
               FETCH_PROJECT: 'fetchingProject',
-            },
-          },
-          menuOpened: {
-            on: {
-              CLOSE_MENU: {
-                target: 'success',
-                actions: ['closeMenu'],
-              },
-              DELETE_ASSESSMENT: {
+              CHANGE_PAGE: [
+                {
+                  target: 'fetchingProject',
+                  actions: ['changePage'],
+                },
+              ],
+              DELETE_ASSESSMENTS: {
                 target: 'fetchingProject',
-                actions: ['closeMenu'],
+              },
+              SELECT_ASSESSMENT: {
+                actions: ['selectAssessment'],
+              },
+              SELECT_ALL_ASSESSMENTS: {
+                actions: ['selectAllAssessments'],
               },
             },
           },
@@ -256,25 +253,18 @@ export const projectViewMachine = Machine(
         } = event;
         const { descriptions, project } = response.data;
         const { label, assessments } = project;
-        const { pageCount, hasPreviousPage, hasNextPage } = assessments.pageInfo;
+        const { count } = assessments.pageInfo;
         return {
           descriptions,
           label,
           assessments: assessments.edges.map((edge) => edge.node),
-          pageCount,
-          hasPreviousPage,
-          hasNextPage,
+          selectedAssessmentIds: [],
+          count,
         };
       }),
-      openMenu: assign((_, event) => {
-        const {
-          anchorElement,
-          assessment: { id },
-        } = event;
-        return { anchorElement, assessmentId: id };
-      }),
-      closeMenu: assign((_, event) => {
-        return { anchorElement: null, assessmentId: null };
+      changePage: assign((_, event) => {
+        const { page } = event;
+        return { page };
       }),
       setMessage: assign((_, event) => {
         const { message } = event;
@@ -282,6 +272,24 @@ export const projectViewMachine = Machine(
       }),
       clearMessage: assign((_, event) => {
         return { message: null };
+      }),
+      selectAssessment: assign((context, event) => {
+        const { selectedAssessmentIds } = context;
+        const { assessmentId } = event;
+
+        const index = selectedAssessmentIds.indexOf(assessmentId);
+        if (index === -1) {
+          return { selectedAssessmentIds: [...selectedAssessmentIds, assessmentId] };
+        }
+        return { selectedAssessmentIds: selectedAssessmentIds.filter((itemId) => itemId !== assessmentId) };
+      }),
+      selectAllAssessments: assign((context, event) => {
+        const { target } = event;
+        if (target.checked) {
+          const { assessments } = context;
+          return { selectedAssessmentIds: assessments.map((assessment) => assessment.id) };
+        }
+        return { selectedAssessmentIds: [] };
       }),
     },
   }

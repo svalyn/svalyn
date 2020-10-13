@@ -21,14 +21,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.svalyn.application.dto.input.CreateAssessmentInput;
-import com.svalyn.application.dto.input.DeleteAssessmentInput;
+import com.svalyn.application.dto.input.DeleteAssessmentsInput;
 import com.svalyn.application.dto.input.UpdateAssessmentStatusInput;
 import com.svalyn.application.dto.input.UpdateTestInput;
 import com.svalyn.application.dto.output.Assessment;
 import com.svalyn.application.dto.output.AssessmentStatus;
 import com.svalyn.application.dto.output.Category;
 import com.svalyn.application.dto.output.CreateAssessmentSuccessPayload;
-import com.svalyn.application.dto.output.DeleteAssessmentSuccessPayload;
+import com.svalyn.application.dto.output.DeleteAssessmentsSuccessPayload;
 import com.svalyn.application.dto.output.ErrorPayload;
 import com.svalyn.application.dto.output.IPayload;
 import com.svalyn.application.dto.output.Requirement;
@@ -70,7 +70,7 @@ public class AssessmentService {
         return this.assessmentRepository.countByProjectId(projectId);
     }
 
-    public Mono<IPayload> createAssessment(CreateAssessmentInput input) {
+    public Mono<IPayload> createAssessment(UUID userId, CreateAssessmentInput input) {
         return this.projectRepository.existById(input.getProjectId()).flatMap(existById -> {
             if (existById.booleanValue()) {
                 Optional<DescriptionEntity> optionalDescriptionEntity = this.descriptionRepository
@@ -84,7 +84,9 @@ public class AssessmentService {
                     assessmentEntity.setProjectId(input.getProjectId());
                     assessmentEntity.setLabel(input.getLabel());
                     assessmentEntity.setResults(new HashMap<>());
+                    assessmentEntity.setCreatedBy(userId);
                     assessmentEntity.setCreatedOn(LocalDateTime.now(ZoneOffset.UTC));
+                    assessmentEntity.setLastModifiedBy(userId);
                     assessmentEntity.setLastModifiedOn(LocalDateTime.now(ZoneOffset.UTC));
                     assessmentEntity.setStatus(AssessmentStatusEntity.OPEN);
 
@@ -98,16 +100,11 @@ public class AssessmentService {
         }).filter(IPayload.class::isInstance).map(IPayload.class::cast);
     }
 
-    public Mono<IPayload> deleteAssessment(DeleteAssessmentInput input) {
-        return this.assessmentRepository.existById(input.getAssessmentId()).flatMap(existById -> {
-            if (existById.booleanValue()) {
-                // @formatter:off
-                return this.assessmentRepository.deleteAssessment(input.getAssessmentId())
-                        .then(Mono.just(new DeleteAssessmentSuccessPayload()));
-                // @formatter:on
-            }
-            return Mono.just(new ErrorPayload("The assessment does not exist"));
-        }).filter(IPayload.class::isInstance).map(IPayload.class::cast);
+    public Mono<IPayload> deleteAssessments(DeleteAssessmentsInput input) {
+        // @formatter:off
+        return this.assessmentRepository.deleteAssessments(input.getAssessmentIds())
+                .then(Mono.just(new DeleteAssessmentsSuccessPayload()));
+        // @formatter:on
 
     }
 
@@ -133,11 +130,12 @@ public class AssessmentService {
         // @formatter:on
     }
 
-    public Mono<IPayload> updateAssessmentStatus(UpdateAssessmentStatusInput input) {
+    public Mono<IPayload> updateAssessmentStatus(UUID userId, UpdateAssessmentStatusInput input) {
         // @formatter:off
         return this.assessmentRepository.findById(input.getAssessmentId())
                 .flatMap(assessmentEntity -> {
                     assessmentEntity.setStatus(this.convert(input.getStatus()));
+                    assessmentEntity.setLastModifiedBy(userId);
                     assessmentEntity.setLastModifiedOn(LocalDateTime.now(ZoneOffset.UTC));
                     return this.assessmentRepository.save(assessmentEntity);
                 }).flatMap(assessmentEntity -> {
@@ -149,13 +147,14 @@ public class AssessmentService {
         // @formatter:on
     }
 
-    public Mono<IPayload> updateTest(UpdateTestInput input) {
+    public Mono<IPayload> updateTest(UUID userId, UpdateTestInput input) {
         // @formatter:off
         return this.assessmentRepository.findById(input.getAssessmentId())
                 .flatMap(assessmentEntity -> {
                     if (assessmentEntity.getStatus() == AssessmentStatusEntity.OPEN) {
                         var statusEntity = this.convert(input.getStatus());
                         assessmentEntity.getResults().put(input.getTestId(), statusEntity);
+                        assessmentEntity.setLastModifiedBy(userId);
                         assessmentEntity.setLastModifiedOn(LocalDateTime.now(ZoneOffset.UTC));
                     }
                     return this.assessmentRepository.save(assessmentEntity);
@@ -229,9 +228,9 @@ public class AssessmentService {
         }
 
         AssessmentStatus status = this.convert(assessmentEntity.getStatus());
-        return new Assessment(assessmentEntity.getId(), assessmentEntity.getLabel(), categories,
-                assessmentEntity.getCreatedOn(), assessmentEntity.getLastModifiedOn(), success, failure, testCount,
-                status);
+        return new Assessment(assessmentEntity.getId(), assessmentEntity.getLabel(), assessmentEntity.getCreatedBy(),
+                assessmentEntity.getCreatedOn(), assessmentEntity.getLastModifiedBy(),
+                assessmentEntity.getLastModifiedOn(), categories, success, failure, testCount, status);
     }
 
     private TestStatus convert(TestStatusEntity statusEntity) {

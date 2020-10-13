@@ -76,19 +76,23 @@ public class AssessmentRepository {
         return Mono.just(assessmentEntity);
     }
 
-    public Mono<Void> deleteAssessment(UUID assessmentId) {
+    public Mono<Void> deleteAssessments(List<UUID> assessmentIds) {
         // @formatter:off
-        this.assessmentEntities.stream().filter(assessment -> assessment.getId().equals(assessmentId))
-            .findFirst()
-            .ifPresent(this.assessmentEntities::remove);
+        var assessmentsToRemove = this.assessmentEntities.stream()
+            .filter(assessment -> assessmentIds.contains(assessment.getId()))
+            .collect(Collectors.toList());
+
+        assessmentsToRemove.forEach(this.assessmentEntities::remove);
         // @formatter:on
         return Mono.empty();
     }
 
-    public Mono<Void> deleteAllByProjectId(UUID projectId) {
+    public Mono<Void> deleteAllByProjectIds(List<UUID> projectIds) {
+        // @formatter:off
         var assessments = this.assessmentEntities.stream()
-                .filter(assessment -> assessment.getProjectId().equals(projectId)).collect(Collectors.toList());
+                .filter(assessment -> projectIds.contains(assessment.getProjectId())).collect(Collectors.toList());
         assessments.stream().forEach(this.assessmentEntities::remove);
+        // @formatter:on
         return Mono.empty();
     }
 

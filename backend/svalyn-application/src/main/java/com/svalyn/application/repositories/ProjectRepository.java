@@ -6,9 +6,12 @@
  **************************************************************/
 package com.svalyn.application.repositories;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -54,18 +57,20 @@ public class ProjectRepository {
         return Mono.just(this.projects.stream().anyMatch(project -> project.getId().equals(projectId)));
     }
 
-    public Mono<Project> createProject(String label) {
-        Project project = new Project(UUID.randomUUID(), label);
+    public Mono<Project> createProject(UUID userId, String label) {
+        Project project = new Project(UUID.randomUUID(), label, userId, LocalDateTime.now(ZoneOffset.UTC));
         this.projects.add(project);
 
         return Mono.just(project);
     }
 
-    public Mono<Void> deleteProject(UUID projectId) {
+    public Mono<Void> deleteProjects(List<UUID> projectIds) {
         // @formatter:off
-        this.projects.stream().filter(project -> project.getId().equals(projectId))
-            .findFirst()
-            .ifPresent(this.projects::remove);
+        var projectsToRemove = this.projects.stream()
+            .filter(project -> projectIds.contains(project.getId()))
+            .collect(Collectors.toList());
+
+        projectsToRemove.forEach(this.projects::remove);
         // @formatter:on
         return Mono.empty();
     }

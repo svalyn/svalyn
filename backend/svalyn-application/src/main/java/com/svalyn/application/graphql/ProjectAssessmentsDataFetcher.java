@@ -39,10 +39,13 @@ public class ProjectAssessmentsDataFetcher implements DataFetcher<CompletableFut
     public CompletableFuture<Connection<Assessment>> get(DataFetchingEnvironment environment) throws Exception {
         Project project = environment.getSource();
 
-        Integer page = environment.getArgumentOrDefault(PAGE, 1);
+        int page = environment.getArgumentOrDefault(PAGE, 0).intValue();
+        if (page < 0) {
+            page = 0;
+        }
 
         // @formatter:off
-        Pageable pageable = PageRequest.of(page.intValue() - 1, 20);
+        Pageable pageable = PageRequest.of(page, 20);
         var assessmentCountMono = this.assessmentService.countByProjectId(project.getId());
         var assessmentEdgesMono = this.assessmentService.findAllByProjectId(project.getId(), pageable)
                 .map(Edge::new)
@@ -59,9 +62,8 @@ public class ProjectAssessmentsDataFetcher implements DataFetcher<CompletableFut
     private Connection<Assessment> toConnection(Pageable pageable, Long count, List<Edge<Assessment>> edges) {
         boolean hasPreviousPage = pageable.hasPrevious();
         boolean hasNextPage = pageable.getOffset() + pageable.getPageSize() < count;
-        int pageCount = (int) Math.ceil(count.doubleValue() / 20);
 
-        var pageInfo = new PageInfo(hasPreviousPage, hasNextPage, pageCount);
+        var pageInfo = new PageInfo(hasPreviousPage, hasNextPage, count.intValue());
         return new Connection<>(edges, pageInfo);
     }
 

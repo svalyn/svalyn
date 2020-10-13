@@ -36,4 +36,13 @@ public class AccountRepository {
         // @formatter:on
         return Mono.justOrEmpty(optionalAccountEntity);
     }
+
+    public Mono<AccountEntity> findById(UUID userId) {
+        // @formatter:off
+        var optionalAccountEntity = this.accounts.stream()
+                .filter(accountEntity -> accountEntity.getId().equals(userId))
+                .findFirst();
+        // @formatter:on
+        return Mono.justOrEmpty(optionalAccountEntity);
+    }
 }

@@ -9,8 +9,6 @@ package com.svalyn.application.configuration;
 import static graphql.schema.FieldCoordinates.coordinates;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,15 +16,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
+import com.svalyn.application.graphql.AssessmentCreatedByDataFetcher;
+import com.svalyn.application.graphql.AssessmentLastModifiedByDataFetcher;
 import com.svalyn.application.graphql.GraphQLDateCoercing;
 import com.svalyn.application.graphql.MutationCreateAssessmentDataFetcher;
 import com.svalyn.application.graphql.MutationCreateProjectDataFetcher;
-import com.svalyn.application.graphql.MutationDeleteAssessmentDataFetcher;
-import com.svalyn.application.graphql.MutationDeleteProjectDataFetcher;
+import com.svalyn.application.graphql.MutationDeleteAssessmentsDataFetcher;
+import com.svalyn.application.graphql.MutationDeleteProjectsDataFetcher;
 import com.svalyn.application.graphql.MutationUpdateAssessmentStatusDataFetcher;
 import com.svalyn.application.graphql.MutationUpdateTestDataFetcher;
 import com.svalyn.application.graphql.ProjectAssessmentDataFetcher;
 import com.svalyn.application.graphql.ProjectAssessmentsDataFetcher;
+import com.svalyn.application.graphql.ProjectCreatedByDataFetcher;
 import com.svalyn.application.graphql.QueryDescriptionsDataFetcher;
 import com.svalyn.application.graphql.QueryPrincipalDataFetcher;
 import com.svalyn.application.graphql.QueryProjectDataFetcher;
@@ -58,15 +59,9 @@ public class GraphQLConfiguration {
     @Bean
     public GraphQLSchema graphQLSchema(GraphQLCodeRegistry graphQLCodeRegistry) {
         var schemaResource = new ClassPathResource(SCHEMA_PATH);
-        Optional<InputStream> optionalInputStream = Optional.empty();
-        try {
-            optionalInputStream = Optional.of(schemaResource.getInputStream());
-        } catch (IOException exception) {
-            this.logger.warn(exception.getMessage(), exception);
-        }
 
-        // @formatter:off
-        return optionalInputStream.map(inputStream -> {
+        GraphQLSchema graphQLSchema = null;
+        try (var inputStream = schemaResource.getInputStream();) {
             var typeDefinitionRegistry = new SchemaParser().parse(inputStream);
 
             TypeResolver defaultTypeResolver = environment -> {
@@ -74,34 +69,38 @@ public class GraphQLConfiguration {
                 return environment.getSchema().getObjectType(className);
             };
 
-            var runtimeWiring = RuntimeWiring.newRuntimeWiring()
-                    .codeRegistry(graphQLCodeRegistry)
+            var runtimeWiring = RuntimeWiring.newRuntimeWiring().codeRegistry(graphQLCodeRegistry)
                     .scalar(this.getGraphQLDate())
                     .type("CreateProjectPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
                     .type("CreateAssessmentPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
                     .type("UpdateAssessmentStatusPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
                     .type("UpdateTestPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
-                    .type("DeleteProjectPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
-                    .type("DeleteAssessmentPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
+                    .type("DeleteProjectsPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
+                    .type("DeleteAssessmentsPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
                     .build();
 
-            return new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, runtimeWiring);
-        }).orElse(null);
-        // @formatter:on
+            graphQLSchema = new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, runtimeWiring);
+        } catch (IOException exception) {
+            this.logger.warn(exception.getMessage(), exception);
+        }
+        return graphQLSchema;
     }
 
     @Bean
     public GraphQLCodeRegistry graphQLCodeRegistry(QueryPrincipalDataFetcher queryPrincipalDataFetcher,
             QueryDescriptionsDataFetcher queryDescriptionsDataFetcher,
             QueryProjectsDataFetcher queryProjectsDataFetcher, QueryProjectDataFetcher queryProjectDataFetcher,
+            AssessmentCreatedByDataFetcher assessmentCreatedByDataFetcher,
+            AssessmentLastModifiedByDataFetcher assessmentLastModifiedByDataFetcher,
             ProjectAssessmentsDataFetcher projectAssessmentsDataFetcher,
             ProjectAssessmentDataFetcher projectAssessmentDataFetcher,
+            ProjectCreatedByDataFetcher projectCreatedByDataFetcher,
             MutationCreateProjectDataFetcher mutationCreateProjectDataFetcher,
             MutationCreateAssessmentDataFetcher mutationCreateAssessmentDataFetcher,
             MutationUpdateAssessmentStatusDataFetcher mutationUpdateAssessmentStatusDataFetcher,
             MutationUpdateTestDataFetcher mutationUpdateTestDataFetcher,
-            MutationDeleteProjectDataFetcher mutationDeleteProjectDataFetcher,
-            MutationDeleteAssessmentDataFetcher mutationDeleteAssessmentDataFetcher) {
+            MutationDeleteProjectsDataFetcher mutationDeleteProjectsDataFetcher,
+            MutationDeleteAssessmentsDataFetcher mutationDeleteAssessmentsDataFetcher) {
 
         // @formatter:off
         return GraphQLCodeRegistry.newCodeRegistry()
@@ -109,14 +108,17 @@ public class GraphQLConfiguration {
                 .dataFetcher(coordinates("Query", "descriptions"), queryDescriptionsDataFetcher)
                 .dataFetcher(coordinates("Query", "projects"), queryProjectsDataFetcher)
                 .dataFetcher(coordinates("Query", "project"), queryProjectDataFetcher)
+                .dataFetcher(coordinates("Assessment", "createdBy"), assessmentCreatedByDataFetcher)
+                .dataFetcher(coordinates("Assessment", "lastModifiedBy"), assessmentLastModifiedByDataFetcher)
                 .dataFetcher(coordinates("Mutation", "createProject"), mutationCreateProjectDataFetcher)
                 .dataFetcher(coordinates("Mutation", "createAssessment"), mutationCreateAssessmentDataFetcher)
                 .dataFetcher(coordinates("Mutation", "updateAssessmentStatus"), mutationUpdateAssessmentStatusDataFetcher)
                 .dataFetcher(coordinates("Mutation", "updateTest"), mutationUpdateTestDataFetcher)
-                .dataFetcher(coordinates("Mutation", "deleteProject"), mutationDeleteProjectDataFetcher)
-                .dataFetcher(coordinates("Mutation", "deleteAssessment"), mutationDeleteAssessmentDataFetcher)
+                .dataFetcher(coordinates("Mutation", "deleteProjects"), mutationDeleteProjectsDataFetcher)
+                .dataFetcher(coordinates("Mutation", "deleteAssessments"), mutationDeleteAssessmentsDataFetcher)
                 .dataFetcher(coordinates("Project", "assessments"), projectAssessmentsDataFetcher)
                 .dataFetcher(coordinates("Project", "assessment"), projectAssessmentDataFetcher)
+                .dataFetcher(coordinates("Project", "createdBy"), projectCreatedByDataFetcher)
                 .build();
         // @formatter:on
     }

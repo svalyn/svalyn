@@ -21,7 +21,11 @@ public class AssessmentEntity {
 
     private Map<UUID, TestStatusEntity> results;
 
+    private UUID createdBy;
+
     private LocalDateTime createdOn;
+
+    private UUID lastModifiedBy;
 
     private LocalDateTime lastModifiedOn;
 
@@ -67,6 +71,14 @@ public class AssessmentEntity {
         this.results = results;
     }
 
+    public UUID getCreatedBy() {
+        return this.createdBy;
+    }
+
+    public void setCreatedBy(UUID createdBy) {
+        this.createdBy = createdBy;
+    }
+
     public LocalDateTime getCreatedOn() {
         return this.createdOn;
     }
@@ -75,8 +87,16 @@ public class AssessmentEntity {
         this.createdOn = createdOn;
     }
 
+    public UUID getLastModifiedBy() {
+        return this.lastModifiedBy;
+    }
+
     public LocalDateTime getLastModifiedOn() {
         return this.lastModifiedOn;
+    }
+
+    public void setLastModifiedBy(UUID lastModifiedBy) {
+        this.lastModifiedBy = lastModifiedBy;
     }
 
     public void setLastModifiedOn(LocalDateTime lastModifiedOn) {

@@ -7,14 +7,14 @@
 package com.svalyn.application.services;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
 import com.svalyn.application.dto.input.CreateProjectInput;
-import com.svalyn.application.dto.input.DeleteProjectInput;
+import com.svalyn.application.dto.input.DeleteProjectsInput;
 import com.svalyn.application.dto.output.CreateProjectSuccessPayload;
-import com.svalyn.application.dto.output.DeleteProjectSuccessPayload;
-import com.svalyn.application.dto.output.ErrorPayload;
+import com.svalyn.application.dto.output.DeleteProjectsSuccessPayload;
 import com.svalyn.application.dto.output.IPayload;
 import com.svalyn.application.repositories.AssessmentRepository;
 import com.svalyn.application.repositories.ProjectRepository;
@@ -33,26 +33,21 @@ public class ProjectService {
         this.assessmentRepository = Objects.requireNonNull(assessmentRepository);
     }
 
-    public Mono<IPayload> createProject(CreateProjectInput input) {
+    public Mono<IPayload> createProject(UUID userId, CreateProjectInput input) {
         // @formatter:off
-        return this.projectRepository.createProject(input.getLabel())
+        return this.projectRepository.createProject(userId, input.getLabel())
                 .map(CreateProjectSuccessPayload::new)
                 .filter(IPayload.class::isInstance)
                 .map(IPayload.class::cast);
         // @formatter:on
     }
 
-    public Mono<IPayload> deleteProject(DeleteProjectInput input) {
-        return this.projectRepository.existById(input.getProjectId()).flatMap(existById -> {
-            if (existById.booleanValue()) {
-                // @formatter:off
-                return this.projectRepository.deleteProject(input.getProjectId())
-                        .then(this.assessmentRepository.deleteAllByProjectId(input.getProjectId()))
-                        .then(Mono.just(new DeleteProjectSuccessPayload()));
-                // @formatter:on
-            }
-            return Mono.just(new ErrorPayload("The project does not exist"));
-        }).filter(IPayload.class::isInstance).map(IPayload.class::cast);
+    public Mono<IPayload> deleteProjects(DeleteProjectsInput input) {
+        // @formatter:off
+        return this.projectRepository.deleteProjects(input.getProjectIds())
+                .then(this.assessmentRepository.deleteAllByProjectIds(input.getProjectIds()))
+                .then(Mono.just(new DeleteProjectsSuccessPayload()));
+        // @formatter:on
     }
 
 }

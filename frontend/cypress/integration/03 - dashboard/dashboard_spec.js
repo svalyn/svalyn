@@ -32,14 +32,19 @@ describe('Dashboard - /', () => {
     cy.get('[data-testid=create-project]').click();
 
     cy.get('[data-testid=ProjectToDelete').should('be.visible');
-    cy.get('[data-testid="ProjectToDelete - more"').click();
+    cy.get('[data-testid="select-ProjectToDelete"').click();
     cy.get('[data-testid=delete]').click();
 
     cy.get('[data-testid=ProjectToDelete').should('not.be.visible');
   });
 
   it('cannot navigate to the next page', () => {
-    cy.get('[data-testid=next]').should('have.attr', 'aria-disabled', 'true');
+    for (let index = 0; index < 10; index++) {
+      cy.createProject(`Project ${index}`);
+    }
+    cy.reload();
+
+    cy.get('[data-testid=pagination] button:nth-of-type(2)').should('have.attr', 'disabled');
   });
 
   it('can navigate to the next page', () => {
@@ -50,29 +55,34 @@ describe('Dashboard - /', () => {
 
     cy.get('[data-testid="Project 24"').should('not.be.visible');
 
-    cy.get('[data-testid=previous]').should('have.attr', 'aria-disabled', 'true');
-    cy.get('[data-testid=next]').should('have.attr', 'aria-disabled', 'false');
+    cy.get('[data-testid=pagination] button:nth-of-type(1)').should('have.attr', 'disabled');
+    cy.get('[data-testid=pagination] button:nth-of-type(2)').should('not.have.attr', 'disabled');
 
-    cy.get('[data-testid=next]').click();
+    cy.get('[data-testid=pagination] button:nth-of-type(2)').click();
 
     cy.get('[data-testid="Project 24"').should('be.visible');
   });
 
   it('cannot navigate to the previous page', () => {
-    cy.get('[data-testid=previous]').should('have.attr', 'aria-disabled', 'true');
+    for (let index = 0; index < 10; index++) {
+      cy.createProject(`Project ${index}`);
+    }
+    cy.reload();
+
+    cy.get('[data-testid=pagination] button:nth-of-type(1)').should('have.attr', 'disabled');
   });
 
   it('can navigate to the previous page', () => {
     for (let index = 0; index < 25; index++) {
       cy.createProject(`Project ${index}`);
     }
-    cy.visit('/?page=2');
+    cy.visit('/?page=1');
 
-    cy.get('[data-testid=previous]').should('have.attr', 'aria-disabled', 'false');
-    cy.get('[data-testid=next]').should('have.attr', 'aria-disabled', 'true');
+    cy.get('[data-testid=pagination] button:nth-of-type(1)').should('not.have.attr', 'disabled');
+    cy.get('[data-testid=pagination] button:nth-of-type(2)').should('have.attr', 'disabled');
     cy.get('[data-testid="Project 1"').should('not.be.visible');
 
-    cy.get('[data-testid=previous]').click();
+    cy.get('[data-testid=pagination] button:nth-of-type(1)').click();
 
     cy.get('[data-testid="Project 1"').should('be.visible');
   });

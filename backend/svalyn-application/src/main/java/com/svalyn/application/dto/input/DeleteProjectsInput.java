@@ -6,12 +6,13 @@
  **************************************************************/
 package com.svalyn.application.dto.input;
 
+import java.util.List;
 import java.util.UUID;
 
-public class DeleteProjectInput {
-    private UUID projectId;
+public class DeleteProjectsInput {
+    private List<UUID> projectIds;
 
-    public UUID getProjectId() {
-        return this.projectId;
+    public List<UUID> getProjectIds() {
+        return this.projectIds;
     }
 }

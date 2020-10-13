@@ -39,6 +39,11 @@ const theme = createMuiTheme({
       fontWeight: 'normal',
       letterSpacing: '0.23px',
     },
+    h5: {
+      fontSize: '1rem',
+      fontWeight: '500',
+      letterSpacing: '0.20px',
+    },
     caption: {
       fontSize: '0.875rem',
     },

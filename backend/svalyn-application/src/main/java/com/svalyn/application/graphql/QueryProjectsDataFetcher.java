@@ -36,10 +36,13 @@ public class QueryProjectsDataFetcher implements DataFetcher<CompletableFuture<C
 
     @Override
     public CompletableFuture<Connection<Project>> get(DataFetchingEnvironment environment) throws Exception {
-        Integer page = environment.getArgumentOrDefault(PAGE, 1);
+        int page = environment.getArgumentOrDefault(PAGE, 0).intValue();
+        if (page < 0) {
+            page = 0;
+        }
 
         // @formatter:off
-        Pageable pageable = PageRequest.of(page.intValue() - 1, 20);
+        Pageable pageable = PageRequest.of(page, 20);
         var projectCountMono = this.projectRepository.count();
         var projectEdgesMono = this.projectRepository.findAll(pageable)
                 .map(Edge::new)
@@ -56,9 +59,7 @@ public class QueryProjectsDataFetcher implements DataFetcher<CompletableFuture<C
     private Connection<Project> toConnection(Pageable pageable, Long count, List<Edge<Project>> edges) {
         boolean hasPreviousPage = pageable.hasPrevious();
         boolean hasNextPage = pageable.getOffset() + pageable.getPageSize() < count;
-        int pageCount = (int) Math.ceil(count.doubleValue() / 20);
-
-        var pageInfo = new PageInfo(hasPreviousPage, hasNextPage, pageCount);
+        var pageInfo = new PageInfo(hasPreviousPage, hasNextPage, count.intValue());
         return new Connection<>(edges, pageInfo);
     }
 

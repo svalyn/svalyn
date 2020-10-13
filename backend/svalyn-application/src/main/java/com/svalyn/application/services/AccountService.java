@@ -7,12 +7,12 @@
 package com.svalyn.application.services;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.svalyn.application.dto.output.Account;
 import com.svalyn.application.entities.AccountEntity;
 import com.svalyn.application.repositories.AccountRepository;
 
@@ -35,6 +35,13 @@ public class AccountService {
         return this.accountRepository.findByUsername(username)
                 .flatMap(accountEntity -> Mono.<AccountEntity>error(new IllegalArgumentException()))
                 .switchIfEmpty(Mono.defer(() -> this.accountRepository.createAccount(username, encodedPassword)))
+                .map(accountEntity -> new Account(accountEntity.getId(), accountEntity.getUsername()));
+        // @formatter:on
+    }
+
+    public Mono<Account> findById(UUID userId) {
+        // @formatter:off
+        return this.accountRepository.findById(userId)
                 .map(accountEntity -> new Account(accountEntity.getId(), accountEntity.getUsername()));
         // @formatter:on
     }

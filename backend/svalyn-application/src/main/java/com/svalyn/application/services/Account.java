@@ -4,15 +4,15 @@
  * This source code is licensed under the MIT license found in
  * the LICENSE file in the root directory of this source tree.
  **************************************************************/
-package com.svalyn.application.dto.output;
+package com.svalyn.application.services;
 
 import java.util.Objects;
 import java.util.UUID;
 
 public class Account {
-    private UUID id;
+    private final UUID id;
 
-    private String username;
+    private final String username;
 
     public Account(UUID id, String username) {
         this.id = Objects.requireNonNull(id);

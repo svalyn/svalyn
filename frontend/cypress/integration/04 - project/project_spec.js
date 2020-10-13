@@ -38,18 +38,26 @@ describe('Project - /projects/:projectId', () => {
     cy.get('[data-testid=create-assessment]').click();
 
     cy.get('[data-testid=AssessmentToDelete').should('be.visible');
-    cy.get('[data-testid="AssessmentToDelete - more"').click();
+    cy.get('[data-testid="select-AssessmentToDelete"').click();
     cy.get('[data-testid=delete]').click();
 
     cy.get('[data-testid=AssessmentToDelete').should('not.be.visible');
   });
 
-  it('cannot navigate to the next page', () => {
-    cy.get('[data-testid=next]').should('have.attr', 'aria-disabled', 'true');
+  it('cannot navigate to the next page', function () {
+    const projectId = this.projectId;
+    cy.getDescriptions().then((res) => {
+      const descriptionId = res.body.data.descriptions[0].id;
+      for (let index = 0; index < 10; index++) {
+        cy.createAssessment(projectId, descriptionId, `Assessment ${index}`);
+      }
+    });
+    cy.reload();
+
+    cy.get('[data-testid=pagination] button:nth-of-type(2)').should('have.attr', 'disabled');
   });
 
   it('can navigate to the next page', function () {
-    console.log(this);
     const projectId = this.projectId;
     cy.getDescriptions().then((res) => {
       const descriptionId = res.body.data.descriptions[0].id;
@@ -61,16 +69,25 @@ describe('Project - /projects/:projectId', () => {
 
     cy.get('[data-testid="Assessment 1"').should('not.be.visible');
 
-    cy.get('[data-testid=previous]').should('have.attr', 'aria-disabled', 'true');
-    cy.get('[data-testid=next]').should('have.attr', 'aria-disabled', 'false');
+    cy.get('[data-testid=pagination] button:nth-of-type(1)').should('have.attr', 'disabled');
+    cy.get('[data-testid=pagination] button:nth-of-type(2)').should('not.have.attr', 'disabled');
 
-    cy.get('[data-testid=next]').click();
+    cy.get('[data-testid=pagination] button:nth-of-type(2)').click();
 
     cy.get('[data-testid="Assessment 1"').should('be.visible');
   });
 
-  it('cannot navigate to the previous page', () => {
-    cy.get('[data-testid=previous]').should('have.attr', 'aria-disabled', 'true');
+  it('cannot navigate to the previous page', function () {
+    const projectId = this.projectId;
+    cy.getDescriptions().then((res) => {
+      const descriptionId = res.body.data.descriptions[0].id;
+      for (let index = 0; index < 10; index++) {
+        cy.createAssessment(projectId, descriptionId, `Assessment ${index}`);
+      }
+    });
+    cy.reload();
+
+    cy.get('[data-testid=pagination] button:nth-of-type(1)').should('have.attr', 'disabled');
   });
 
   it('can navigate to the previous page', function () {
@@ -81,13 +98,13 @@ describe('Project - /projects/:projectId', () => {
         cy.createAssessment(projectId, descriptionId, `Assessment ${index}`);
       }
     });
-    cy.visit(`/projects/${projectId}/?page=2`);
+    cy.visit(`/projects/${projectId}/?page=1`);
 
-    cy.get('[data-testid=previous]').should('have.attr', 'aria-disabled', 'false');
-    cy.get('[data-testid=next]').should('have.attr', 'aria-disabled', 'true');
+    cy.get('[data-testid=pagination] button:nth-of-type(1)').should('not.have.attr', 'disabled');
+    cy.get('[data-testid=pagination] button:nth-of-type(2)').should('have.attr', 'disabled');
     cy.get('[data-testid="Assessment 24"').should('not.be.visible');
 
-    cy.get('[data-testid=previous]').click();
+    cy.get('[data-testid=pagination] button:nth-of-type(1)').click();
 
     cy.get('[data-testid="Assessment 24"').should('be.visible');
   });

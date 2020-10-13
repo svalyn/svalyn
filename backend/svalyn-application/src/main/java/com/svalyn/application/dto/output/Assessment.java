@@ -16,11 +16,15 @@ public class Assessment {
 
     private final String label;
 
-    private final List<Category> categories;
+    private final UUID createdBy;
 
     private final LocalDateTime createdOn;
 
+    private final UUID lastModifiedBy;
+
     private final LocalDateTime lastModifiedOn;
+
+    private final List<Category> categories;
 
     private final int success;
 
@@ -30,13 +34,16 @@ public class Assessment {
 
     private final AssessmentStatus status;
 
-    public Assessment(UUID id, String label, List<Category> categories, LocalDateTime createdOn,
-            LocalDateTime lastModifiedOn, int success, int failure, int testCount, AssessmentStatus status) {
+    public Assessment(UUID id, String label, UUID createdBy, LocalDateTime createdOn, UUID lastModifiedBy,
+            LocalDateTime lastModifiedOn, List<Category> categories, int success, int failure, int testCount,
+            AssessmentStatus status) {
         this.id = Objects.requireNonNull(id);
         this.label = Objects.requireNonNull(label);
-        this.categories = Objects.requireNonNull(categories);
+        this.createdBy = Objects.requireNonNull(createdBy);
         this.createdOn = Objects.requireNonNull(createdOn);
+        this.lastModifiedBy = Objects.requireNonNull(lastModifiedBy);
         this.lastModifiedOn = Objects.requireNonNull(lastModifiedOn);
+        this.categories = Objects.requireNonNull(categories);
         this.success = success;
         this.failure = failure;
         this.testCount = testCount;
@@ -51,16 +58,24 @@ public class Assessment {
         return this.label;
     }
 
-    public List<Category> getCategories() {
-        return this.categories;
+    public UUID getCreatedBy() {
+        return this.createdBy;
     }
 
     public LocalDateTime getCreatedOn() {
         return this.createdOn;
     }
 
+    public UUID getLastModifiedBy() {
+        return this.lastModifiedBy;
+    }
+
     public LocalDateTime getLastModifiedOn() {
         return this.lastModifiedOn;
+    }
+
+    public List<Category> getCategories() {
+        return this.categories;
     }
 
     public int getSuccess() {

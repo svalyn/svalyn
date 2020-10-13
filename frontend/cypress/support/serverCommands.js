@@ -30,14 +30,14 @@ Cypress.Commands.add('logout', () => {
 Cypress.Commands.add('deleteAllProjects', () => {
   const getProjectsQuery = `
   query getProjects {
-    firstPage: projects(page: 1) {
+    firstPage: projects(page: 0) {
       edges {
         node {
           id
         }
       }
     }
-    secondPage: projects(page: 2) {
+    secondPage: projects(page: 1) {
       edges {
         node {
           id
@@ -55,23 +55,22 @@ Cypress.Commands.add('deleteAllProjects', () => {
     const firstPageProjectIds = res.body.data.firstPage.edges.map((edge) => edge.node.id);
     const secondPageProjectIds = res.body.data.secondPage.edges.map((edge) => edge.node.id);
 
-    const deleteProjectQuery = `
-    mutation deleteProject($input: DeleteProjectInput!) {
-      deleteProject(input: $input) {
+    const deleteProjectsQuery = `
+    mutation deleteProjects($input: DeleteProjectsInput!) {
+      deleteProjects(input: $input) {
         __typename
       }
     }
     `;
-    firstPageProjectIds.concat(secondPageProjectIds).forEach((projectId) => {
-      const variables = {
-        input: { projectId },
-      };
-      cy.request({
-        method: 'POST',
-        mode: 'cors',
-        url,
-        body: { query: deleteProjectQuery, variables },
-      });
+    const projectIds = [...firstPageProjectIds, ...secondPageProjectIds];
+    const variables = {
+      input: { projectIds },
+    };
+    cy.request({
+      method: 'POST',
+      mode: 'cors',
+      url,
+      body: { query: deleteProjectsQuery, variables },
     });
   });
 });

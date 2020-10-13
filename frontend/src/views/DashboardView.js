@@ -5,20 +5,15 @@
  * the LICENSE file in the root directory of this source tree.
  ***************************************************************/
 import React, { useEffect } from 'react';
-import { Link as RouterLink, useLocation, Redirect } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useHistory, Redirect } from 'react-router-dom';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import Button from '@material-ui/core/Button';
 import CloseIcon from '@material-ui/icons/Close';
 import Container from '@material-ui/core/Container';
-import FolderIcon from '@material-ui/icons/Folder';
 import Grid from '@material-ui/core/Grid';
 import HomeIcon from '@material-ui/icons/Home';
 import IconButton from '@material-ui/core/IconButton';
-import List from '@material-ui/core/List';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
+import Link from '@material-ui/core/Link';
 import Paper from '@material-ui/core/Paper';
 import Snackbar from '@material-ui/core/Snackbar';
 import TextField from '@material-ui/core/TextField';
@@ -30,8 +25,8 @@ import { ajax } from 'rxjs/ajax';
 import { concatMap, catchError } from 'rxjs/operators';
 import { useMachine } from '@xstate/react';
 
-import { ListItemLink } from '../core/ListItemLink';
 import { AuthenticatedHeader } from '../headers/AuthenticatedHeader';
+import { EnhancedTable } from '../table/Table';
 import { newProjectFormMachine, dashboardViewMachine } from './DashboardViewMachine';
 
 const {
@@ -45,12 +40,14 @@ const {
         node {
           id
           label
+          createdBy {
+            username
+          }
+          createdOn
         }
       }
       pageInfo {
-        hasNextPage
-        hasPreviousPage
-        pageCount
+        count
       }
     }
   }
@@ -93,11 +90,11 @@ const createProject = (variables) =>
 
 const {
   loc: {
-    source: { body: deleteProjectMutation },
+    source: { body: deleteProjectsMutation },
   },
 } = gql`
-  mutation deleteProject($input: DeleteProjectInput!) {
-    deleteProject(input: $input) {
+  mutation deleteProjects($input: DeleteProjectsInput!) {
+    deleteProjects(input: $input) {
       __typename
       ... on ErrorPayload {
         message
@@ -105,12 +102,12 @@ const {
     }
   }
 `;
-const deleteProject = (variables) =>
+const deleteProjects = (variables) =>
   ajax({
     url: '/api/graphql',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query: deleteProjectMutation, variables }),
+    body: JSON.stringify({ query: deleteProjectsMutation, variables }),
   });
 
 const useStyles = makeStyles((theme) => ({
@@ -136,22 +133,32 @@ const useStyles = makeStyles((theme) => ({
     width: 20,
     height: 20,
   },
-  paginationButtonsContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginBottom: '0.5rem',
-  },
 }));
 
 export const DashboardView = () => {
   const classes = useStyles();
+  const history = useHistory();
   const { search } = useLocation();
-  const page = parseInt(new URLSearchParams(search).get('page') ?? 1);
+  const pageFromURL = parseInt(new URLSearchParams(search).get('page') ?? 0);
 
-  const [{ value, context }, dispatch] = useMachine(dashboardViewMachine);
+  const [{ value, context }, dispatch] = useMachine(dashboardViewMachine, {
+    context: {
+      page: pageFromURL,
+    },
+  });
+
   const { dashboardView, toast } = value;
-  const { projects, pageCount, hasPreviousPage, hasNextPage, anchorElement, projectId, message } = context;
+  const { page, projects, selectedProjectIds, count, message } = context;
+
+  useEffect(() => {
+    if (pageFromURL !== page) {
+      if (page === 0) {
+        history.push('/');
+      } else {
+        history.push(`/?page=${page}`);
+      }
+    }
+  }, [history, page, pageFromURL]);
 
   useEffect(() => {
     dispatch('FETCH');
@@ -184,23 +191,21 @@ export const DashboardView = () => {
       .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
   };
 
-  const onMoreClick = (event, project) => dispatch({ type: 'OPEN_MENU', anchorElement: event.target, project });
-  const onMenuClose = () => dispatch({ type: 'CLOSE_MENU' });
   const onDelete = () => {
     const variables = {
       input: {
-        projectId,
+        projectIds: selectedProjectIds,
       },
     };
-    dispatch('DELETE_PROJECT');
-    deleteProject(variables)
+    dispatch('DELETE_PROJECTS');
+    deleteProjects(variables)
       .pipe(
         concatMap((ajaxResponse) => {
           const { data, errors } = ajaxResponse.response;
           if (errors || ajaxResponse.status !== 200) {
             dispatch({ type: 'SHOW_TOAST', message: 'An unexpected error has occurred, please refresh the page' });
-          } else if (data.deleteProject.__typename === 'ErrorPayload') {
-            dispatch({ type: 'SHOW_TOAST', message: data.deleteProject.message });
+          } else if (data.deleteProjects.__typename === 'ErrorPayload') {
+            dispatch({ type: 'SHOW_TOAST', message: data.deleteProjects.message });
           }
           return getProjects({ page });
         })
@@ -209,12 +214,10 @@ export const DashboardView = () => {
       .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
   };
 
-  let rightElement = <Projects projects={projects} onMoreClick={onMoreClick} />;
+  let rightElement = null;
   if (dashboardView === 'empty') {
-    if (pageCount > 0 && page > pageCount) {
-      rightElement = (
-        <Message content={`You are trying to view the page n°${page} but there are only ${pageCount} pages`} />
-      );
+    if (count > 0 && page * 20 > count) {
+      rightElement = <Message content={`You are trying to view the page n°${page} but it does not exist`} />;
     } else {
       rightElement = <Message content="You do not have any projects for the moment, start by creating one" />;
     }
@@ -222,6 +225,23 @@ export const DashboardView = () => {
     rightElement = <Message content="An error has occurred, please refresh the page" />;
   } else if (dashboardView === 'unauthorized') {
     return <Redirect to="/login" />;
+  } else if (dashboardView === 'success') {
+    const onSelectProject = (_, projectId) => dispatch({ type: 'SELECT_PROJECT', projectId });
+    const onSelectAllProjects = (event) => dispatch({ type: 'SELECT_ALL_PROJECTS', target: event.target });
+    const onChangePage = (_, page) => dispatch({ type: 'CHANGE_PAGE', page });
+
+    rightElement = (
+      <Projects
+        projects={projects}
+        selectedProjectIds={selectedProjectIds}
+        count={count}
+        page={page}
+        onSelectProject={onSelectProject}
+        onSelectAllProjects={onSelectAllProjects}
+        onChangePage={onChangePage}
+        onDelete={onDelete}
+      />
+    );
   }
 
   return (
@@ -229,7 +249,7 @@ export const DashboardView = () => {
       <div className={classes.view}>
         <AuthenticatedHeader />
         <div className={classes.dashboardView}>
-          <Container>
+          <Container maxWidth="xl">
             <Typography variant="h1" gutterBottom>
               Dashboard
             </Typography>
@@ -238,18 +258,6 @@ export const DashboardView = () => {
                 <HomeIcon className={classes.icon} /> Dashboard
               </Typography>
             </Breadcrumbs>
-            <div className={classes.paginationButtonsContainer}>
-              <Button
-                component={RouterLink}
-                to={`/${page === 2 ? '' : `?page=${page - 1}`}`}
-                disabled={!hasPreviousPage}
-                data-testid="previous">
-                Previous
-              </Button>
-              <Button component={RouterLink} to={`/?page=${page + 1}`} disabled={!hasNextPage} data-testid="next">
-                Next
-              </Button>
-            </div>
             <Grid container spacing={4}>
               <Grid item xs={3}>
                 <NewProjectForm onNewProjectClick={onNewProjectClick} />
@@ -261,12 +269,6 @@ export const DashboardView = () => {
           </Container>
         </div>
       </div>
-
-      <Menu id="simple-menu" anchorEl={anchorElement} keepMounted open={Boolean(anchorElement)} onClose={onMenuClose}>
-        <MenuItem onClick={onDelete} data-testid="delete">
-          Delete
-        </MenuItem>
-      </Menu>
 
       <Snackbar
         anchorOrigin={{
@@ -335,37 +337,50 @@ const NewProjectForm = ({ onNewProjectClick }) => {
   );
 };
 
-const Projects = ({ projects, onMoreClick }) => {
+const Projects = ({
+  projects,
+  selectedProjectIds,
+  count,
+  page,
+  onSelectProject,
+  onSelectAllProjects,
+  onChangePage,
+  onDelete,
+}) => {
+  const headers = [{ label: 'Name' }, { label: 'Created by' }, { label: 'Created on' }];
+  const itemPropertyAccessor = (project, index) => {
+    if (index === 0) {
+      return (
+        <Link color="inherit" component={RouterLink} to={`/projects/${project.id}`} data-testid={project.label}>
+          {project.label}
+        </Link>
+      );
+    } else if (index === 1) {
+      return project.createdBy.username;
+    } else if (index === 2) {
+      return project.createdOn;
+    }
+    return null;
+  };
+  const itemDataTestidProvider = (item) => item.label;
+
   return (
     <div>
-      <Paper>
-        <List>
-          {projects.map((project) => {
-            const onClick = (event) => onMoreClick(event, project);
-            return (
-              <ListItemLink
-                key={project.id}
-                to={`/projects/${project.id}`}
-                primary={project.label}
-                icon={<FolderIcon />}
-                action={
-                  <ListItemSecondaryAction>
-                    <IconButton
-                      aria-label="more"
-                      aria-controls="long-menu"
-                      aria-haspopup="true"
-                      onClick={onClick}
-                      data-testid={`${project.label} - more`}>
-                      <MoreVertIcon />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                }
-                data-testid={project.label}
-              />
-            );
-          })}
-        </List>
-      </Paper>
+      <EnhancedTable
+        title="Projects"
+        headers={headers}
+        items={projects}
+        selectedItemIds={selectedProjectIds}
+        itemPropertyAccessor={itemPropertyAccessor}
+        itemDataTestidProvider={itemDataTestidProvider}
+        totalItemsCount={count}
+        onSelect={onSelectProject}
+        onSelectAll={onSelectAllProjects}
+        page={page}
+        itemsPerPage={20}
+        onChangePage={onChangePage}
+        onDelete={onDelete}
+      />
     </div>
   );
 };

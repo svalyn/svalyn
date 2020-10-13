@@ -88,12 +88,10 @@ export const dashboardViewMachine = Machine(
     id: 'DashboardView',
     type: 'parallel',
     context: {
+      page: 0,
       projects: [],
-      pageCount: 0,
-      hasPreviousPage: false,
-      hasNextPage: false,
-      anchorElement: null,
-      projectId: null,
+      selectedProjectIds: [],
+      count: 0,
       message: null,
     },
     states: {
@@ -162,22 +160,21 @@ export const dashboardViewMachine = Machine(
               CREATE_PROJECT: {
                 target: 'fetchingProjects',
               },
-              OPEN_MENU: {
-                target: 'menuOpened',
-                actions: ['openMenu'],
-              },
               FETCH: 'fetchingProjects',
-            },
-          },
-          menuOpened: {
-            on: {
-              CLOSE_MENU: {
-                target: 'success',
-                actions: ['closeMenu'],
-              },
-              DELETE_PROJECT: {
+              CHANGE_PAGE: [
+                {
+                  target: 'fetchingProjects',
+                  actions: ['changePage'],
+                },
+              ],
+              DELETE_PROJECTS: {
                 target: 'fetchingProjects',
-                actions: ['closeMenu'],
+              },
+              SELECT_PROJECT: {
+                actions: ['selectProject'],
+              },
+              SELECT_ALL_PROJECTS: {
+                actions: ['selectAllProjects'],
               },
             },
           },
@@ -219,23 +216,16 @@ export const dashboardViewMachine = Machine(
           ajaxResponse: { response },
         } = event;
         const { projects } = response.data;
-        const { pageCount, hasPreviousPage, hasNextPage } = projects.pageInfo;
+        const { count } = projects.pageInfo;
         return {
           projects: projects.edges.map((edge) => edge.node),
-          pageCount,
-          hasPreviousPage,
-          hasNextPage,
+          selectedProjectIds: [],
+          count,
         };
       }),
-      openMenu: assign((_, event) => {
-        const {
-          anchorElement,
-          project: { id },
-        } = event;
-        return { anchorElement, projectId: id };
-      }),
-      closeMenu: assign(() => {
-        return { anchorElement: null, projectId: null };
+      changePage: assign((_, event) => {
+        const { page } = event;
+        return { page };
       }),
       setMessage: assign((_, event) => {
         const { message } = event;
@@ -243,6 +233,28 @@ export const dashboardViewMachine = Machine(
       }),
       clearMessage: assign((_, event) => {
         return { message: null };
+      }),
+      selectProject: assign((context, event) => {
+        const { selectedProjectIds } = context;
+        const { projectId } = event;
+
+        const index = selectedProjectIds.indexOf(projectId);
+        if (index === -1) {
+          return { selectedProjectIds: [...selectedProjectIds, projectId] };
+        }
+        return { selectedProjectIds: selectedProjectIds.filter((itemId) => itemId !== projectId) };
+      }),
+      selectAllProjects: assign((context, event) => {
+        const { target } = event;
+        if (target.checked) {
+          const { projects } = context;
+          return {
+            selectedProjectIds: projects.map((project) => project.id),
+          };
+        }
+        return {
+          selectedProjectIds: [],
+        };
       }),
     },
   }

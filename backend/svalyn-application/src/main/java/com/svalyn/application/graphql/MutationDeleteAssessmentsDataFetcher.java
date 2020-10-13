@@ -12,31 +12,31 @@ import java.util.concurrent.CompletableFuture;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.svalyn.application.dto.input.DeleteProjectInput;
+import com.svalyn.application.dto.input.DeleteAssessmentsInput;
 import com.svalyn.application.dto.output.IPayload;
-import com.svalyn.application.services.ProjectService;
+import com.svalyn.application.services.AssessmentService;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 
 @Service
-public class MutationDeleteProjectDataFetcher implements DataFetcher<CompletableFuture<IPayload>> {
+public class MutationDeleteAssessmentsDataFetcher implements DataFetcher<CompletableFuture<IPayload>> {
 
     private static final String INPUT = "input";
 
     private final ObjectMapper objectMapper;
 
-    private final ProjectService projectService;
+    private final AssessmentService assessmentService;
 
-    public MutationDeleteProjectDataFetcher(ObjectMapper objectMapper, ProjectService projectService) {
+    public MutationDeleteAssessmentsDataFetcher(ObjectMapper objectMapper, AssessmentService assessmentService) {
         this.objectMapper = Objects.requireNonNull(objectMapper);
-        this.projectService = Objects.requireNonNull(projectService);
+        this.assessmentService = Objects.requireNonNull(assessmentService);
     }
 
     @Override
     public CompletableFuture<IPayload> get(DataFetchingEnvironment environment) throws Exception {
-        var input = this.objectMapper.convertValue(environment.getArgument(INPUT), DeleteProjectInput.class);
-        return this.projectService.deleteProject(input).toFuture();
+        var input = this.objectMapper.convertValue(environment.getArgument(INPUT), DeleteAssessmentsInput.class);
+        return this.assessmentService.deleteAssessments(input).toFuture();
     }
 
 }

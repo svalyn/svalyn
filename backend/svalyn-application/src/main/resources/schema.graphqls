@@ -15,7 +15,7 @@ type Query {
 type PageInfo {
   hasNextPage: Boolean!
   hasPreviousPage: Boolean!
-  pageCount: Int!
+  count: Int!
 }
 
 type User {
@@ -41,6 +41,8 @@ type Project {
   label: String!
   assessments(page: Int!): ProjectAssessmentsConnection!
   assessment(assessmentId: ID!): Assessment
+  createdBy: User!
+  createdOn: Date!
 }
 
 type ProjectAssessmentsConnection {
@@ -55,9 +57,11 @@ type ProjectAssessmentsEdge {
 type Assessment {
   id: ID!
   label: String!
-  categories: [Category!]!
+  createdBy: User!
   createdOn: Date!
+  lastModifiedBy: User!
   lastModifiedOn: Date!
+  categories: [Category!]!
   success: Int!
   failure: Int!
   testCount: Int!
@@ -103,8 +107,8 @@ type Mutation {
   createAssessment(input: CreateAssessmentInput!): CreateAssessmentPayload!
   updateAssessmentStatus(input: UpdateAssessmentStatusInput!): UpdateAssessmentStatusPayload!
   updateTest(input: UpdateTestInput!): UpdateTestPayload!
-  deleteProject(input: DeleteProjectInput!): DeleteProjectPayload!
-  deleteAssessment(input: DeleteAssessmentInput!): DeleteAssessmentPayload!
+  deleteProjects(input: DeleteProjectsInput!): DeleteProjectsPayload!
+  deleteAssessments(input: DeleteAssessmentsInput!): DeleteAssessmentsPayload!
 }
 
 type ErrorPayload {
@@ -156,20 +160,20 @@ type UpdateTestSuccessPayload {
 
 union UpdateTestPayload = ErrorPayload | UpdateTestSuccessPayload
 
-input DeleteProjectInput {
-  projectId: ID!
+input DeleteProjectsInput {
+  projectIds: [ID!]!
 }
 
-type DeleteProjectSuccessPayload {
+type DeleteProjectsSuccessPayload {
 }
 
-union DeleteProjectPayload = ErrorPayload | DeleteProjectSuccessPayload
+union DeleteProjectsPayload = ErrorPayload | DeleteProjectsSuccessPayload
 
-input DeleteAssessmentInput {
-  assessmentId: ID!
+input DeleteAssessmentsInput {
+  assessmentIds: [ID!]!
 }
 
-type DeleteAssessmentSuccessPayload {
+type DeleteAssessmentsSuccessPayload {
 }
 
-union DeleteAssessmentPayload = ErrorPayload | DeleteAssessmentSuccessPayload
+union DeleteAssessmentsPayload = ErrorPayload | DeleteAssessmentsSuccessPayload

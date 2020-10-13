@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.svalyn.application.dto.input.CreateAssessmentInput;
 import com.svalyn.application.dto.output.IPayload;
 import com.svalyn.application.services.AssessmentService;
+import com.svalyn.application.services.UserDetailsService;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -26,17 +27,23 @@ public class MutationCreateAssessmentDataFetcher implements DataFetcher<Completa
 
     private final ObjectMapper objectMapper;
 
+    private final UserDetailsService userDetailsService;
+
     private final AssessmentService assessmentService;
 
-    public MutationCreateAssessmentDataFetcher(ObjectMapper objectMapper, AssessmentService assessmentService) {
+    public MutationCreateAssessmentDataFetcher(ObjectMapper objectMapper, UserDetailsService userDetailsService,
+            AssessmentService assessmentService) {
         this.objectMapper = Objects.requireNonNull(objectMapper);
+        this.userDetailsService = Objects.requireNonNull(userDetailsService);
         this.assessmentService = Objects.requireNonNull(assessmentService);
     }
 
     @Override
     public CompletableFuture<IPayload> get(DataFetchingEnvironment environment) throws Exception {
         var input = this.objectMapper.convertValue(environment.getArgument(INPUT), CreateAssessmentInput.class);
-        return this.assessmentService.createAssessment(input).toFuture();
+
+        var userDetails = this.userDetailsService.getUserDetails(environment.getContext()).orElse(null);
+        return this.assessmentService.createAssessment(userDetails.getId(), input).toFuture();
     }
 
 }

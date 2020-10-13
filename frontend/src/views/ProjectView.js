@@ -4,14 +4,12 @@
  * This source code is licensed under the MIT license found in
  * the LICENSE file in the root directory of this source tree.
  ***************************************************************/
-import React, { Fragment, useEffect } from 'react';
-import { Link as RouterLink, Redirect, useLocation, useParams } from 'react-router-dom';
-import AssignmentIcon from '@material-ui/icons/Assignment';
+import React, { useEffect } from 'react';
+import { Link as RouterLink, Redirect, useLocation, useHistory, useParams } from 'react-router-dom';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import Button from '@material-ui/core/Button';
 import CloseIcon from '@material-ui/icons/Close';
 import Container from '@material-ui/core/Container';
-import Divider from '@material-ui/core/Divider';
 import FolderIcon from '@material-ui/icons/Folder';
 import FormControl from '@material-ui/core/FormControl';
 import Grid from '@material-ui/core/Grid';
@@ -19,11 +17,7 @@ import HomeIcon from '@material-ui/icons/Home';
 import IconButton from '@material-ui/core/IconButton';
 import InputLabel from '@material-ui/core/InputLabel';
 import Link from '@material-ui/core/Link';
-import List from '@material-ui/core/List';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
 import Paper from '@material-ui/core/Paper';
 import Select from '@material-ui/core/Select';
 import Snackbar from '@material-ui/core/Snackbar';
@@ -36,8 +30,8 @@ import { ajax } from 'rxjs/ajax';
 import { concatMap, catchError } from 'rxjs/operators';
 import { useMachine } from '@xstate/react';
 
-import { ListItemLink } from '../core/ListItemLink';
 import { AuthenticatedHeader } from '../headers/AuthenticatedHeader';
+import { EnhancedTable } from '../table/Table';
 import { newAssessmentFormMachine, projectViewMachine } from './ProjectViewMachine';
 
 const {
@@ -58,7 +52,13 @@ const {
             id
             label
             createdOn
+            createdBy {
+              username
+            }
             lastModifiedOn
+            lastModifiedBy {
+              username
+            }
             success
             failure
             testCount
@@ -66,9 +66,7 @@ const {
           }
         }
         pageInfo {
-          hasPreviousPage
-          hasNextPage
-          pageCount
+          count
         }
       }
     }
@@ -111,11 +109,11 @@ const createAssessment = (variables) =>
 
 const {
   loc: {
-    source: { body: deleteAssessmentMutation },
+    source: { body: deleteAssessmentsMutation },
   },
 } = gql`
-  mutation deleteAssessment($input: DeleteAssessmentInput!) {
-    deleteAssessment(input: $input) {
+  mutation deleteAssessments($input: DeleteAssessmentsInput!) {
+    deleteAssessments(input: $input) {
       __typename
       ... on ErrorPayload {
         message
@@ -123,12 +121,12 @@ const {
     }
   }
 `;
-const deleteAssessment = (variables) =>
+const deleteAssessments = (variables) =>
   ajax({
     url: '/api/graphql',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query: deleteAssessmentMutation, variables }),
+    body: JSON.stringify({ query: deleteAssessmentsMutation, variables }),
   });
 
 const useProjectViewStyles = makeStyles((theme) => ({
@@ -154,33 +152,32 @@ const useProjectViewStyles = makeStyles((theme) => ({
     width: 20,
     height: 20,
   },
-  paginationButtonsContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginBottom: '0.5rem',
-  },
 }));
 
 export const ProjectView = () => {
   const classes = useProjectViewStyles();
   const { projectId } = useParams();
+  const history = useHistory();
   const { search } = useLocation();
-  const page = parseInt(new URLSearchParams(search).get('page') ?? 1);
+  const pageFromURL = parseInt(new URLSearchParams(search).get('page') ?? 0);
 
-  const [{ value, context }, dispatch] = useMachine(projectViewMachine);
+  const [{ value, context }, dispatch] = useMachine(projectViewMachine, {
+    context: {
+      page: pageFromURL,
+    },
+  });
   const { projectView, toast } = value;
-  const {
-    label,
-    assessments,
-    pageCount,
-    hasPreviousPage,
-    hasNextPage,
-    descriptions,
-    anchorElement,
-    assessmentId,
-    message,
-  } = context;
+  const { page, label, assessments, selectedAssessmentIds, count, descriptions, message } = context;
+
+  useEffect(() => {
+    if (pageFromURL !== page) {
+      if (page === 0) {
+        history.push(`/projects/${projectId}`);
+      } else {
+        history.push(`/projects/${projectId}?page=${page}`);
+      }
+    }
+  }, [history, projectId, page, pageFromURL]);
 
   useEffect(() => {
     dispatch('FETCH_PROJECT');
@@ -216,23 +213,21 @@ export const ProjectView = () => {
       .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
   };
 
-  const onMoreClick = (event, assessment) => dispatch({ type: 'OPEN_MENU', anchorElement: event.target, assessment });
-  const onMenuClose = () => dispatch({ type: 'CLOSE_MENU' });
   const onDelete = () => {
     const variables = {
       input: {
-        assessmentId,
+        assessmentIds: selectedAssessmentIds,
       },
     };
-    dispatch('DELETE_ASSESSMENT');
-    deleteAssessment(variables)
+    dispatch('DELETE_ASSESSMENTS');
+    deleteAssessments(variables)
       .pipe(
         concatMap((ajaxResponse) => {
           const { data, errors } = ajaxResponse.response;
           if (errors || ajaxResponse.status !== 200) {
             dispatch({ type: 'SHOW_TOAST', message: 'An unexpected error has occurred, please refresh the page' });
-          } else if (data.deleteAssessment.__typename === 'ErrorPayload') {
-            dispatch({ type: 'SHOW_TOAST', message: data.deleteAssessment.message });
+          } else if (data.deleteAssessments.__typename === 'ErrorPayload') {
+            dispatch({ type: 'SHOW_TOAST', message: data.deleteAssessments.message });
           }
           return getProject({ projectId, page });
         })
@@ -241,21 +236,37 @@ export const ProjectView = () => {
       .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
   };
 
-  let rightElement = <Assessments projectId={projectId} assessments={assessments} onMoreClick={onMoreClick} />;
+  let rightElement = null;
   if (projectView === 'error') {
     rightElement = <Message content="An error has occurred, please refresh the page" />;
   } else if (projectView === 'missing') {
     rightElement = <Message content={`No project found with the id ${projectId}`} />;
   } else if (projectView === 'empty') {
-    if (pageCount > 0 && page > pageCount) {
-      rightElement = (
-        <Message content={`You are trying to view the page n°${page} but there are only ${pageCount} pages`} />
-      );
+    if (count > 0 && page * 20 > count) {
+      rightElement = <Message content={`You are trying to view the page n°${page} but it does not exist`} />;
     } else {
       rightElement = <Message content="You do not have any assessments for the moment, start by creating one" />;
     }
   } else if (projectView === 'unauthorized') {
     return <Redirect to="/login" />;
+  } else if (projectView === 'success') {
+    const onSelectAssessment = (_, assessmentId) => dispatch({ type: 'SELECT_ASSESSMENT', assessmentId });
+    const onSelectAllAssessments = (event) => dispatch({ type: 'SELECT_ALL_ASSESSMENTS', target: event.target });
+    const onChangePage = (_, page) => dispatch({ type: 'CHANGE_PAGE', page });
+
+    rightElement = (
+      <Assessments
+        projectId={projectId}
+        assessments={assessments}
+        selectedAssessmentIds={selectedAssessmentIds}
+        count={count}
+        page={page}
+        onSelectAssessment={onSelectAssessment}
+        onSelectAllAssessments={onSelectAllAssessments}
+        onChangePage={onChangePage}
+        onDelete={onDelete}
+      />
+    );
   }
 
   return (
@@ -263,7 +274,7 @@ export const ProjectView = () => {
       <div className={classes.view}>
         <AuthenticatedHeader />
         <div className={classes.projectView}>
-          <Container>
+          <Container maxWidth="xl">
             <Typography variant="h1" gutterBottom>
               {label}
             </Typography>
@@ -275,22 +286,6 @@ export const ProjectView = () => {
                 <FolderIcon className={classes.icon} /> {label}
               </Typography>
             </Breadcrumbs>
-            <div className={classes.paginationButtonsContainer}>
-              <Button
-                component={RouterLink}
-                to={`/projects/${projectId}/${page === 2 ? '' : `?page=${page - 1}`}`}
-                disabled={!hasPreviousPage}
-                data-testid="previous">
-                Previous
-              </Button>
-              <Button
-                component={RouterLink}
-                to={`/projects/${projectId}/?page=${page + 1}`}
-                disabled={!hasNextPage}
-                data-testid="next">
-                Next
-              </Button>
-            </div>
             <Grid container spacing={4}>
               <Grid item xs={3}>
                 <NewAssessmentForm descriptions={descriptions} onNewAssessmentClick={onNewAssessmentClick} />
@@ -302,12 +297,6 @@ export const ProjectView = () => {
           </Container>
         </div>
       </div>
-
-      <Menu id="simple-menu" anchorEl={anchorElement} keepMounted open={Boolean(anchorElement)} onClose={onMenuClose}>
-        <MenuItem onClick={onDelete} data-testid="delete">
-          Delete
-        </MenuItem>
-      </Menu>
 
       <Snackbar
         anchorOrigin={{
@@ -403,69 +392,76 @@ const NewAssessmentForm = ({ descriptions, onNewAssessmentClick }) => {
   );
 };
 
-const useAssessmentsStyles = makeStyles((theme) => ({
-  title: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginBottom: '0.5rem',
-    '& > *:first-child': {
-      marginRight: '1rem',
-    },
-  },
-}));
+const Assessments = ({
+  projectId,
+  assessments,
+  selectedAssessmentIds,
+  count,
+  page,
+  onSelectAssessment,
+  onSelectAllAssessments,
+  onChangePage,
+  onDelete,
+}) => {
+  const headers = [
+    { label: 'Name' },
+    { label: 'Created by' },
+    { label: 'Created on' },
+    { label: 'Last modified by' },
+    { label: 'Last modified on' },
+    { label: 'Success' },
+    { label: 'Failure' },
+    { label: 'Status' },
+  ];
+  const itemPropertyAccessor = (assessment, index) => {
+    if (index === 0) {
+      return (
+        <Link
+          color="inherit"
+          component={RouterLink}
+          to={`/projects/${projectId}/assessments/${assessment.id}`}
+          data-testid={assessment.label}>
+          {assessment.label}
+        </Link>
+      );
+    } else if (index === 1) {
+      return assessment.createdBy.username;
+    } else if (index === 2) {
+      return assessment.createdOn;
+    } else if (index === 3) {
+      return assessment.lastModifiedBy.username;
+    } else if (index === 4) {
+      return assessment.lastModifiedOn;
+    } else if (index === 5) {
+      return assessment.success;
+    } else if (index === 6) {
+      return assessment.failure;
+    } else if (index === 7) {
+      return assessment.status;
+    }
 
-const Assessments = ({ projectId, assessments, onMoreClick }) => {
-  const classes = useAssessmentsStyles();
-  const size = assessments.length;
+    return null;
+  };
+  const itemDataTestidProvider = (item) => item.label;
+
   return (
-    <Paper>
-      <List>
-        {assessments.map((assessment, index) => {
-          const primary = (
-            <div className={classes.title}>
-              <Typography variant="h4">{assessment.label}</Typography>
-              <Typography variant="subtitle2">{assessment.status}</Typography>
-            </div>
-          );
-          const secondary = (
-            <>
-              <Typography variant="subtitle2">{`Total ${assessment.testCount} · Success ${assessment.success} · Failure ${assessment.failure}`}</Typography>
-              <Typography variant="caption">{`Created on ${assessment.createdOn} · Last modified on ${assessment.lastModifiedOn}`}</Typography>
-            </>
-          );
-
-          const onClick = (event) => onMoreClick(event, assessment);
-          const action = (
-            <ListItemSecondaryAction>
-              <IconButton
-                aria-label="more"
-                aria-controls="long-menu"
-                aria-haspopup="true"
-                onClick={onClick}
-                data-testid={`${assessment.label} - more`}>
-                <MoreVertIcon />
-              </IconButton>
-            </ListItemSecondaryAction>
-          );
-
-          return (
-            <Fragment key={assessment.id}>
-              <ListItemLink
-                to={`/projects/${projectId}/assessments/${assessment.id}`}
-                primary={primary}
-                secondary={secondary}
-                icon={<AssignmentIcon />}
-                action={action}
-                disableTypography
-                data-testid={assessment.label}
-              />
-              {index <= size - 2 ? <Divider /> : null}
-            </Fragment>
-          );
-        })}
-      </List>
-    </Paper>
+    <div>
+      <EnhancedTable
+        title="Assessments"
+        headers={headers}
+        items={assessments}
+        selectedItemIds={selectedAssessmentIds}
+        itemPropertyAccessor={itemPropertyAccessor}
+        itemDataTestidProvider={itemDataTestidProvider}
+        totalItemsCount={count}
+        onSelect={onSelectAssessment}
+        onSelectAll={onSelectAllAssessments}
+        page={page}
+        itemsPerPage={20}
+        onChangePage={onChangePage}
+        onDelete={onDelete}
+      />
+    </div>
   );
 };
 

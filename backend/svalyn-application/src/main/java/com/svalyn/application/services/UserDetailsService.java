@@ -8,15 +8,15 @@ package com.svalyn.application.services;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.svalyn.application.repositories.AccountRepository;
 
+import graphql.GraphQLContext;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -29,11 +29,20 @@ public class UserDetailsService implements ReactiveUserDetailsService {
     }
 
     @Override
-    public Mono<UserDetails> findByUsername(String username) {
+    public Mono<org.springframework.security.core.userdetails.UserDetails> findByUsername(String username) {
         return this.accountRepository.findByUsername(username).map(accountEntity -> {
             var authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
-            return new User(accountEntity.getUsername(), accountEntity.getPassword(), authorities);
+            return new UserDetails(accountEntity.getId(), accountEntity.getUsername(), accountEntity.getPassword(),
+                    authorities);
         });
+    }
+
+    public Optional<UserDetails> getUserDetails(GraphQLContext context) {
+        // @formatter:off
+        return context.getOrEmpty("principal")
+                .filter(UserDetails.class::isInstance)
+                .map(UserDetails.class::cast);
+        // @formatter:on
     }
 
 }
