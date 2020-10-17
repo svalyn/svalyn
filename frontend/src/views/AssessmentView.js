@@ -179,13 +179,15 @@ export const AssessmentView = () => {
   }, [projectId, assessmentId, dispatch]);
 
   const onAssessmentUpdated = (ajaxResponse) => {
-    const { data, errors } = ajaxResponse.response;
-    if (errors || ajaxResponse.status !== 200) {
+    if (ajaxResponse.status !== 200 || ajaxResponse?.response?.errors) {
       dispatch({ type: 'SHOW_TOAST', message: 'An unexpected error has occurred, please refresh the page' });
-    } else if (data.updateAssessment.__typename === 'ErrorPayload') {
-      dispatch({ type: 'SHOW_TOAST', message: data.updateAssessment.message });
-    } else if (data.updateAssessment.assessment) {
-      dispatch({ type: 'REFRESH_ASSESSMENT', assessment: data.updateAssessment.assessment });
+    } else {
+      const { data } = ajaxResponse.response;
+      if (data.updateAssessment.__typename === 'ErrorPayload') {
+        dispatch({ type: 'SHOW_TOAST', message: data.updateAssessment.message });
+      } else if (data.updateAssessment.assessment) {
+        dispatch({ type: 'REFRESH_ASSESSMENT', assessment: data.updateAssessment.assessment });
+      }
     }
   };
   const onCategoryClick = (selectedCategory) => dispatch({ type: 'SELECT_CATEGORY', selectedCategory });
@@ -436,7 +438,9 @@ const Header = ({ projectId, projectLabel, assessment, onAssessmentUpdated }) =>
         status: newStatus,
       },
     };
-    updateAssessmentStatus(variables).subscribe((ajaxResponse) => onAssessmentUpdated(ajaxResponse));
+    updateAssessmentStatus(variables)
+      .pipe(catchError((error) => of(error)))
+      .subscribe((ajaxResponse) => onAssessmentUpdated(ajaxResponse));
   };
 
   return (

@@ -15,7 +15,9 @@ import RadioGroup from '@material-ui/core/RadioGroup';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles, withStyles } from '@material-ui/core/styles';
 import { gql } from 'graphql.macro';
+import { of } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
+import { catchError } from 'rxjs/operators';
 
 import { testPropTypes } from '../propTypes/propTypes';
 
@@ -119,7 +121,9 @@ const Test = ({ assessmentId, assessmentStatus, test, onAssessmentUpdated }) => 
         status: value,
       },
     };
-    updateTest(variables).subscribe((ajaxResponse) => onAssessmentUpdated(ajaxResponse));
+    updateTest(variables)
+      .pipe(catchError((error) => of(error)))
+      .subscribe((ajaxResponse) => onAssessmentUpdated(ajaxResponse));
   };
 
   let stepsElement = null;
