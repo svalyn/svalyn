@@ -21,8 +21,6 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.svalyn.application.entities.DescriptionEntity;
 
-import reactor.core.publisher.Flux;
-
 @Service
 public class DescriptionRepository {
 
@@ -55,7 +53,7 @@ public class DescriptionRepository {
         // @formatter:on
     }
 
-    public Flux<DescriptionEntity> findAll() {
-        return Flux.fromIterable(this.descriptionEntities);
+    public List<DescriptionEntity> findAll() {
+        return this.descriptionEntities;
     }
 }

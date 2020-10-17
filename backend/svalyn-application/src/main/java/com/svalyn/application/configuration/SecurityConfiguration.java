@@ -7,61 +7,61 @@
 package com.svalyn.application.configuration;
 
 import java.util.Arrays;
+import java.util.Objects;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
-import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.config.web.server.ServerHttpSecurity.CorsSpec;
-import org.springframework.security.config.web.server.ServerHttpSecurity.CsrfSpec;
-import org.springframework.security.web.server.SecurityWebFilterChain;
-import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
-import org.springframework.security.web.server.authentication.RedirectServerAuthenticationEntryPoint;
-import org.springframework.security.web.server.authentication.ServerAuthenticationEntryPointFailureHandler;
-import org.springframework.security.web.server.authentication.logout.HttpStatusReturningServerLogoutSuccessHandler;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.CorsConfigurer;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
+import org.springframework.security.web.authentication.AuthenticationEntryPointFailureHandler;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 
-@EnableWebFluxSecurity
-public class SecurityConfiguration {
-    @Bean
-    public SecurityWebFilterChain securityFilterChain(Environment environment, ServerHttpSecurity http) {
-        boolean isDevProfileActive = Arrays.asList(environment.getActiveProfiles()).contains("dev");
+@EnableWebSecurity
+public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+    private final Environment environment;
+
+    public SecurityConfiguration(Environment environment) {
+        this.environment = Objects.requireNonNull(environment);
+    }
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        boolean isDevProfileActive = Arrays.asList(this.environment.getActiveProfiles()).contains("dev");
         // @formatter:off
         http
-            .authorizeExchange(exchanges -> {
-                exchanges.pathMatchers("/login").permitAll();
-                exchanges.pathMatchers("/new/account").permitAll();
+        .authorizeRequests(exchanges -> {
+            exchanges.antMatchers("/login").permitAll();
+            exchanges.antMatchers("/new/account").permitAll();
 
-                exchanges.pathMatchers("/static/**").permitAll();
-                exchanges.pathMatchers("/favicon.ico").permitAll();
-                exchanges.pathMatchers("/manifest.json").permitAll();
-                exchanges.pathMatchers("/logo192.png").permitAll();
-                exchanges.pathMatchers("/logo512.png").permitAll();
-                exchanges.pathMatchers("/api/graphql").hasAnyRole("USER");
-                exchanges.anyExchange().authenticated();
-            })
-            .httpBasic(httpBasic -> {
-                if (isDevProfileActive) {
-                    httpBasic.authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED));
-                } else {
-                    httpBasic.authenticationEntryPoint(new RedirectServerAuthenticationEntryPoint("/login"));
-                }
-            })
-            .formLogin(formLogin -> {
-                formLogin.loginPage("/login");
-                formLogin.authenticationFailureHandler(new ServerAuthenticationEntryPointFailureHandler(new HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED)));
-                if (isDevProfileActive) {
-                    formLogin.authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED));
-                } else {
-                    formLogin.authenticationEntryPoint(new RedirectServerAuthenticationEntryPoint("/login"));
-                }
-            })
-            .logout(logout -> {
-                logout.logoutSuccessHandler(new HttpStatusReturningServerLogoutSuccessHandler(HttpStatus.ACCEPTED));
-            })
-            .cors(CorsSpec::disable)
-            .csrf(CsrfSpec::disable);
+            exchanges.antMatchers("/static/**").permitAll();
+            exchanges.antMatchers("/favicon.ico").permitAll();
+            exchanges.antMatchers("/manifest.json").permitAll();
+            exchanges.antMatchers("/logo192.png").permitAll();
+            exchanges.antMatchers("/logo512.png").permitAll();
+            exchanges.antMatchers("/api/graphql").hasAnyRole("USER");
+            exchanges.anyRequest().authenticated();
+        })
+        .httpBasic(httpBasic -> {
+            if (isDevProfileActive) {
+                httpBasic.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
+            } else {
+                httpBasic.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"));
+            }
+        })
+        .formLogin(formLogin -> {
+            formLogin.loginPage("/login");
+            formLogin.failureHandler(new AuthenticationEntryPointFailureHandler(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
+            formLogin.successHandler((request, response, authentication) -> response.setStatus(HttpStatus.OK.value()));
+        })
+        .logout(logout -> logout.logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.ACCEPTED)))
+        .cors(CorsConfigurer<HttpSecurity>::disable)
+        .csrf(CsrfConfigurer<HttpSecurity>::disable);
         // @formatter:on
-        return http.build();
     }
 }

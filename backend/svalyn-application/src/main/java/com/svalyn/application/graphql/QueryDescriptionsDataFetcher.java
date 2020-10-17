@@ -8,7 +8,6 @@ package com.svalyn.application.graphql;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 
 import org.springframework.stereotype.Service;
 
@@ -19,7 +18,7 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 
 @Service
-public class QueryDescriptionsDataFetcher implements DataFetcher<CompletableFuture<List<Description>>> {
+public class QueryDescriptionsDataFetcher implements DataFetcher<List<Description>> {
 
     private final DescriptionService descriptionService;
 
@@ -28,8 +27,8 @@ public class QueryDescriptionsDataFetcher implements DataFetcher<CompletableFutu
     }
 
     @Override
-    public CompletableFuture<List<Description>> get(DataFetchingEnvironment environment) throws Exception {
-        return this.descriptionService.getDescriptions().collectList().toFuture();
+    public List<Description> get(DataFetchingEnvironment environment) throws Exception {
+        return this.descriptionService.getDescriptions();
     }
 
 }

@@ -7,7 +7,6 @@
 package com.svalyn.application.graphql;
 
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 
 import org.springframework.stereotype.Service;
 
@@ -20,7 +19,7 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 
 @Service
-public class MutationDeleteAssessmentsDataFetcher implements DataFetcher<CompletableFuture<IPayload>> {
+public class MutationDeleteAssessmentsDataFetcher implements DataFetcher<IPayload> {
 
     private static final String INPUT = "input";
 
@@ -34,9 +33,9 @@ public class MutationDeleteAssessmentsDataFetcher implements DataFetcher<Complet
     }
 
     @Override
-    public CompletableFuture<IPayload> get(DataFetchingEnvironment environment) throws Exception {
+    public IPayload get(DataFetchingEnvironment environment) throws Exception {
         var input = this.objectMapper.convertValue(environment.getArgument(INPUT), DeleteAssessmentsInput.class);
-        return this.assessmentService.deleteAssessments(input).toFuture();
+        return this.assessmentService.deleteAssessments(input);
     }
 
 }

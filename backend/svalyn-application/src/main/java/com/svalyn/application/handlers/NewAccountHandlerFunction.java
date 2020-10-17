@@ -6,20 +6,17 @@
  **************************************************************/
 package com.svalyn.application.handlers;
 
-import static org.springframework.web.reactive.function.server.ServerResponse.badRequest;
-import static org.springframework.web.reactive.function.server.ServerResponse.ok;
+import static org.springframework.web.servlet.function.ServerResponse.badRequest;
+import static org.springframework.web.servlet.function.ServerResponse.ok;
 
 import java.util.Objects;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.server.HandlerFunction;
-import org.springframework.web.reactive.function.server.ServerRequest;
-import org.springframework.web.reactive.function.server.ServerResponse;
+import org.springframework.web.servlet.function.HandlerFunction;
+import org.springframework.web.servlet.function.ServerRequest;
+import org.springframework.web.servlet.function.ServerResponse;
 
 import com.svalyn.application.services.AccountService;
-
-import reactor.core.publisher.Mono;
 
 @Service
 public class NewAccountHandlerFunction implements HandlerFunction<ServerResponse> {
@@ -31,21 +28,17 @@ public class NewAccountHandlerFunction implements HandlerFunction<ServerResponse
     }
 
     @Override
-    public Mono<ServerResponse> handle(ServerRequest request) {
-        return request.formData().flatMap((formData -> {
-            String username = Optional.ofNullable(formData.getFirst("username")).orElse("");
-            String password = Optional.ofNullable(formData.getFirst("password")).orElse("");
+    public ServerResponse handle(ServerRequest request) {
+        String username = request.param("username").orElse("");
+        String password = request.param("password").orElse("");
 
-            // @formatter:off
-            if (username.length() > 0 && password.length() >= 10) {
-                return this.accountService.createAccount(username, password)
-                        .flatMap(account -> ok().build())
-                        .switchIfEmpty(badRequest().build())
-                        .onErrorResume(throwable -> badRequest().build());
+        if (username.length() > 0 && password.length() >= 10) {
+            var optionalAccount = this.accountService.createAccount(username, password);
+            if (optionalAccount.isPresent()) {
+                return ok().build();
             }
-            return badRequest().build();
-            // @formatter:on
-        }));
+        }
+        return badRequest().build();
     }
 
 }

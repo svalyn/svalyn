@@ -11,13 +11,11 @@ import java.util.Objects;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
-import org.springframework.web.reactive.config.CorsRegistry;
-import org.springframework.web.reactive.config.EnableWebFlux;
-import org.springframework.web.reactive.config.WebFluxConfigurer;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-@EnableWebFlux
-public class WebConfigurer implements WebFluxConfigurer {
+public class WebConfigurer implements WebMvcConfigurer {
 
     private final Environment environment;
 

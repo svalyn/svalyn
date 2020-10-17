@@ -8,19 +8,17 @@ package com.svalyn.application.services;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.svalyn.application.repositories.AccountRepository;
 
 import graphql.GraphQLContext;
-import reactor.core.publisher.Mono;
 
 @Service
-public class UserDetailsService implements ReactiveUserDetailsService {
+public class UserDetailsService implements org.springframework.security.core.userdetails.UserDetailsService {
 
     private final AccountRepository accountRepository;
 
@@ -29,20 +27,17 @@ public class UserDetailsService implements ReactiveUserDetailsService {
     }
 
     @Override
-    public Mono<org.springframework.security.core.userdetails.UserDetails> findByUsername(String username) {
+    public org.springframework.security.core.userdetails.UserDetails loadUserByUsername(String username)
+            throws UsernameNotFoundException {
         return this.accountRepository.findByUsername(username).map(accountEntity -> {
             var authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
             return new UserDetails(accountEntity.getId(), accountEntity.getUsername(), accountEntity.getPassword(),
                     authorities);
-        });
+        }).orElseThrow(() -> new UsernameNotFoundException("No account with the username " + username + " found"));
     }
 
-    public Optional<UserDetails> getUserDetails(GraphQLContext context) {
-        // @formatter:off
-        return context.getOrEmpty("principal")
-                .filter(UserDetails.class::isInstance)
-                .map(UserDetails.class::cast);
-        // @formatter:on
+    public UserDetails getUserDetails(GraphQLContext context) {
+        return context.get("principal");
     }
 
 }

@@ -7,6 +7,7 @@
 package com.svalyn.application.services;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
@@ -15,8 +16,6 @@ import org.springframework.stereotype.Service;
 
 import com.svalyn.application.entities.AccountEntity;
 import com.svalyn.application.repositories.AccountRepository;
-
-import reactor.core.publisher.Mono;
 
 @Service
 public class AccountService {
@@ -27,19 +26,19 @@ public class AccountService {
         this.accountRepository = Objects.requireNonNull(accountRepository);
     }
 
-    public Mono<Account> createAccount(String username, String password) {
+    public Optional<Account> createAccount(String username, String password) {
         PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
         String encodedPassword = encoder.encode(password);
 
-        // @formatter:off
-        return this.accountRepository.findByUsername(username)
-                .flatMap(accountEntity -> Mono.<AccountEntity>error(new IllegalArgumentException()))
-                .switchIfEmpty(Mono.defer(() -> this.accountRepository.createAccount(username, encodedPassword)))
-                .map(accountEntity -> new Account(accountEntity.getId(), accountEntity.getUsername()));
-        // @formatter:on
+        boolean alreadyExists = this.accountRepository.findByUsername(username).isPresent();
+        if (alreadyExists) {
+            return Optional.empty();
+        }
+        AccountEntity accountEntity = this.accountRepository.createAccount(username, encodedPassword);
+        return Optional.of(new Account(accountEntity.getId(), accountEntity.getUsername()));
     }
 
-    public Mono<Account> findById(UUID userId) {
+    public Optional<Account> findById(UUID userId) {
         // @formatter:off
         return this.accountRepository.findById(userId)
                 .map(accountEntity -> new Account(accountEntity.getId(), accountEntity.getUsername()));

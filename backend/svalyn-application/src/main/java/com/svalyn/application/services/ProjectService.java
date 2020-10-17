@@ -15,11 +15,11 @@ import com.svalyn.application.dto.input.CreateProjectInput;
 import com.svalyn.application.dto.input.DeleteProjectsInput;
 import com.svalyn.application.dto.output.CreateProjectSuccessPayload;
 import com.svalyn.application.dto.output.DeleteProjectsSuccessPayload;
+import com.svalyn.application.dto.output.ErrorPayload;
 import com.svalyn.application.dto.output.IPayload;
+import com.svalyn.application.dto.output.Project;
 import com.svalyn.application.repositories.AssessmentRepository;
 import com.svalyn.application.repositories.ProjectRepository;
-
-import reactor.core.publisher.Mono;
 
 @Service
 public class ProjectService {
@@ -33,21 +33,19 @@ public class ProjectService {
         this.assessmentRepository = Objects.requireNonNull(assessmentRepository);
     }
 
-    public Mono<IPayload> createProject(UUID userId, CreateProjectInput input) {
-        // @formatter:off
-        return this.projectRepository.createProject(userId, input.getLabel())
-                .map(CreateProjectSuccessPayload::new)
-                .filter(IPayload.class::isInstance)
-                .map(IPayload.class::cast);
-        // @formatter:on
+    public IPayload createProject(UUID userId, CreateProjectInput input) {
+        boolean exists = this.projectRepository.existsByLabel(input.getLabel());
+        if (!exists) {
+            Project project = this.projectRepository.createProject(userId, input.getLabel());
+            return new CreateProjectSuccessPayload(project);
+        }
+        return new ErrorPayload("The project does already exist");
     }
 
-    public Mono<IPayload> deleteProjects(DeleteProjectsInput input) {
-        // @formatter:off
-        return this.projectRepository.deleteProjects(input.getProjectIds())
-                .then(this.assessmentRepository.deleteAllByProjectIds(input.getProjectIds()))
-                .then(Mono.just(new DeleteProjectsSuccessPayload()));
-        // @formatter:on
+    public IPayload deleteProjects(DeleteProjectsInput input) {
+        this.projectRepository.deleteProjects(input.getProjectIds());
+        this.assessmentRepository.deleteAllByProjectIds(input.getProjectIds());
+        return new DeleteProjectsSuccessPayload();
     }
 
 }

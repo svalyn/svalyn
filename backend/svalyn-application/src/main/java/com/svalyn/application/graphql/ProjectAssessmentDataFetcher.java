@@ -8,7 +8,6 @@ package com.svalyn.application.graphql;
 
 import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 import org.springframework.stereotype.Service;
 
@@ -19,7 +18,7 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 
 @Service
-public class ProjectAssessmentDataFetcher implements DataFetcher<CompletableFuture<Assessment>> {
+public class ProjectAssessmentDataFetcher implements DataFetcher<Assessment> {
 
     private static final String ASSESSMENT_ID = "assessmentId"; //$NON-NLS-1$
 
@@ -30,9 +29,9 @@ public class ProjectAssessmentDataFetcher implements DataFetcher<CompletableFutu
     }
 
     @Override
-    public CompletableFuture<Assessment> get(DataFetchingEnvironment environment) throws Exception {
+    public Assessment get(DataFetchingEnvironment environment) throws Exception {
         UUID assessmentId = UUID.fromString(environment.getArgument(ASSESSMENT_ID));
-        return this.assessmentService.findById(assessmentId).toFuture();
+        return this.assessmentService.findById(assessmentId).orElse(null);
     }
 
 }

@@ -6,14 +6,14 @@
  **************************************************************/
 package com.svalyn.application.services;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import com.svalyn.application.dto.output.Description;
 import com.svalyn.application.repositories.DescriptionRepository;
-
-import reactor.core.publisher.Flux;
 
 @Service
 public class DescriptionService {
@@ -24,9 +24,12 @@ public class DescriptionService {
         this.descriptionRepository = Objects.requireNonNull(descriptionRepository);
     }
 
-    public Flux<Description> getDescriptions() {
-        return this.descriptionRepository.findAll()
-                .map(descriptionEntity -> new Description(descriptionEntity.getId(), descriptionEntity.getLabel()));
+    public List<Description> getDescriptions() {
+        // @formatter:off
+        return this.descriptionRepository.findAll().stream()
+                .map(descriptionEntity -> new Description(descriptionEntity.getId(), descriptionEntity.getLabel()))
+                .collect(Collectors.toList());
+        // @formatter:on
 
     }
 }

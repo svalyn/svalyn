@@ -6,20 +6,23 @@
  **************************************************************/
 package com.svalyn.application.handlers;
 
-import static org.springframework.web.reactive.function.server.ServerResponse.ok;
+import static org.springframework.web.servlet.function.ServerResponse.ok;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+
+import javax.servlet.ServletException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.server.HandlerFunction;
-import org.springframework.web.reactive.function.server.ServerRequest;
-import org.springframework.web.reactive.function.server.ServerResponse;
+import org.springframework.web.servlet.function.HandlerFunction;
+import org.springframework.web.servlet.function.ServerRequest;
+import org.springframework.web.servlet.function.ServerResponse;
 
 import com.svalyn.application.configuration.GraphQLPayload;
 
@@ -27,7 +30,6 @@ import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.GraphQLContext;
-import reactor.core.publisher.Mono;
 
 @Service
 public class GraphQLHandlerFunction implements HandlerFunction<ServerResponse> {
@@ -41,18 +43,33 @@ public class GraphQLHandlerFunction implements HandlerFunction<ServerResponse> {
     }
 
     @Override
-    public Mono<ServerResponse> handle(ServerRequest request) {
+    public ServerResponse handle(ServerRequest request) {
         // @formatter:off
-        var authentication = request.principal()
+        var optionalAuthentication = request.principal()
                 .filter(UsernamePasswordAuthenticationToken.class::isInstance)
                 .map(UsernamePasswordAuthenticationToken.class::cast);
 
-        var payload = request.bodyToMono(GraphQLPayload.class);
+        var optionalGraphQLPayload = this.getGraphQLPayload(request);
+        var optionalExecutionInput = optionalAuthentication.flatMap(authentication -> {
+            return optionalGraphQLPayload.map(graphQLPayload -> this.payloadToExecutionInput(authentication, graphQLPayload));
+        });
 
-        return Mono.zip(authentication, payload, this::payloadToExecutionInput)
-                      .map(this.graphQL::execute)
-                      .flatMap(this::executionResultToServerResponse);
+        return optionalExecutionInput.map(this.graphQL::execute)
+                .map(this::executionResultToServerResponse)
+                .orElse(null);
         // @formatter:on
+    }
+
+    private Optional<GraphQLPayload> getGraphQLPayload(ServerRequest request) {
+        Optional<GraphQLPayload> optionalGraphQLPayload = Optional.empty();
+
+        try {
+            optionalGraphQLPayload = Optional.of(request.body(GraphQLPayload.class));
+        } catch (ServletException | IOException exception) {
+            this.logger.warn(exception.getMessage(), exception);
+        }
+
+        return optionalGraphQLPayload;
     }
 
     private ExecutionInput payloadToExecutionInput(Authentication authentication, GraphQLPayload graphQLPayload) {
@@ -72,9 +89,9 @@ public class GraphQLHandlerFunction implements HandlerFunction<ServerResponse> {
         // @formatter:on
     }
 
-    private Mono<ServerResponse> executionResultToServerResponse(ExecutionResult executionResult) {
+    private ServerResponse executionResultToServerResponse(ExecutionResult executionResult) {
         executionResult.getErrors().stream().map(Object::toString).forEach(this.logger::warn);
 
-        return ok().bodyValue(executionResult.toSpecification());
+        return ok().body(executionResult.toSpecification());
     }
 }

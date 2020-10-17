@@ -6,31 +6,39 @@
  **************************************************************/
 package com.svalyn.application.configuration;
 
-import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
-import static org.springframework.web.reactive.function.server.RouterFunctions.resources;
-import static org.springframework.web.reactive.function.server.RouterFunctions.route;
+import static org.springframework.web.servlet.function.RequestPredicates.POST;
+import static org.springframework.web.servlet.function.RouterFunctions.resources;
+import static org.springframework.web.servlet.function.RouterFunctions.route;
+
+import java.util.Arrays;
+import java.util.Optional;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.web.reactive.function.server.RouterFunction;
-import org.springframework.web.reactive.function.server.ServerResponse;
+import org.springframework.web.servlet.function.RouterFunction;
+import org.springframework.web.servlet.function.ServerResponse;
 
 import com.svalyn.application.handlers.GraphQLHandlerFunction;
 import com.svalyn.application.handlers.NewAccountHandlerFunction;
 
-import reactor.core.publisher.Mono;
-
 @Configuration
 public class RouterConfiguration {
     @Bean
-    public RouterFunction<ServerResponse> router(NewAccountHandlerFunction newAccountHandlerFunction,
-            GraphQLHandlerFunction graphQLHandlerFunction) {
+    public RouterFunction<ServerResponse> router(Environment environment,
+            NewAccountHandlerFunction newAccountHandlerFunction, GraphQLHandlerFunction graphQLHandlerFunction) {
         var staticResources = resources("/**", new ClassPathResource("static/")); //$NON-NLS-1$ //$NON-NLS-2$
         var newAccount = route(POST("/new/account"), newAccountHandlerFunction); //$NON-NLS-1$
         var api = route(POST("/api/graphql"), graphQLHandlerFunction); //$NON-NLS-1$
-        var redirectToFrontend = resources(req -> Mono.just(new ClassPathResource("static/index.html"))); //$NON-NLS-1$
+        var routerFunction = staticResources.and(newAccount).and(api);
 
-        return staticResources.and(newAccount).and(api).and(redirectToFrontend);
+        boolean isDevProfileActive = Arrays.asList(environment.getActiveProfiles()).contains("dev");
+        if (!isDevProfileActive) {
+            var redirectToFrontend = resources(req -> Optional.of(new ClassPathResource("static/index.html")));
+            routerFunction = routerFunction.and(redirectToFrontend);
+        }
+
+        return routerFunction;
     }
 }

@@ -8,7 +8,7 @@ package com.svalyn.application.graphql;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,7 +25,7 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 
 @Service
-public class ProjectAssessmentsDataFetcher implements DataFetcher<CompletableFuture<Connection<Assessment>>> {
+public class ProjectAssessmentsDataFetcher implements DataFetcher<Connection<Assessment>> {
 
     private static final String PAGE = "page";
 
@@ -36,7 +36,7 @@ public class ProjectAssessmentsDataFetcher implements DataFetcher<CompletableFut
     }
 
     @Override
-    public CompletableFuture<Connection<Assessment>> get(DataFetchingEnvironment environment) throws Exception {
+    public Connection<Assessment> get(DataFetchingEnvironment environment) throws Exception {
         Project project = environment.getSource();
 
         int page = environment.getArgumentOrDefault(PAGE, 0).intValue();
@@ -46,24 +46,19 @@ public class ProjectAssessmentsDataFetcher implements DataFetcher<CompletableFut
 
         // @formatter:off
         Pageable pageable = PageRequest.of(page, 20);
-        var assessmentCountMono = this.assessmentService.countByProjectId(project.getId());
-        var assessmentEdgesMono = this.assessmentService.findAllByProjectId(project.getId(), pageable)
+        var assessmentCount = this.assessmentService.countByProjectId(project.getId());
+        var assessmentEdges = this.assessmentService.findAllByProjectId(project.getId(), pageable).stream()
                 .map(Edge::new)
-                .collectList();
+                .collect(Collectors.toList());
         // @formatter:on
-
-        var connectionMono = assessmentCountMono.zipWith(assessmentEdgesMono, (assessmentCount, assessmentEdges) -> {
-            return this.toConnection(pageable, assessmentCount, assessmentEdges);
-        });
-
-        return connectionMono.toFuture();
+        return this.toConnection(pageable, assessmentCount, assessmentEdges);
     }
 
-    private Connection<Assessment> toConnection(Pageable pageable, Long count, List<Edge<Assessment>> edges) {
+    private Connection<Assessment> toConnection(Pageable pageable, int count, List<Edge<Assessment>> edges) {
         boolean hasPreviousPage = pageable.hasPrevious();
         boolean hasNextPage = pageable.getOffset() + pageable.getPageSize() < count;
 
-        var pageInfo = new PageInfo(hasPreviousPage, hasNextPage, count.intValue());
+        var pageInfo = new PageInfo(hasPreviousPage, hasNextPage, count);
         return new Connection<>(edges, pageInfo);
     }
 

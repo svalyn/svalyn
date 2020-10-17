@@ -7,7 +7,6 @@
 package com.svalyn.application.graphql;
 
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 
 import org.springframework.stereotype.Service;
 
@@ -21,7 +20,7 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 
 @Service
-public class MutationUpdateTestDataFetcher implements DataFetcher<CompletableFuture<IPayload>> {
+public class MutationUpdateTestDataFetcher implements DataFetcher<IPayload> {
 
     private static final String INPUT = "input";
 
@@ -39,11 +38,11 @@ public class MutationUpdateTestDataFetcher implements DataFetcher<CompletableFut
     }
 
     @Override
-    public CompletableFuture<IPayload> get(DataFetchingEnvironment environment) throws Exception {
+    public IPayload get(DataFetchingEnvironment environment) throws Exception {
         var input = this.objectMapper.convertValue(environment.getArgument(INPUT), UpdateTestInput.class);
 
-        var userDetails = this.userDetailsService.getUserDetails(environment.getContext()).orElse(null);
-        return this.assessmentService.updateTest(userDetails.getId(), input).toFuture();
+        var userDetails = this.userDetailsService.getUserDetails(environment.getContext());
+        return this.assessmentService.updateTest(userDetails.getId(), input);
     }
 
 }

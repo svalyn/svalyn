@@ -31,7 +31,7 @@ public class TestEnvironmentInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         boolean isTest = Arrays.asList(this.environment.getActiveProfiles()).contains("test");
         if (isTest) {
-            this.accountService.createAccount("user", "0123456789").block();
+            this.accountService.createAccount("user", "0123456789");
         }
     }
 

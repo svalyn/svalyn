@@ -8,7 +8,6 @@ package com.svalyn.application.graphql;
 
 import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 import org.springframework.stereotype.Service;
 
@@ -19,7 +18,7 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 
 @Service
-public class QueryProjectDataFetcher implements DataFetcher<CompletableFuture<Project>> {
+public class QueryProjectDataFetcher implements DataFetcher<Project> {
 
     private static final String PROJECT_ID = "projectId"; //$NON-NLS-1$
 
@@ -30,9 +29,9 @@ public class QueryProjectDataFetcher implements DataFetcher<CompletableFuture<Pr
     }
 
     @Override
-    public CompletableFuture<Project> get(DataFetchingEnvironment environment) throws Exception {
+    public Project get(DataFetchingEnvironment environment) throws Exception {
         UUID projectId = UUID.fromString(environment.getArgument(PROJECT_ID));
-        return this.projectRepository.findById(projectId).toFuture();
+        return this.projectRepository.findById(projectId).orElse(null);
     }
 
 }

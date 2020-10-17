@@ -7,7 +7,6 @@
 package com.svalyn.application.graphql;
 
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 
 import org.springframework.stereotype.Service;
 
@@ -19,7 +18,7 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 
 @Service
-public class AssessmentCreatedByDataFetcher implements DataFetcher<CompletableFuture<Account>> {
+public class AssessmentCreatedByDataFetcher implements DataFetcher<Account> {
 
     private final AccountService accountService;
 
@@ -28,9 +27,9 @@ public class AssessmentCreatedByDataFetcher implements DataFetcher<CompletableFu
     }
 
     @Override
-    public CompletableFuture<Account> get(DataFetchingEnvironment environment) throws Exception {
+    public Account get(DataFetchingEnvironment environment) throws Exception {
         Assessment assessment = environment.getSource();
-        return this.accountService.findById(assessment.getLastModifiedBy()).toFuture();
+        return this.accountService.findById(assessment.getLastModifiedBy()).orElse(null);
     }
 
 }

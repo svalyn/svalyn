@@ -8,6 +8,7 @@ package com.svalyn.application.repositories;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -16,15 +17,12 @@ import org.springframework.stereotype.Service;
 
 import com.svalyn.application.entities.AssessmentEntity;
 
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
 @Service
 public class AssessmentRepository {
 
     private final List<AssessmentEntity> assessmentEntities = new ArrayList<>();
 
-    public Flux<AssessmentEntity> findAllByProjectId(UUID projectId, Pageable pageable) {
+    public List<AssessmentEntity> findAllByProjectId(UUID projectId, Pageable pageable) {
         int start = Long.valueOf(pageable.getOffset()).intValue();
         int end = start + pageable.getPageSize();
 
@@ -35,32 +33,33 @@ public class AssessmentRepository {
             end = this.assessmentEntities.size();
         }
 
-        return Flux.fromIterable(this.assessmentEntities.subList(start, end))
-                .filter(assessmentEntity -> assessmentEntity.getProjectId().equals(projectId));
-    }
-
-    public Mono<Long> countByProjectId(UUID projectId) {
-        long count = this.assessmentEntities.stream().filter(assessment -> assessment.getProjectId().equals(projectId))
-                .count();
-        return Mono.just(count);
-    }
-
-    public Mono<AssessmentEntity> findById(UUID assessmentId) {
         // @formatter:off
-        var optionalAssessment = this.assessmentEntities.stream()
+        return this.assessmentEntities.subList(start, end).stream()
+                .filter(assessmentEntity -> assessmentEntity.getProjectId().equals(projectId))
+                .collect(Collectors.toList());
+        // @formatter:on
+    }
+
+    public int countByProjectId(UUID projectId) {
+        // formatter:off
+        return this.assessmentEntities.stream().filter(assessment -> assessment.getProjectId().equals(projectId))
+                .collect(Collectors.toList()).size();
+        // formatter:on
+    }
+
+    public Optional<AssessmentEntity> findById(UUID assessmentId) {
+        // @formatter:off
+        return this.assessmentEntities.stream()
                 .filter(assessment -> assessment.getId().equals(assessmentId))
                 .findFirst();
         // @formatter:on
-        return Mono.justOrEmpty(optionalAssessment);
     }
 
-    public Mono<Boolean> existById(UUID assessmentId) {
-        boolean existById = this.assessmentEntities.stream()
-                .anyMatch(assessment -> assessment.getId().equals(assessmentId));
-        return Mono.just(existById);
+    public boolean existById(UUID assessmentId) {
+        return this.assessmentEntities.stream().anyMatch(assessment -> assessment.getId().equals(assessmentId));
     }
 
-    public Mono<AssessmentEntity> save(AssessmentEntity assessmentEntity) {
+    public AssessmentEntity save(AssessmentEntity assessmentEntity) {
         var optionalAssessmentEntity = this.assessmentEntities.stream()
                 .filter(entity -> entity.getId().equals(assessmentEntity.getId())).findFirst();
 
@@ -73,10 +72,10 @@ public class AssessmentRepository {
         } else {
             this.assessmentEntities.add(0, assessmentEntity);
         }
-        return Mono.just(assessmentEntity);
+        return assessmentEntity;
     }
 
-    public Mono<Void> deleteAssessments(List<UUID> assessmentIds) {
+    public void deleteAssessments(List<UUID> assessmentIds) {
         // @formatter:off
         var assessmentsToRemove = this.assessmentEntities.stream()
             .filter(assessment -> assessmentIds.contains(assessment.getId()))
@@ -84,16 +83,14 @@ public class AssessmentRepository {
 
         assessmentsToRemove.forEach(this.assessmentEntities::remove);
         // @formatter:on
-        return Mono.empty();
     }
 
-    public Mono<Void> deleteAllByProjectIds(List<UUID> projectIds) {
+    public void deleteAllByProjectIds(List<UUID> projectIds) {
         // @formatter:off
         var assessments = this.assessmentEntities.stream()
                 .filter(assessment -> projectIds.contains(assessment.getProjectId())).collect(Collectors.toList());
         assessments.stream().forEach(this.assessmentEntities::remove);
         // @formatter:on
-        return Mono.empty();
     }
 
 }
