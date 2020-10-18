@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.svalyn.application.dto.input.UpdateAssessmentStatusInput;
 import com.svalyn.application.dto.output.IPayload;
-import com.svalyn.application.services.AssessmentService;
+import com.svalyn.application.services.AssessmentUpdateService;
 import com.svalyn.application.services.UserDetailsService;
 
 import graphql.schema.DataFetcher;
@@ -28,13 +28,13 @@ public class MutationUpdateAssessmentStatusDataFetcher implements DataFetcher<IP
 
     private final UserDetailsService userDetailsService;
 
-    private final AssessmentService assessmentService;
+    private final AssessmentUpdateService assessmentUpdateService;
 
     public MutationUpdateAssessmentStatusDataFetcher(ObjectMapper objectMapper, UserDetailsService userDetailsService,
-            AssessmentService assessmentService) {
+            AssessmentUpdateService assessmentUpdateService) {
         this.objectMapper = Objects.requireNonNull(objectMapper);
         this.userDetailsService = Objects.requireNonNull(userDetailsService);
-        this.assessmentService = Objects.requireNonNull(assessmentService);
+        this.assessmentUpdateService = Objects.requireNonNull(assessmentUpdateService);
     }
 
     @Override
@@ -42,7 +42,7 @@ public class MutationUpdateAssessmentStatusDataFetcher implements DataFetcher<IP
         var input = this.objectMapper.convertValue(environment.getArgument(INPUT), UpdateAssessmentStatusInput.class);
 
         var userDetails = this.userDetailsService.getUserDetails(environment.getContext());
-        return this.assessmentService.updateAssessmentStatus(userDetails.getId(), input);
+        return this.assessmentUpdateService.updateAssessmentStatus(userDetails.getId(), input);
     }
 
 }

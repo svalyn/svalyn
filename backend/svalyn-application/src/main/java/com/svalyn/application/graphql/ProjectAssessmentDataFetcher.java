@@ -12,7 +12,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import com.svalyn.application.dto.output.Assessment;
-import com.svalyn.application.services.AssessmentService;
+import com.svalyn.application.services.AssessmentSearchService;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -22,16 +22,16 @@ public class ProjectAssessmentDataFetcher implements DataFetcher<Assessment> {
 
     private static final String ASSESSMENT_ID = "assessmentId"; //$NON-NLS-1$
 
-    private final AssessmentService assessmentService;
+    private final AssessmentSearchService assessmentSearchService;
 
-    public ProjectAssessmentDataFetcher(AssessmentService assessmentService) {
-        this.assessmentService = Objects.requireNonNull(assessmentService);
+    public ProjectAssessmentDataFetcher(AssessmentSearchService assessmentSearchService) {
+        this.assessmentSearchService = Objects.requireNonNull(assessmentSearchService);
     }
 
     @Override
     public Assessment get(DataFetchingEnvironment environment) throws Exception {
         UUID assessmentId = UUID.fromString(environment.getArgument(ASSESSMENT_ID));
-        return this.assessmentService.findById(assessmentId).orElse(null);
+        return this.assessmentSearchService.findById(assessmentId).orElse(null);
     }
 
 }

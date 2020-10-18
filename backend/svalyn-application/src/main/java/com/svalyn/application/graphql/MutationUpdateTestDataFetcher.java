@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.svalyn.application.dto.input.UpdateTestInput;
 import com.svalyn.application.dto.output.IPayload;
-import com.svalyn.application.services.AssessmentService;
+import com.svalyn.application.services.AssessmentUpdateService;
 import com.svalyn.application.services.UserDetailsService;
 
 import graphql.schema.DataFetcher;
@@ -28,13 +28,13 @@ public class MutationUpdateTestDataFetcher implements DataFetcher<IPayload> {
 
     private final UserDetailsService userDetailsService;
 
-    private final AssessmentService assessmentService;
+    private final AssessmentUpdateService assessmentUpdateService;
 
     public MutationUpdateTestDataFetcher(ObjectMapper objectMapper, UserDetailsService userDetailsService,
-            AssessmentService assessmentService) {
+            AssessmentUpdateService assessmentUpdateService) {
         this.objectMapper = Objects.requireNonNull(objectMapper);
         this.userDetailsService = Objects.requireNonNull(userDetailsService);
-        this.assessmentService = Objects.requireNonNull(assessmentService);
+        this.assessmentUpdateService = Objects.requireNonNull(assessmentUpdateService);
     }
 
     @Override
@@ -42,7 +42,7 @@ public class MutationUpdateTestDataFetcher implements DataFetcher<IPayload> {
         var input = this.objectMapper.convertValue(environment.getArgument(INPUT), UpdateTestInput.class);
 
         var userDetails = this.userDetailsService.getUserDetails(environment.getContext());
-        return this.assessmentService.updateTest(userDetails.getId(), input);
+        return this.assessmentUpdateService.updateTest(userDetails.getId(), input);
     }
 
 }

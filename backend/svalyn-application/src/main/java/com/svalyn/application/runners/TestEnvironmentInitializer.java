@@ -13,25 +13,25 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
-import com.svalyn.application.services.AccountService;
+import com.svalyn.application.services.AccountCreationService;
 
 @Component
 public class TestEnvironmentInitializer implements CommandLineRunner {
 
     private final Environment environment;
 
-    private final AccountService accountService;
+    private final AccountCreationService accountCreationService;
 
-    public TestEnvironmentInitializer(Environment environment, AccountService accountService) {
+    public TestEnvironmentInitializer(Environment environment, AccountCreationService accountCreationService) {
         this.environment = Objects.requireNonNull(environment);
-        this.accountService = Objects.requireNonNull(accountService);
+        this.accountCreationService = Objects.requireNonNull(accountCreationService);
     }
 
     @Override
     public void run(String... args) throws Exception {
         boolean isTest = Arrays.asList(this.environment.getActiveProfiles()).contains("test");
         if (isTest) {
-            this.accountService.createAccount("user", "0123456789");
+            this.accountCreationService.createAccount("user", "0123456789");
         }
     }
 

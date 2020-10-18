@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.svalyn.application.dto.input.CreateProjectInput;
 import com.svalyn.application.dto.output.IPayload;
-import com.svalyn.application.services.ProjectService;
+import com.svalyn.application.services.ProjectCreationService;
 import com.svalyn.application.services.UserDetailsService;
 
 import graphql.schema.DataFetcher;
@@ -28,13 +28,13 @@ public class MutationCreateProjectDataFetcher implements DataFetcher<IPayload> {
 
     private final UserDetailsService userDetailsService;
 
-    private final ProjectService projectService;
+    private final ProjectCreationService projectCreationService;
 
     public MutationCreateProjectDataFetcher(ObjectMapper objectMapper, UserDetailsService userDetailsService,
-            ProjectService projectService) {
+            ProjectCreationService projectCreationService) {
         this.objectMapper = Objects.requireNonNull(objectMapper);
         this.userDetailsService = Objects.requireNonNull(userDetailsService);
-        this.projectService = Objects.requireNonNull(projectService);
+        this.projectCreationService = Objects.requireNonNull(projectCreationService);
     }
 
     @Override
@@ -42,7 +42,7 @@ public class MutationCreateProjectDataFetcher implements DataFetcher<IPayload> {
         var input = this.objectMapper.convertValue(environment.getArgument(INPUT), CreateProjectInput.class);
 
         var userDetails = this.userDetailsService.getUserDetails(environment.getContext());
-        return this.projectService.createProject(userDetails.getId(), input);
+        return this.projectCreationService.createProject(userDetails.getId(), input);
     }
 
 }

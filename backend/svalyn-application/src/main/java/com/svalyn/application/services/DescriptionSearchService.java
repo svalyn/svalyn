@@ -16,11 +16,11 @@ import com.svalyn.application.dto.output.Description;
 import com.svalyn.application.repositories.DescriptionRepository;
 
 @Service
-public class DescriptionService {
+public class DescriptionSearchService {
 
     private final DescriptionRepository descriptionRepository;
 
-    public DescriptionService(DescriptionRepository descriptionRepository) {
+    public DescriptionSearchService(DescriptionRepository descriptionRepository) {
         this.descriptionRepository = Objects.requireNonNull(descriptionRepository);
     }
 

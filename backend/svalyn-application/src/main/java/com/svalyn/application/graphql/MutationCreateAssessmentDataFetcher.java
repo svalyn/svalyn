@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.svalyn.application.dto.input.CreateAssessmentInput;
 import com.svalyn.application.dto.output.IPayload;
-import com.svalyn.application.services.AssessmentService;
+import com.svalyn.application.services.AssessmentCreationService;
 import com.svalyn.application.services.UserDetailsService;
 
 import graphql.schema.DataFetcher;
@@ -28,13 +28,13 @@ public class MutationCreateAssessmentDataFetcher implements DataFetcher<IPayload
 
     private final UserDetailsService userDetailsService;
 
-    private final AssessmentService assessmentService;
+    private final AssessmentCreationService assessmentCreationService;
 
     public MutationCreateAssessmentDataFetcher(ObjectMapper objectMapper, UserDetailsService userDetailsService,
-            AssessmentService assessmentService) {
+            AssessmentCreationService assessmentCreationService) {
         this.objectMapper = Objects.requireNonNull(objectMapper);
         this.userDetailsService = Objects.requireNonNull(userDetailsService);
-        this.assessmentService = Objects.requireNonNull(assessmentService);
+        this.assessmentCreationService = Objects.requireNonNull(assessmentCreationService);
     }
 
     @Override
@@ -42,7 +42,7 @@ public class MutationCreateAssessmentDataFetcher implements DataFetcher<IPayload
         var input = this.objectMapper.convertValue(environment.getArgument(INPUT), CreateAssessmentInput.class);
 
         var userDetails = this.userDetailsService.getUserDetails(environment.getContext());
-        return this.assessmentService.createAssessment(userDetails.getId(), input);
+        return this.assessmentCreationService.createAssessment(userDetails.getId(), input);
     }
 
 }

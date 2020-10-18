@@ -18,7 +18,7 @@ import com.svalyn.application.dto.output.Connection;
 import com.svalyn.application.dto.output.Edge;
 import com.svalyn.application.dto.output.PageInfo;
 import com.svalyn.application.dto.output.Project;
-import com.svalyn.application.repositories.ProjectRepository;
+import com.svalyn.application.services.ProjectSearchService;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -28,10 +28,10 @@ public class QueryProjectsDataFetcher implements DataFetcher<Connection<Project>
 
     private static final String PAGE = "page";
 
-    private final ProjectRepository projectRepository;
+    private final ProjectSearchService projectSearchService;
 
-    public QueryProjectsDataFetcher(ProjectRepository projectRepository) {
-        this.projectRepository = Objects.requireNonNull(projectRepository);
+    public QueryProjectsDataFetcher(ProjectSearchService projectSearchService) {
+        this.projectSearchService = Objects.requireNonNull(projectSearchService);
     }
 
     @Override
@@ -43,8 +43,8 @@ public class QueryProjectsDataFetcher implements DataFetcher<Connection<Project>
 
         // @formatter:off
         Pageable pageable = PageRequest.of(page, 20);
-        var projectCount = this.projectRepository.count();
-        var projectEdges = this.projectRepository.findAll(pageable).stream()
+        var projectCount = this.projectSearchService.count();
+        var projectEdges = this.projectSearchService.findAll(pageable).stream()
                 .map(Edge::new)
                 .collect(Collectors.toList());
         // @formatter:on

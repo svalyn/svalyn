@@ -19,7 +19,7 @@ import com.svalyn.application.dto.output.Connection;
 import com.svalyn.application.dto.output.Edge;
 import com.svalyn.application.dto.output.PageInfo;
 import com.svalyn.application.dto.output.Project;
-import com.svalyn.application.services.AssessmentService;
+import com.svalyn.application.services.AssessmentSearchService;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -29,10 +29,10 @@ public class ProjectAssessmentsDataFetcher implements DataFetcher<Connection<Ass
 
     private static final String PAGE = "page";
 
-    private final AssessmentService assessmentService;
+    private final AssessmentSearchService assessmentSearchService;
 
-    public ProjectAssessmentsDataFetcher(AssessmentService assessmentService) {
-        this.assessmentService = Objects.requireNonNull(assessmentService);
+    public ProjectAssessmentsDataFetcher(AssessmentSearchService assessmentSearchService) {
+        this.assessmentSearchService = Objects.requireNonNull(assessmentSearchService);
     }
 
     @Override
@@ -46,8 +46,8 @@ public class ProjectAssessmentsDataFetcher implements DataFetcher<Connection<Ass
 
         // @formatter:off
         Pageable pageable = PageRequest.of(page, 20);
-        var assessmentCount = this.assessmentService.countByProjectId(project.getId());
-        var assessmentEdges = this.assessmentService.findAllByProjectId(project.getId(), pageable).stream()
+        var assessmentCount = this.assessmentSearchService.countByProjectId(project.getId());
+        var assessmentEdges = this.assessmentSearchService.findAllByProjectId(project.getId(), pageable).stream()
                 .map(Edge::new)
                 .collect(Collectors.toList());
         // @formatter:on

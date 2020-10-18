@@ -10,9 +10,9 @@ import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 
+import com.svalyn.application.dto.output.Account;
 import com.svalyn.application.dto.output.Project;
-import com.svalyn.application.services.Account;
-import com.svalyn.application.services.AccountService;
+import com.svalyn.application.services.AccountSearchService;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -20,16 +20,16 @@ import graphql.schema.DataFetchingEnvironment;
 @Service
 public class ProjectCreatedByDataFetcher implements DataFetcher<Account> {
 
-    private final AccountService accountService;
+    private final AccountSearchService accountSearchService;
 
-    public ProjectCreatedByDataFetcher(AccountService accountService) {
-        this.accountService = Objects.requireNonNull(accountService);
+    public ProjectCreatedByDataFetcher(AccountSearchService accountSearchService) {
+        this.accountSearchService = Objects.requireNonNull(accountSearchService);
     }
 
     @Override
     public Account get(DataFetchingEnvironment environment) throws Exception {
         Project project = environment.getSource();
-        return this.accountService.findById(project.getCreatedBy()).orElse(null);
+        return this.accountSearchService.findById(project.getCreatedBy()).orElse(null);
     }
 
 }

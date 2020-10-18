@@ -10,9 +10,9 @@ import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 
+import com.svalyn.application.dto.output.Account;
 import com.svalyn.application.dto.output.Assessment;
-import com.svalyn.application.services.Account;
-import com.svalyn.application.services.AccountService;
+import com.svalyn.application.services.AccountSearchService;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -20,16 +20,16 @@ import graphql.schema.DataFetchingEnvironment;
 @Service
 public class AssessmentCreatedByDataFetcher implements DataFetcher<Account> {
 
-    private final AccountService accountService;
+    private final AccountSearchService accountSearchService;
 
-    public AssessmentCreatedByDataFetcher(AccountService accountService) {
-        this.accountService = Objects.requireNonNull(accountService);
+    public AssessmentCreatedByDataFetcher(AccountSearchService accountSearchService) {
+        this.accountSearchService = Objects.requireNonNull(accountSearchService);
     }
 
     @Override
     public Account get(DataFetchingEnvironment environment) throws Exception {
         Assessment assessment = environment.getSource();
-        return this.accountService.findById(assessment.getLastModifiedBy()).orElse(null);
+        return this.accountSearchService.findById(assessment.getLastModifiedBy()).orElse(null);
     }
 
 }

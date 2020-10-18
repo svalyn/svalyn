@@ -12,7 +12,7 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 
 import com.svalyn.application.dto.output.Description;
-import com.svalyn.application.services.DescriptionService;
+import com.svalyn.application.services.DescriptionSearchService;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -20,15 +20,15 @@ import graphql.schema.DataFetchingEnvironment;
 @Service
 public class QueryDescriptionsDataFetcher implements DataFetcher<List<Description>> {
 
-    private final DescriptionService descriptionService;
+    private final DescriptionSearchService descriptionSearchService;
 
-    public QueryDescriptionsDataFetcher(DescriptionService descriptionService) {
-        this.descriptionService = Objects.requireNonNull(descriptionService);
+    public QueryDescriptionsDataFetcher(DescriptionSearchService descriptionSearchService) {
+        this.descriptionSearchService = Objects.requireNonNull(descriptionSearchService);
     }
 
     @Override
     public List<Description> get(DataFetchingEnvironment environment) throws Exception {
-        return this.descriptionService.getDescriptions();
+        return this.descriptionSearchService.getDescriptions();
     }
 
 }

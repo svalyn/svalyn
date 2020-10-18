@@ -16,15 +16,15 @@ import org.springframework.web.servlet.function.HandlerFunction;
 import org.springframework.web.servlet.function.ServerRequest;
 import org.springframework.web.servlet.function.ServerResponse;
 
-import com.svalyn.application.services.AccountService;
+import com.svalyn.application.services.AccountCreationService;
 
 @Service
 public class NewAccountHandlerFunction implements HandlerFunction<ServerResponse> {
 
-    private final AccountService accountService;
+    private final AccountCreationService accountCreationService;
 
-    public NewAccountHandlerFunction(AccountService accountService) {
-        this.accountService = Objects.requireNonNull(accountService);
+    public NewAccountHandlerFunction(AccountCreationService accountCreationService) {
+        this.accountCreationService = Objects.requireNonNull(accountCreationService);
     }
 
     @Override
@@ -33,7 +33,7 @@ public class NewAccountHandlerFunction implements HandlerFunction<ServerResponse
         String password = request.param("password").orElse("");
 
         if (username.length() > 0 && password.length() >= 10) {
-            var optionalAccount = this.accountService.createAccount(username, password);
+            var optionalAccount = this.accountCreationService.createAccount(username, password);
             if (optionalAccount.isPresent()) {
                 return ok().build();
             }

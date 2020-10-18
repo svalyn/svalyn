@@ -17,17 +17,17 @@ import com.svalyn.application.entities.AccountEntity;
 
 @Service
 public class AccountRepository {
-    private final List<AccountEntity> accounts = new ArrayList<>();
+    private final List<AccountEntity> accountEntities = new ArrayList<>();
 
     public AccountEntity createAccount(String username, String password) {
         AccountEntity accountEntity = new AccountEntity(UUID.randomUUID(), username, password);
-        this.accounts.add(accountEntity);
+        this.accountEntities.add(accountEntity);
         return accountEntity;
     }
 
     public Optional<AccountEntity> findByUsername(String username) {
         // @formatter:off
-        return this.accounts.stream()
+        return this.accountEntities.stream()
                 .filter(accountEntity -> accountEntity.getUsername().equals(username))
                 .findFirst();
         // @formatter:on
@@ -35,7 +35,7 @@ public class AccountRepository {
 
     public Optional<AccountEntity> findById(UUID userId) {
         // @formatter:off
-        return this.accounts.stream()
+        return this.accountEntities.stream()
                 .filter(accountEntity -> accountEntity.getId().equals(userId))
                 .findFirst();
         // @formatter:on

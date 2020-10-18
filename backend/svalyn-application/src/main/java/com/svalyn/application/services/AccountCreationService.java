@@ -8,21 +8,20 @@ package com.svalyn.application.services;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.svalyn.application.dto.output.Account;
 import com.svalyn.application.entities.AccountEntity;
 import com.svalyn.application.repositories.AccountRepository;
 
 @Service
-public class AccountService {
-
+public class AccountCreationService {
     private final AccountRepository accountRepository;
 
-    public AccountService(AccountRepository accountRepository) {
+    public AccountCreationService(AccountRepository accountRepository) {
         this.accountRepository = Objects.requireNonNull(accountRepository);
     }
 
@@ -38,10 +37,4 @@ public class AccountService {
         return Optional.of(new Account(accountEntity.getId(), accountEntity.getUsername()));
     }
 
-    public Optional<Account> findById(UUID userId) {
-        // @formatter:off
-        return this.accountRepository.findById(userId)
-                .map(accountEntity -> new Account(accountEntity.getId(), accountEntity.getUsername()));
-        // @formatter:on
-    }
 }

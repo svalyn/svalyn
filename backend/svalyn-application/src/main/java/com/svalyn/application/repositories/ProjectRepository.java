@@ -6,8 +6,6 @@
  **************************************************************/
 package com.svalyn.application.repositories;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -17,60 +15,59 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.svalyn.application.dto.output.Project;
+import com.svalyn.application.entities.ProjectEntity;
 
 @Service
 public class ProjectRepository {
 
-    private final List<Project> projects = new ArrayList<>();
+    private final List<ProjectEntity> projectEntities = new ArrayList<>();
 
     public int count() {
-        return this.projects.size();
+        return this.projectEntities.size();
     }
 
-    public List<Project> findAll(Pageable pageable) {
+    public List<ProjectEntity> findAll(Pageable pageable) {
         int start = Long.valueOf(pageable.getOffset()).intValue();
         int end = start + pageable.getPageSize();
 
-        if (start > this.projects.size()) {
-            start = this.projects.size();
+        if (start > this.projectEntities.size()) {
+            start = this.projectEntities.size();
         }
-        if (end > this.projects.size()) {
-            end = this.projects.size();
+        if (end > this.projectEntities.size()) {
+            end = this.projectEntities.size();
         }
 
-        return this.projects.subList(start, end);
+        return this.projectEntities.subList(start, end);
     }
 
-    public Optional<Project> findById(UUID projectId) {
+    public Optional<ProjectEntity> findById(UUID projectId) {
         // @formatter:off
-        return this.projects.stream()
+        return this.projectEntities.stream()
                 .filter(project -> project.getId().equals(projectId))
                 .findFirst();
         // @formatter:on
     }
 
     public boolean existsByLabel(String label) {
-        return this.projects.stream().anyMatch(project -> project.getLabel().equals(label));
+        return this.projectEntities.stream().anyMatch(project -> project.getLabel().equals(label));
     }
 
     public boolean existsById(UUID projectId) {
-        return this.projects.stream().anyMatch(project -> project.getId().equals(projectId));
+        return this.projectEntities.stream().anyMatch(project -> project.getId().equals(projectId));
     }
 
-    public Project createProject(UUID userId, String label) {
-        Project project = new Project(UUID.randomUUID(), label, userId, LocalDateTime.now(ZoneOffset.UTC));
-        this.projects.add(project);
-        return project;
+    public ProjectEntity save(ProjectEntity projectEntity) {
+        this.projectEntities.add(projectEntity);
+        return projectEntity;
     }
 
     public void deleteProjects(List<UUID> projectIds) {
         // @formatter:off
-        var projectsToRemove = this.projects.stream()
+        var projectsToRemove = this.projectEntities.stream()
             .filter(project -> projectIds.contains(project.getId()))
             .collect(Collectors.toList());
 
-        projectsToRemove.forEach(this.projects::remove);
+        projectsToRemove.forEach(this.projectEntities::remove);
         // @formatter:on
     }
 }

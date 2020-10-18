@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.svalyn.application.dto.input.DeleteProjectsInput;
 import com.svalyn.application.dto.output.IPayload;
-import com.svalyn.application.services.ProjectService;
+import com.svalyn.application.services.ProjectDeletionService;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -25,17 +25,17 @@ public class MutationDeleteProjectsDataFetcher implements DataFetcher<IPayload> 
 
     private final ObjectMapper objectMapper;
 
-    private final ProjectService projectService;
+    private final ProjectDeletionService projectDeletionService;
 
-    public MutationDeleteProjectsDataFetcher(ObjectMapper objectMapper, ProjectService projectService) {
+    public MutationDeleteProjectsDataFetcher(ObjectMapper objectMapper, ProjectDeletionService projectDeletionService) {
         this.objectMapper = Objects.requireNonNull(objectMapper);
-        this.projectService = Objects.requireNonNull(projectService);
+        this.projectDeletionService = Objects.requireNonNull(projectDeletionService);
     }
 
     @Override
     public IPayload get(DataFetchingEnvironment environment) throws Exception {
         var input = this.objectMapper.convertValue(environment.getArgument(INPUT), DeleteProjectsInput.class);
-        return this.projectService.deleteProjects(input);
+        return this.projectDeletionService.deleteProjects(input);
     }
 
 }
