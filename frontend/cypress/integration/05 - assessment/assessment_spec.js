@@ -24,13 +24,13 @@ describe('Assessment - /projects/:projectId/assessments/:assessmentId', () => {
   });
 
   it('Shows the name of the assessment', () => {
-    cy.get('[data-testid=assessment-label').should('have.text', 'NewAssessment');
+    cy.get('[data-testid=assessment-label]').should('have.text', 'NewAssessment');
   });
 
   it('Can complete an assessment', () => {
-    cy.get('[data-testid="results"').should('have.text', `Total ${22} · Success ${0} · Failure ${0}`);
+    cy.get('[data-testid="results"]').should('have.text', `Total ${22} · Success ${0} · Failure ${0}`);
 
-    cy.get('[data-testid="Motor functions can be freezed-success"').click();
+    cy.get('[data-testid="Motor functions can be freezed-success"]').click();
     cy.get('[data-testid="results"').should('have.text', `Total ${22} · Success ${1} · Failure ${0}`);
 
     cy.get('[data-testid="The hosts should be emotionally stable"').click();
@@ -152,5 +152,22 @@ describe('Assessment - /projects/:projectId/assessments/:assessmentId', () => {
     cy.get('[data-testid="toggle-assessment-status"').click();
 
     cy.get('[data-testid="The hosts should be diagnosticable-success"').should('be.visible');
+  });
+
+  it('Show a message when trying to edit a test after logging out', () => {
+    cy.get('[data-testid="results"').should('have.text', `Total ${22} · Success ${0} · Failure ${0}`);
+
+    cy.logout();
+
+    cy.get('[data-testid="Motor functions can be freezed-success"').click();
+    cy.get('[data-testid="snackbar"]').should('be.visible');
+    cy.get('[data-testid="results"').should('have.text', `Total ${22} · Success ${0} · Failure ${0}`);
+  });
+
+  it('Show a message when trying to edit an assessment after logging out', () => {
+    cy.logout();
+
+    cy.get('[data-testid="toggle-assessment-status"').click();
+    cy.get('[data-testid="snackbar"]').should('be.visible');
   });
 });

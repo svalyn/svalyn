@@ -250,6 +250,7 @@ export const AssessmentView = () => {
         autoHideDuration={3000}
         onClose={() => dispatch({ type: 'HIDE_TOAST' })}
         message={message}
+        data-testid="snackbar"
         action={
           <IconButton size="small" aria-label="close" color="inherit" onClick={() => dispatch({ type: 'HIDE_TOAST' })}>
             <CloseIcon fontSize="small" />
