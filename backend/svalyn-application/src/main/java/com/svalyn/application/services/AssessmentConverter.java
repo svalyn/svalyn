@@ -9,10 +9,14 @@ package com.svalyn.application.services;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.svalyn.application.dto.output.Account;
 import com.svalyn.application.dto.output.Assessment;
 import com.svalyn.application.dto.output.AssessmentStatus;
 import com.svalyn.application.dto.output.Category;
@@ -22,20 +26,25 @@ import com.svalyn.application.dto.output.TestStatus;
 import com.svalyn.application.entities.AssessmentEntity;
 import com.svalyn.application.entities.AssessmentStatusEntity;
 import com.svalyn.application.entities.CategoryEntity;
-import com.svalyn.application.entities.DescriptionEntity;
 import com.svalyn.application.entities.RequirementEntity;
 import com.svalyn.application.entities.TestEntity;
-import com.svalyn.application.entities.TestStatusEntity;
+import com.svalyn.application.entities.TestResultEntity;
+import com.svalyn.application.entities.TestResultStatusEntity;
 
 @Service
 public class AssessmentConverter {
-    public Assessment convert(DescriptionEntity descriptionEntity, AssessmentEntity assessmentEntity) {
+    public Assessment convert(AssessmentEntity assessmentEntity) {
         int success = 0;
         int failure = 0;
         int testCount = 0;
 
+        // @formatter:off
+        Map<UUID, TestResultEntity> results = assessmentEntity.getResults().stream()
+                .collect(Collectors.toMap(result -> result.getTest().getId(), result -> result));
+        // @formatter:on
+
         List<Category> categories = new ArrayList<>();
-        for (CategoryEntity categoryEntity : descriptionEntity.getCategories()) {
+        for (CategoryEntity categoryEntity : assessmentEntity.getDescription().getCategories()) {
             int previousCategorySuccess = success;
             int previousCategoryFailure = failure;
 
@@ -46,7 +55,9 @@ public class AssessmentConverter {
 
                 List<Test> tests = new ArrayList<>();
                 for (TestEntity testEntity : requirementEntity.getTests()) {
-                    TestStatusEntity statusEntity = assessmentEntity.getResults().get(testEntity.getId());
+                    var optionalTestResultEntity = Optional.ofNullable(results.get(testEntity.getId()));
+                    TestResultStatusEntity statusEntity = optionalTestResultEntity.map(TestResultEntity::getStatus)
+                            .orElse(null);
                     TestStatus status = this.convert(statusEntity);
 
                     if (status == TestStatus.SUCCESS) {
@@ -55,7 +66,7 @@ public class AssessmentConverter {
                         failure = failure + 1;
                     }
 
-                    tests.add(new Test(testEntity.getId(), testEntity.getLabel(), testEntity.getDescription(),
+                    tests.add(new Test(testEntity.getId(), testEntity.getLabel(), testEntity.getDetails(),
                             testEntity.getSteps(), status));
                     testCount = testCount + 1;
                 }
@@ -68,7 +79,7 @@ public class AssessmentConverter {
                 }
 
                 requirements.add(new Requirement(requirementEntity.getId(), requirementEntity.getLabel(),
-                        requirementEntity.getDescription(), tests, requirementStatus));
+                        requirementEntity.getDetails(), tests, requirementStatus));
             }
 
             // @formatter:off
@@ -85,30 +96,34 @@ public class AssessmentConverter {
                 categoryStatus = TestStatus.FAILURE;
             }
 
-            categories.add(new Category(categoryEntity.getId(), categoryEntity.getLabel(),
-                    categoryEntity.getDescription(), requirements, categoryStatus));
+            categories.add(new Category(categoryEntity.getId(), categoryEntity.getLabel(), categoryEntity.getDetails(),
+                    requirements, categoryStatus));
         }
 
         AssessmentStatus status = this.convert(assessmentEntity.getStatus());
-        return new Assessment(assessmentEntity.getId(), assessmentEntity.getLabel(), assessmentEntity.getCreatedBy(),
-                assessmentEntity.getCreatedOn(), assessmentEntity.getLastModifiedBy(),
-                assessmentEntity.getLastModifiedOn(), categories, success, failure, testCount, status);
+        Account createdBy = new Account(assessmentEntity.getCreatedBy().getId(),
+                assessmentEntity.getCreatedBy().getUsername());
+        Account lastModifiedBy = new Account(assessmentEntity.getLastModifiedBy().getId(),
+                assessmentEntity.getLastModifiedBy().getUsername());
+        return new Assessment(assessmentEntity.getId(), assessmentEntity.getLabel(), createdBy,
+                assessmentEntity.getCreatedOn(), lastModifiedBy, assessmentEntity.getLastModifiedOn(), categories,
+                success, failure, testCount, status);
     }
 
-    private TestStatus convert(TestStatusEntity statusEntity) {
-        if (statusEntity == TestStatusEntity.SUCCESS) {
+    private TestStatus convert(TestResultStatusEntity statusEntity) {
+        if (statusEntity == TestResultStatusEntity.SUCCESS) {
             return TestStatus.SUCCESS;
-        } else if (statusEntity == TestStatusEntity.FAILURE) {
+        } else if (statusEntity == TestResultStatusEntity.FAILURE) {
             return TestStatus.FAILURE;
         }
         return null;
     }
 
-    public TestStatusEntity convert(TestStatus status) {
+    public TestResultStatusEntity convert(TestStatus status) {
         if (status == TestStatus.SUCCESS) {
-            return TestStatusEntity.SUCCESS;
+            return TestResultStatusEntity.SUCCESS;
         } else if (status == TestStatus.FAILURE) {
-            return TestStatusEntity.FAILURE;
+            return TestResultStatusEntity.FAILURE;
         }
         return null;
     }

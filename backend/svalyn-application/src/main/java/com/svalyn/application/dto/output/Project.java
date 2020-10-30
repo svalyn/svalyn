@@ -15,11 +15,11 @@ public class Project {
 
     private final String label;
 
-    private final UUID createdBy;
+    private final Account createdBy;
 
     private final LocalDateTime createdOn;
 
-    public Project(UUID id, String label, UUID createdBy, LocalDateTime createdOn) {
+    public Project(UUID id, String label, Account createdBy, LocalDateTime createdOn) {
         this.id = Objects.requireNonNull(id);
         this.label = Objects.requireNonNull(label);
         this.createdBy = Objects.requireNonNull(createdBy);
@@ -34,7 +34,7 @@ public class Project {
         return this.label;
     }
 
-    public UUID getCreatedBy() {
+    public Account getCreatedBy() {
         return this.createdBy;
     }
 

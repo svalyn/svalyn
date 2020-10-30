@@ -13,18 +13,19 @@ import org.springframework.stereotype.Service;
 import com.svalyn.application.dto.input.DeleteAssessmentsInput;
 import com.svalyn.application.dto.output.DeleteAssessmentsSuccessPayload;
 import com.svalyn.application.dto.output.IPayload;
-import com.svalyn.application.repositories.AssessmentRepository;
+import com.svalyn.application.repositories.IAssessmentRepository;
 
 @Service
 public class AssessmentDeletionService {
-    private final AssessmentRepository assessmentRepository;
 
-    public AssessmentDeletionService(AssessmentRepository assessmentRepository) {
+    private final IAssessmentRepository assessmentRepository;
+
+    public AssessmentDeletionService(IAssessmentRepository assessmentRepository) {
         this.assessmentRepository = Objects.requireNonNull(assessmentRepository);
     }
 
     public IPayload deleteAssessments(DeleteAssessmentsInput input) {
-        this.assessmentRepository.deleteAssessments(input.getAssessmentIds());
+        this.assessmentRepository.deleteWithIds(input.getAssessmentIds());
         return new DeleteAssessmentsSuccessPayload();
     }
 }

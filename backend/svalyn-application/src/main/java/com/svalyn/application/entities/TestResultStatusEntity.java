@@ -6,6 +6,6 @@
  **************************************************************/
 package com.svalyn.application.entities;
 
-public enum TestStatusEntity {
+public enum TestResultStatusEntity {
     SUCCESS, FAILURE
 }

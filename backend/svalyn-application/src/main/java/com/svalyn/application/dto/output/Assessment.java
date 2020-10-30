@@ -16,11 +16,11 @@ public class Assessment {
 
     private final String label;
 
-    private final UUID createdBy;
+    private final Account createdBy;
 
     private final LocalDateTime createdOn;
 
-    private final UUID lastModifiedBy;
+    private final Account lastModifiedBy;
 
     private final LocalDateTime lastModifiedOn;
 
@@ -34,7 +34,7 @@ public class Assessment {
 
     private final AssessmentStatus status;
 
-    public Assessment(UUID id, String label, UUID createdBy, LocalDateTime createdOn, UUID lastModifiedBy,
+    public Assessment(UUID id, String label, Account createdBy, LocalDateTime createdOn, Account lastModifiedBy,
             LocalDateTime lastModifiedOn, List<Category> categories, int success, int failure, int testCount,
             AssessmentStatus status) {
         this.id = Objects.requireNonNull(id);
@@ -58,7 +58,7 @@ public class Assessment {
         return this.label;
     }
 
-    public UUID getCreatedBy() {
+    public Account getCreatedBy() {
         return this.createdBy;
     }
 
@@ -66,7 +66,7 @@ public class Assessment {
         return this.createdOn;
     }
 
-    public UUID getLastModifiedBy() {
+    public Account getLastModifiedBy() {
         return this.lastModifiedBy;
     }
 

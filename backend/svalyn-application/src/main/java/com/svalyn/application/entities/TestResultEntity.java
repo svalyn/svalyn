@@ -6,11 +6,11 @@
  **************************************************************/
 package com.svalyn.application.entities;
 
-import java.util.List;
 import java.util.UUID;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -21,15 +21,21 @@ import javax.persistence.Table;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
-import com.vladmihalcea.hibernate.type.array.ListArrayType;
-
 @Entity
-@Table(name = "Test")
-@TypeDef(name = "list-array", typeClass = ListArrayType.class)
-public class TestEntity {
+@Table(name = "TestResult")
+@TypeDef(name = "pgsql_enum", typeClass = TestResultStatusEntityEnumType.class)
+public class TestResultEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
+
+    @ManyToOne
+    @JoinColumn(name = "assessmentId")
+    private AssessmentEntity assessment;
+
+    @ManyToOne
+    @JoinColumn(name = "testId")
+    private TestEntity test;
 
     @ManyToOne
     @JoinColumn(name = "requirementId")
@@ -43,13 +49,9 @@ public class TestEntity {
     @JoinColumn(name = "descriptionId")
     private DescriptionEntity description;
 
-    private String label;
-
-    private String details;
-
-    @Type(type = "list-array")
-    @Column(name = "steps", columnDefinition = "text[]")
-    private List<String> steps;
+    @Enumerated(EnumType.STRING)
+    @Type(type = "pgsql_enum")
+    private TestResultStatusEntity status;
 
     public UUID getId() {
         return this.id;
@@ -57,6 +59,22 @@ public class TestEntity {
 
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    public AssessmentEntity getAssessment() {
+        return this.assessment;
+    }
+
+    public void setAssessment(AssessmentEntity assessment) {
+        this.assessment = assessment;
+    }
+
+    public TestEntity getTest() {
+        return this.test;
+    }
+
+    public void setTest(TestEntity test) {
+        this.test = test;
     }
 
     public RequirementEntity getRequirement() {
@@ -83,27 +101,11 @@ public class TestEntity {
         this.description = description;
     }
 
-    public String getLabel() {
-        return this.label;
+    public TestResultStatusEntity getStatus() {
+        return this.status;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
-    }
-
-    public String getDetails() {
-        return this.details;
-    }
-
-    public void setDetails(String details) {
-        this.details = details;
-    }
-
-    public List<String> getSteps() {
-        return this.steps;
-    }
-
-    public void setSteps(List<String> steps) {
-        this.steps = steps;
+    public void setStatus(TestResultStatusEntity status) {
+        this.status = status;
     }
 }

@@ -9,17 +9,17 @@ import PropTypes from 'prop-types';
 export const categoryPropTypes = PropTypes.shape({
   id: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
-  description: PropTypes.string.isRequired,
+  details: PropTypes.string.isRequired,
 });
 
 export const requirementPropTypes = PropTypes.shape({
   id: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
-  description: PropTypes.string.isRequired,
+  details: PropTypes.string.isRequired,
 });
 
 export const testPropTypes = PropTypes.shape({
   id: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
-  description: PropTypes.string.isRequired,
+  details: PropTypes.string.isRequired,
 });

@@ -4,17 +4,10 @@
  * This source code is licensed under the MIT license found in
  * the LICENSE file in the root directory of this source tree.
  **************************************************************/
-package com.svalyn.application;
+package com.svalyn.application.repositories;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.testcontainers.containers.PostgreSQLContainer;
 
-@SpringBootTest
-class SvalynApplicationTests {
-
-	@Test
-	void contextLoads() {
-		// Do nothing on purpose
-	}
-
+public class PostgreSQLTestContainer extends PostgreSQLContainer<PostgreSQLTestContainer> {
+    // Nothing for now
 }

@@ -13,24 +13,19 @@ import org.springframework.stereotype.Service;
 import com.svalyn.application.dto.input.DeleteProjectsInput;
 import com.svalyn.application.dto.output.DeleteProjectsSuccessPayload;
 import com.svalyn.application.dto.output.IPayload;
-import com.svalyn.application.repositories.AssessmentRepository;
-import com.svalyn.application.repositories.ProjectRepository;
+import com.svalyn.application.repositories.IProjectRepository;
 
 @Service
 public class ProjectDeletionService {
 
-    private final ProjectRepository projectRepository;
+    private final IProjectRepository projectRepository;
 
-    private final AssessmentRepository assessmentRepository;
-
-    public ProjectDeletionService(ProjectRepository projectRepository, AssessmentRepository assessmentRepository) {
+    public ProjectDeletionService(IProjectRepository projectRepository) {
         this.projectRepository = Objects.requireNonNull(projectRepository);
-        this.assessmentRepository = Objects.requireNonNull(assessmentRepository);
     }
 
     public IPayload deleteProjects(DeleteProjectsInput input) {
-        this.projectRepository.deleteProjects(input.getProjectIds());
-        this.assessmentRepository.deleteAllByProjectIds(input.getProjectIds());
+        this.projectRepository.deleteWithId(input.getProjectIds());
         return new DeleteProjectsSuccessPayload();
     }
 }

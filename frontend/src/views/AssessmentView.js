@@ -60,17 +60,17 @@ const {
         categories {
           id
           label
-          description
+          details
           status
           requirements {
             id
             label
-            description
+            details
             status
             tests {
               id
               label
-              description
+              details
               steps
               status
             }
@@ -113,17 +113,17 @@ const {
           categories {
             id
             label
-            description
+            details
             status
             requirements {
               id
               label
-              description
+              details
               status
               tests {
                 id
                 label
-                description
+                details
                 steps
                 status
               }

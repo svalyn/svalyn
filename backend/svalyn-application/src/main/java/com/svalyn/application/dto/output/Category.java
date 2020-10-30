@@ -16,16 +16,16 @@ public class Category {
 
     private final String label;
 
-    private final String description;
+    private final String details;
 
     private final List<Requirement> requirements;
 
     private final TestStatus status;
 
-    public Category(UUID id, String label, String description, List<Requirement> requirements, TestStatus status) {
+    public Category(UUID id, String label, String details, List<Requirement> requirements, TestStatus status) {
         this.id = Objects.requireNonNull(id);
         this.label = Objects.requireNonNull(label);
-        this.description = Objects.requireNonNull(description);
+        this.details = Objects.requireNonNull(details);
         this.requirements = Objects.requireNonNull(requirements);
         this.status = status;
     }
@@ -38,8 +38,8 @@ public class Category {
         return this.label;
     }
 
-    public String getDescription() {
-        return this.description;
+    public String getDetails() {
+        return this.details;
     }
 
     public List<Requirement> getRequirements() {

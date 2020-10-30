@@ -45,17 +45,17 @@ const {
           categories {
             id
             label
-            description
+            details
             status
             requirements {
               id
               label
-              description
+              details
               status
               tests {
                 id
                 label
-                description
+                details
                 steps
                 status
               }
@@ -109,7 +109,7 @@ const testComponentPropTypes = {
 };
 const Test = ({ assessmentId, assessmentStatus, test, onAssessmentUpdated }) => {
   const classes = useStyles();
-  const { id, label, description, steps, status } = test;
+  const { id, label, details, steps, status } = test;
 
   const onChange = async (event) => {
     const { value } = event.target;
@@ -144,7 +144,7 @@ const Test = ({ assessmentId, assessmentStatus, test, onAssessmentUpdated }) => 
       <Typography variant="h4" gutterBottom>
         {label}
       </Typography>
-      <Typography>{description}</Typography>
+      <Typography>{details}</Typography>
       {stepsElement}
       <FormGroup row>
         <RadioGroup aria-label="status" name={`status-${id}`} value={status} onChange={onChange}>

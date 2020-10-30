@@ -26,7 +26,7 @@ export const Description = ({ category }) => {
       <Typography variant="h2" gutterBottom>
         {category.label}
       </Typography>
-      <Typography gutterBottom>{category.description}</Typography>
+      <Typography gutterBottom>{category.details}</Typography>
     </div>
   );
 };

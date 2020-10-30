@@ -13,14 +13,14 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.svalyn.application.dto.output.Description;
-import com.svalyn.application.repositories.DescriptionRepository;
+import com.svalyn.application.repositories.IDescriptionRepository;
 
 @Service
 public class DescriptionSearchService {
 
-    private final DescriptionRepository descriptionRepository;
+    private final IDescriptionRepository descriptionRepository;
 
-    public DescriptionSearchService(DescriptionRepository descriptionRepository) {
+    public DescriptionSearchService(IDescriptionRepository descriptionRepository) {
         this.descriptionRepository = Objects.requireNonNull(descriptionRepository);
     }
 

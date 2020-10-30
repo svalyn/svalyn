@@ -7,28 +7,59 @@
 package com.svalyn.application.entities;
 
 import java.time.LocalDateTime;
-import java.util.Map;
+import java.util.List;
 import java.util.UUID;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+
+@Entity
+@Table(name = "Assessment")
+@TypeDef(name = "pgsql_enum", typeClass = AssessmentStatusEntityEnumType.class)
 public class AssessmentEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    private UUID descriptionId;
+    @ManyToOne
+    @JoinColumn(name = "descriptionId")
+    private DescriptionEntity description;
 
-    private UUID projectId;
+    @ManyToOne
+    @JoinColumn(name = "projectId")
+    private ProjectEntity project;
 
     private String label;
 
-    private Map<UUID, TestStatusEntity> results;
+    @OneToMany(mappedBy = "assessment", cascade = CascadeType.ALL)
+    private List<TestResultEntity> results;
 
-    private UUID createdBy;
+    @ManyToOne
+    @JoinColumn(name = "createdBy")
+    private AccountEntity createdBy;
 
     private LocalDateTime createdOn;
 
-    private UUID lastModifiedBy;
+    @ManyToOne
+    @JoinColumn(name = "lastModifiedBy")
+    private AccountEntity lastModifiedBy;
 
     private LocalDateTime lastModifiedOn;
 
+    @Enumerated(EnumType.STRING)
+    @Type(type = "pgsql_enum")
     private AssessmentStatusEntity status;
 
     public UUID getId() {
@@ -39,20 +70,20 @@ public class AssessmentEntity {
         this.id = id;
     }
 
-    public UUID getDescriptionId() {
-        return this.descriptionId;
+    public DescriptionEntity getDescription() {
+        return this.description;
     }
 
-    public void setDescriptionId(UUID descriptionId) {
-        this.descriptionId = descriptionId;
+    public void setDescription(DescriptionEntity description) {
+        this.description = description;
     }
 
-    public UUID getProjectId() {
-        return this.projectId;
+    public ProjectEntity getProject() {
+        return this.project;
     }
 
-    public void setProjectId(UUID projectId) {
-        this.projectId = projectId;
+    public void setProject(ProjectEntity project) {
+        this.project = project;
     }
 
     public String getLabel() {
@@ -63,19 +94,19 @@ public class AssessmentEntity {
         this.label = label;
     }
 
-    public Map<UUID, TestStatusEntity> getResults() {
+    public List<TestResultEntity> getResults() {
         return this.results;
     }
 
-    public void setResults(Map<UUID, TestStatusEntity> results) {
+    public void setResults(List<TestResultEntity> results) {
         this.results = results;
     }
 
-    public UUID getCreatedBy() {
+    public AccountEntity getCreatedBy() {
         return this.createdBy;
     }
 
-    public void setCreatedBy(UUID createdBy) {
+    public void setCreatedBy(AccountEntity createdBy) {
         this.createdBy = createdBy;
     }
 
@@ -87,16 +118,16 @@ public class AssessmentEntity {
         this.createdOn = createdOn;
     }
 
-    public UUID getLastModifiedBy() {
+    public AccountEntity getLastModifiedBy() {
         return this.lastModifiedBy;
+    }
+
+    public void setLastModifiedBy(AccountEntity lastModifiedBy) {
+        this.lastModifiedBy = lastModifiedBy;
     }
 
     public LocalDateTime getLastModifiedOn() {
         return this.lastModifiedOn;
-    }
-
-    public void setLastModifiedBy(UUID lastModifiedBy) {
-        this.lastModifiedBy = lastModifiedBy;
     }
 
     public void setLastModifiedOn(LocalDateTime lastModifiedOn) {

@@ -13,14 +13,14 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import com.svalyn.application.dto.output.Account;
-import com.svalyn.application.repositories.AccountRepository;
+import com.svalyn.application.repositories.IAccountRepository;
 
 @Service
 public class AccountSearchService {
 
-    private final AccountRepository accountRepository;
+    private final IAccountRepository accountRepository;
 
-    public AccountSearchService(AccountRepository accountRepository) {
+    public AccountSearchService(IAccountRepository accountRepository) {
         this.accountRepository = Objects.requireNonNull(accountRepository);
     }
 

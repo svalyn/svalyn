@@ -15,26 +15,33 @@ import org.springframework.stereotype.Service;
 
 import com.svalyn.application.dto.output.Account;
 import com.svalyn.application.entities.AccountEntity;
-import com.svalyn.application.repositories.AccountRepository;
+import com.svalyn.application.repositories.IAccountRepository;
 
 @Service
 public class AccountCreationService {
-    private final AccountRepository accountRepository;
+    private final IAccountRepository accountRepository;
 
-    public AccountCreationService(AccountRepository accountRepository) {
+    public AccountCreationService(IAccountRepository accountRepository) {
         this.accountRepository = Objects.requireNonNull(accountRepository);
     }
 
     public Optional<Account> createAccount(String username, String password) {
-        PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-        String encodedPassword = encoder.encode(password);
 
         boolean alreadyExists = this.accountRepository.findByUsername(username).isPresent();
         if (alreadyExists) {
             return Optional.empty();
         }
-        AccountEntity accountEntity = this.accountRepository.createAccount(username, encodedPassword);
-        return Optional.of(new Account(accountEntity.getId(), accountEntity.getUsername()));
+
+        PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+        String encodedPassword = encoder.encode(password);
+
+        AccountEntity accountEntity = new AccountEntity();
+        accountEntity.setUsername(username);
+        accountEntity.setPassword(encodedPassword);
+
+        AccountEntity savedAccountEntity = this.accountRepository.save(accountEntity);
+
+        return Optional.of(new Account(savedAccountEntity.getId(), savedAccountEntity.getUsername()));
     }
 
 }

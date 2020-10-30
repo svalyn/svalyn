@@ -52,7 +52,7 @@ public class QueryProjectsDataFetcher implements DataFetcher<Connection<Project>
         return this.toConnection(pageable, projectCount, projectEdges);
     }
 
-    private Connection<Project> toConnection(Pageable pageable, int count, List<Edge<Project>> edges) {
+    private Connection<Project> toConnection(Pageable pageable, long count, List<Edge<Project>> edges) {
         boolean hasPreviousPage = pageable.hasPrevious();
         boolean hasNextPage = pageable.getOffset() + pageable.getPageSize() < count;
         var pageInfo = new PageInfo(hasPreviousPage, hasNextPage, count);

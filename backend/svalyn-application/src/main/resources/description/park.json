@@ -1,210 +1,173 @@
 {
-  "id":"aab394ae-9074-44f6-b166-d24d3b747c4e",
   "label":"Park Assessment",
   "categories":[
     {
-      "id":"c54587ec-5d84-4938-82b0-9cf771819fec",
       "label":"Behavior & Diagnostics",
-      "description":"The Behavior Lab and Diagnostics division of the Mesa Hub is where hosts are brought to be trained, diagnosed, analyzed, and updated",
+      "details":"The Behavior Lab and Diagnostics division of the Mesa Hub is where hosts are brought to be trained, diagnosed, analyzed, and updated",
       "requirements":[
         {
-          "id":"d534cae1-e8d6-4fc7-8a02-b7b4cf51a370",
           "label":"The hosts should be diagnosticable",
-          "description":"It is our duty to ensure that we can detect any issue affecting one of our host",
+          "details":"It is our duty to ensure that we can detect any issue affecting one of our host",
           "tests":[
             {
-              "id":"31531d7a-c57c-487f-8fbe-4e197de4e79c",
               "label":"Motor functions can be freezed",
-              "description":"On command of a technician, a host should freeze all motor functions"
+              "details":"On command of a technician, a host should freeze all motor functions"
             }
           ]
         },
         {
-          "id":"8050d752-b8ed-4816-9f46-cc11d52dfdd5",
           "label":"The hosts should be emotionally stable",
-          "description":"We should care about the emotions of our hosts in order to make sure that they can work properly.",
+          "details":"We should care about the emotions of our hosts in order to make sure that they can work properly.",
           "tests":[
             {
-              "id":"f3ee3c03-d91f-40c4-8750-e87eeafbef90",
               "label":"Hosts should not break from their role",
-              "description":"A host should also stay in character to perform its job"
+              "details":"A host should also stay in character to perform its job"
             },
             {
-              "id":"fb58a92b-e74e-4002-8eca-14d06dda0f48",
               "label":"Hosts should act as human beings",
-              "description":"Guests should not be able to identify that a hosts is an android"
+              "details":"Guests should not be able to identify that a hosts is an android"
             }
           ]
         },
         {
-          "id":"09331fb1-352c-48f8-9267-6782e0585c11",
           "label":"The hosts should work as expected",
-          "description":"We have to make sure that our hosts are able to perform their role by having a functional body",
+          "details":"We have to make sure that our hosts are able to perform their role by having a functional body",
           "tests":[
             {
-              "id":"60de832c-4ae2-47b9-b0fb-c8d313352d4c",
               "label":"Hosts should be able to use their body as regular human beings",
-              "description":"They should be able to talk, walk, use tools and behave as regular human beings"
+              "details":"They should be able to talk, walk, use tools and behave as regular human beings"
             }
           ]
         },
         {
-          "id":"6b07db1c-c173-4440-9552-5e78dd9ecf81",
           "label":"The hosts should be repairable",
-          "description":"In case of issue, we should be able to repair any possible damage affecting our hosts",
+          "details":"In case of issue, we should be able to repair any possible damage affecting our hosts",
           "tests":[
             {
-              "id":"a9c8de34-8c60-4374-9fe2-d6f1a4e15b7c",
               "label":"We should have spare parts",
-              "description":"Our spare parts storage should contain everything needed to repair hosts on a daily basis"
+              "details":"Our spare parts storage should contain everything needed to repair hosts on a daily basis"
             },
             {
-              "id":"a70ef9b3-cd61-4a2b-a852-c620a0b659d0",
               "label":"We should have facilities to repair hosts",
-              "description":"We should have enough room to store and repair our hosts"
+              "details":"We should have enough room to store and repair our hosts"
             },
             {
-              "id":"0305ad8e-d6e2-49e7-a2ac-b1b680618fc3",
               "label":"Our staff should be trained",
-              "description":"Our technicians should be trained constantly to repair and update any given model"
+              "details":"Our technicians should be trained constantly to repair and update any given model"
             }
           ]
         }
       ]
     },
     {
-      "id":"51636e8c-07c5-4871-a08d-52fe4365cdc6",
       "label":"Narrative & Design",
-      "description":"The Narrative and Design division of the Westworld Mesa Hub is headed by Lee Sizemore and is responsible for the creation of Narratives",
+      "details":"The Narrative and Design division of the Westworld Mesa Hub is headed by Lee Sizemore and is responsible for the creation of Narratives",
       "requirements":[
         {
-          "id":"7c27fe29-1c4b-436e-87ef-3d3194b92faa",
           "label":"The stories should be convincing",
-          "description":"Our guests should not question anything in our stories",
+          "details":"Our guests should not question anything in our stories",
           "tests":[
             {
-              "id":"87197ffa-2fe1-4599-a916-9b4aa9bf3b88",
               "label":"Guests should not doubt our stories",
-              "description":"Our stories should not raise any doubts in the mind of our guests"
+              "details":"Our stories should not raise any doubts in the mind of our guests"
             },
             {
-              "id":"37d4c2ac-ca1f-4422-8104-0085cc4184a4",
               "label":"We should see good feedback on our stories",
-              "description":"Guests should only submit positive feedback on our stories"
+              "details":"Guests should only submit positive feedback on our stories"
             }
           ]
         },
         {
-          "id":"a5b5afe5-1f5d-42ee-9184-efe5d1e15a7b",
           "label":"The stories should be engaging",
-          "description":"Our stories should motivate our guests to complete them",
+          "details":"Our stories should motivate our guests to complete them",
           "tests":[
             {
-              "id":"e1c114ca-e9a2-4d3c-b3f7-1ec15478a327",
               "label":"Our stories should be finishable",
-              "description":"Our guests should complete more than 80% of the stories that they start"
+              "details":"Our guests should complete more than 80% of the stories that they start"
             },
             {
-              "id":"1ba849ee-de81-469a-a4b5-9077f4da6f6d",
               "label":"Our stories should be social events",
-              "description":"The introduction of a new story should be an event in social networks"
+              "details":"The introduction of a new story should be an event in social networks"
             }
           ]
         },
         {
-          "id":"86f9585d-3c3a-4f13-91d4-27db781c626c",
           "label":"The stories should be addictive",
-          "description":"Our stories should always keep our guests on the edge to make them look for more",
+          "details":"Our stories should always keep our guests on the edge to make them look for more",
           "tests":[
             {
-              "id":"fd8a4b21-196f-407f-97af-3b2f4be1d143",
               "label":"Our guests should want to return to try new stories",
-              "description":"Our guests should want to spend more time in Westworld than in the real world, as such our guests should return at least 3 times per year to one of our parks"
+              "details":"Our guests should want to spend more time in Westworld than in the real world, as such our guests should return at least 3 times per year to one of our parks"
             },
             {
-              "id":"7387e0e0-0775-40cf-a635-2343afbb9d9d",
               "label":"Our guests should be ready to pay anything for our stories",
-              "description":"The unique experience that only us can deliver thanks to our park should make our guests be ready to pay anything for the chance to experience it"
+              "details":"The unique experience that only us can deliver thanks to our park should make our guests be ready to pay anything for the chance to experience it"
             }
           ]
         },
         {
-          "id":"53f66bee-0dc9-4dfe-9f96-28758d32bc02",
           "label":"The environment should be coherent",
-          "description":"Our environment are built to serve our stories, as such they should properly serve them",
+          "details":"Our environment are built to serve our stories, as such they should properly serve them",
           "tests":[
             {
-              "id":"98b7be33-f33a-49e5-ab28-fa203a34803f",
               "label":"Our guests should want to bring our park with them",
-              "description":"Our merchandising department should report at least $10.000 of gifts bought per guest"
+              "details":"Our merchandising department should report at least $10.000 of gifts bought per guest"
             },
             {
-              "id":"c7c0ac47-8e3f-4979-897f-044d9e2965a8",
               "label":"Our guests should never want to leave our parks",
-              "description":"Our parks should be so immersive that at least 10% of our guests should be permanent residents"
+              "details":"Our parks should be so immersive that at least 10% of our guests should be permanent residents"
             }
           ]
         }
       ]
     },
     {
-      "id":"0391fc81-4a91-4e62-8f13-51079b6f9bbe",
       "label":"Quality Assurance",
-      "description":"Quality Assurance (shortened to QA) is a division of Delos Destinations which oversees the standards and safety at Westworld and the other parks",
+      "details":"Quality Assurance (shortened to QA) is a division of Delos Destinations which oversees the standards and safety at Westworld and the other parks",
       "requirements":[
         {
-          "id":"08ebfe49-0498-48a2-8710-34a015764f29",
           "label":"The operation should be interruptible",
-          "description":"In case of issue, we should be able to interrupt any ongoing story",
+          "details":"In case of issue, we should be able to interrupt any ongoing story",
           "tests":[
             {
-              "id":"3f29a1fd-0aaf-4919-9fec-e7f9d091f1b1",
               "label":"Our stories should be stoppable",
-              "description":"In case of emergency, any story should be stoppable in less than 10s anywhere in our parks"
+              "details":"In case of emergency, any story should be stoppable in less than 10s anywhere in our parks"
             },
             {
-              "id":"de3cc26c-a0be-411a-826d-925886c4bfa7",
               "label":"Our stories should be restartable",
-              "description":"In case of issue, we should be able to give our guests the ability to restart a story at anytime"
+              "details":"In case of issue, we should be able to give our guests the ability to restart a story at anytime"
             }
           ]
         },
         {
-          "id":"3d5ac4b4-a47b-4299-9949-f874efa8617a",
           "label":"The guests should be retrievable",
-          "description":"We should always be able to retrieve any endangered guests as soon as possible",
+          "details":"We should always be able to retrieve any endangered guests as soon as possible",
           "tests":[
             {
-              "id":"0b8b2dc9-b894-4ad5-8386-6425c0e21147",
               "label":"We should be able to evacuate our guests",
-              "description":"Some mean of transportation should be available to evacuate our guests in case of emergency"
+              "details":"Some mean of transportation should be available to evacuate our guests in case of emergency"
             },
             {
-              "id":"b302f2d0-1336-4040-8ade-b5f92ba44b43",
               "label":"We should be able to provide medical assistance",
-              "description":"A medical team should be on alert 24/7 to assist any guest"
+              "details":"A medical team should be on alert 24/7 to assist any guest"
             },
             {
-              "id":"8877aad0-2892-495b-b2a2-a3305fc64c56",
               "label":"We should be able to extract guests from the park",
-              "description":"In case of critical emergency, we should be able to dispatch our extraction team to the park"
+              "details":"In case of critical emergency, we should be able to dispatch our extraction team to the park"
             }
           ]
         },
         {
-          "id":"02114a9f-4c4d-4718-97b6-8659ef0c9e05",
           "label":"The parks should be monitored",
-          "description":"In order to support the activities of the park, we should monitor it extensively to detect any issue",
+          "details":"In order to support the activities of the park, we should monitor it extensively to detect any issue",
           "tests":[
             {
-              "id":"f6416c2b-7eac-432a-b1bf-0e5bf51f5a93",
               "label":"We need to be able to detect potential issues",
-              "description":"A large set of cameras needs to work 24/7 to let us monitor our parks"
+              "details":"A large set of cameras needs to work 24/7 to let us monitor our parks"
             },
             {
-              "id":"2de85107-f01d-45da-b148-1aa4fe191fdc",
               "label":"We need to be able to communicate with anybody in the park",
-              "description":"A park-wide communication system is needed to coordinate our teams and to communicate with quests"
+              "details":"A park-wide communication system is needed to coordinate our teams and to communicate with quests"
             }
           ]
         }

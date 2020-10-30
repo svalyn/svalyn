@@ -76,7 +76,7 @@ enum AssessmentStatus {
 type Category {
   id: ID!
   label: String!
-  description: String!
+  details: String!
   requirements: [Requirement!]!
   status: TestStatus
 }
@@ -84,7 +84,7 @@ type Category {
 type Requirement {
   id: ID!
   label: String!
-  description: String!
+  details: String!
   tests: [Test!]!
   status: TestStatus
 }
@@ -92,7 +92,7 @@ type Requirement {
 type Test {
   id: ID!
   label: String!
-  description: String!
+  details: String!
   steps: [String!]
   status: TestStatus
 }

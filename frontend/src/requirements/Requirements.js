@@ -122,7 +122,7 @@ const RightPanel = ({ assessmentId, assessmentStatus, requirement, onAssessmentU
         <Typography variant="h3" gutterBottom>
           {requirement.label}
         </Typography>
-        <Typography>{requirement.description}</Typography>
+        <Typography>{requirement.details}</Typography>
       </div>
       <Tests
         assessmentId={assessmentId}

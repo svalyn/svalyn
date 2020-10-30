@@ -13,16 +13,16 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.svalyn.application.repositories.AccountRepository;
+import com.svalyn.application.repositories.IAccountRepository;
 
 import graphql.GraphQLContext;
 
 @Service
 public class UserDetailsService implements org.springframework.security.core.userdetails.UserDetailsService {
 
-    private final AccountRepository accountRepository;
+    private final IAccountRepository accountRepository;
 
-    public UserDetailsService(AccountRepository accountRepository) {
+    public UserDetailsService(IAccountRepository accountRepository) {
         this.accountRepository = Objects.requireNonNull(accountRepository);
     }
 

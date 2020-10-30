@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
 import com.svalyn.application.dto.output.Assessment;
@@ -45,7 +47,7 @@ public class ProjectAssessmentsDataFetcher implements DataFetcher<Connection<Ass
         }
 
         // @formatter:off
-        Pageable pageable = PageRequest.of(page, 20);
+        Pageable pageable = PageRequest.of(page, 20, Sort.by(Direction.DESC, "createdOn"));
         var assessmentCount = this.assessmentSearchService.countByProjectId(project.getId());
         var assessmentEdges = this.assessmentSearchService.findAllByProjectId(project.getId(), pageable).stream()
                 .map(Edge::new)
@@ -54,7 +56,7 @@ public class ProjectAssessmentsDataFetcher implements DataFetcher<Connection<Ass
         return this.toConnection(pageable, assessmentCount, assessmentEdges);
     }
 
-    private Connection<Assessment> toConnection(Pageable pageable, int count, List<Edge<Assessment>> edges) {
+    private Connection<Assessment> toConnection(Pageable pageable, long count, List<Edge<Assessment>> edges) {
         boolean hasPreviousPage = pageable.hasPrevious();
         boolean hasNextPage = pageable.getOffset() + pageable.getPageSize() < count;
 

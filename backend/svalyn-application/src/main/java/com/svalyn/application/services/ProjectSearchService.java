@@ -15,16 +15,17 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.svalyn.application.dto.output.Account;
 import com.svalyn.application.dto.output.Project;
 import com.svalyn.application.entities.ProjectEntity;
-import com.svalyn.application.repositories.ProjectRepository;
+import com.svalyn.application.repositories.IProjectRepository;
 
 @Service
 public class ProjectSearchService {
 
-    private final ProjectRepository projectRepository;
+    private final IProjectRepository projectRepository;
 
-    public ProjectSearchService(ProjectRepository projectRepository) {
+    public ProjectSearchService(IProjectRepository projectRepository) {
         this.projectRepository = Objects.requireNonNull(projectRepository);
     }
 
@@ -42,11 +43,12 @@ public class ProjectSearchService {
     }
 
     public Project convert(ProjectEntity projectEntity) {
-        return new Project(projectEntity.getId(), projectEntity.getLabel(), projectEntity.getCreatedBy(),
-                projectEntity.getCreatedOn());
+        Account createdBy = new Account(projectEntity.getCreatedBy().getId(),
+                projectEntity.getCreatedBy().getUsername());
+        return new Project(projectEntity.getId(), projectEntity.getLabel(), createdBy, projectEntity.getCreatedOn());
     }
 
-    public int count() {
+    public long count() {
         return this.projectRepository.count();
     }
 }

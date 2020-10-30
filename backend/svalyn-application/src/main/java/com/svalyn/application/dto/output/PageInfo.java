@@ -11,9 +11,9 @@ public class PageInfo {
 
     private boolean hasNextPage;
 
-    private int count;
+    private long count;
 
-    public PageInfo(boolean hasPreviousPage, boolean hasNextPage, int count) {
+    public PageInfo(boolean hasPreviousPage, boolean hasNextPage, long count) {
         this.hasPreviousPage = hasPreviousPage;
         this.hasNextPage = hasNextPage;
         this.count = count;
@@ -27,7 +27,7 @@ public class PageInfo {
         return this.hasNextPage;
     }
 
-    public int getCount() {
+    public long getCount() {
         return this.count;
     }
 }

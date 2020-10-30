@@ -16,8 +16,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
-import com.svalyn.application.graphql.AssessmentCreatedByDataFetcher;
-import com.svalyn.application.graphql.AssessmentLastModifiedByDataFetcher;
 import com.svalyn.application.graphql.GraphQLDateCoercing;
 import com.svalyn.application.graphql.MutationCreateAssessmentDataFetcher;
 import com.svalyn.application.graphql.MutationCreateProjectDataFetcher;
@@ -27,7 +25,6 @@ import com.svalyn.application.graphql.MutationUpdateAssessmentStatusDataFetcher;
 import com.svalyn.application.graphql.MutationUpdateTestDataFetcher;
 import com.svalyn.application.graphql.ProjectAssessmentDataFetcher;
 import com.svalyn.application.graphql.ProjectAssessmentsDataFetcher;
-import com.svalyn.application.graphql.ProjectCreatedByDataFetcher;
 import com.svalyn.application.graphql.QueryDescriptionsDataFetcher;
 import com.svalyn.application.graphql.QueryPrincipalDataFetcher;
 import com.svalyn.application.graphql.QueryProjectDataFetcher;
@@ -90,11 +87,8 @@ public class GraphQLConfiguration {
     public GraphQLCodeRegistry graphQLCodeRegistry(QueryPrincipalDataFetcher queryPrincipalDataFetcher,
             QueryDescriptionsDataFetcher queryDescriptionsDataFetcher,
             QueryProjectsDataFetcher queryProjectsDataFetcher, QueryProjectDataFetcher queryProjectDataFetcher,
-            AssessmentCreatedByDataFetcher assessmentCreatedByDataFetcher,
-            AssessmentLastModifiedByDataFetcher assessmentLastModifiedByDataFetcher,
             ProjectAssessmentsDataFetcher projectAssessmentsDataFetcher,
             ProjectAssessmentDataFetcher projectAssessmentDataFetcher,
-            ProjectCreatedByDataFetcher projectCreatedByDataFetcher,
             MutationCreateProjectDataFetcher mutationCreateProjectDataFetcher,
             MutationCreateAssessmentDataFetcher mutationCreateAssessmentDataFetcher,
             MutationUpdateAssessmentStatusDataFetcher mutationUpdateAssessmentStatusDataFetcher,
@@ -108,8 +102,6 @@ public class GraphQLConfiguration {
                 .dataFetcher(coordinates("Query", "descriptions"), queryDescriptionsDataFetcher)
                 .dataFetcher(coordinates("Query", "projects"), queryProjectsDataFetcher)
                 .dataFetcher(coordinates("Query", "project"), queryProjectDataFetcher)
-                .dataFetcher(coordinates("Assessment", "createdBy"), assessmentCreatedByDataFetcher)
-                .dataFetcher(coordinates("Assessment", "lastModifiedBy"), assessmentLastModifiedByDataFetcher)
                 .dataFetcher(coordinates("Mutation", "createProject"), mutationCreateProjectDataFetcher)
                 .dataFetcher(coordinates("Mutation", "createAssessment"), mutationCreateAssessmentDataFetcher)
                 .dataFetcher(coordinates("Mutation", "updateAssessmentStatus"), mutationUpdateAssessmentStatusDataFetcher)
@@ -118,7 +110,6 @@ public class GraphQLConfiguration {
                 .dataFetcher(coordinates("Mutation", "deleteAssessments"), mutationDeleteAssessmentsDataFetcher)
                 .dataFetcher(coordinates("Project", "assessments"), projectAssessmentsDataFetcher)
                 .dataFetcher(coordinates("Project", "assessment"), projectAssessmentDataFetcher)
-                .dataFetcher(coordinates("Project", "createdBy"), projectCreatedByDataFetcher)
                 .build();
         // @formatter:on
     }

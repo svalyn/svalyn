@@ -16,16 +16,16 @@ public class Requirement {
 
     private final String label;
 
-    private final String description;
+    private final String details;
 
     private final List<Test> tests;
 
     private final TestStatus status;
 
-    public Requirement(UUID id, String label, String description, List<Test> tests, TestStatus status) {
+    public Requirement(UUID id, String label, String details, List<Test> tests, TestStatus status) {
         this.id = Objects.requireNonNull(id);
         this.label = Objects.requireNonNull(label);
-        this.description = Objects.requireNonNull(description);
+        this.details = Objects.requireNonNull(details);
         this.tests = Objects.requireNonNull(tests);
         this.status = status;
     }
@@ -38,8 +38,8 @@ public class Requirement {
         return this.label;
     }
 
-    public String getDescription() {
-        return this.description;
+    public String getDetails() {
+        return this.details;
     }
 
     public List<Test> getTests() {
