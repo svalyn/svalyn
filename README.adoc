@@ -3,6 +3,12 @@
 Svalyn is a simple side-project allowing me to test some code related to web technologies.
 This project has no precise goals, do not expect anything from it.
 
+== Build and start
+
+- `./build.sh` to build both the frontend and the backend
+- `docker-compose up -d --build` to start the test instance
+- `cd frontend && npm run-script e2e-prod` to run the integration tests against the test instance
+
 == License
 
 The code of this project is available under the terms of the MIT license.

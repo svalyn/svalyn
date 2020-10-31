@@ -1,0 +1,44 @@
+name: Buils
+on:
+  push:
+    branches:
+      - master
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v1.4.4
+        
+      - name: Setup Java JDK
+        uses: actions/setup-java@v1.4.3
+        with:
+          java-version: 11
+
+      - name: Build the server
+        run: ./build.sh
+
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v2
+        with:
+          start: docker-compose -f ../docker-compose.yml up -d --build
+          wait-on: 'http://localhost:8080/login'
+          working-directory: frontend
+          record: true
+        env:
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build a Docker container
+        uses: docker/build-push-action@v1
+        with:
+          registry: docker.pkg.github.com
+          repository: ${{ github.repository }}/server
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          tag_with_ref: true
+          tags: latest
