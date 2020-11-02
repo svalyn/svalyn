@@ -6,12 +6,15 @@
  **************************************************************/
 package com.svalyn.application.entities;
 
+import java.util.List;
 import java.util.UUID;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
 
 @Entity
@@ -25,6 +28,10 @@ public class AccountEntity {
     private String username;
 
     private String password;
+
+    @ManyToMany(mappedBy = "members")
+    @OrderBy("label")
+    private List<ProjectEntity> belongingProjects;
 
     public UUID getId() {
         return this.id;
@@ -48,5 +55,13 @@ public class AccountEntity {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public List<ProjectEntity> getBelongingProjects() {
+        return this.belongingProjects;
+    }
+
+    public void setBelongingProjects(List<ProjectEntity> belongingProjects) {
+        this.belongingProjects = belongingProjects;
     }
 }

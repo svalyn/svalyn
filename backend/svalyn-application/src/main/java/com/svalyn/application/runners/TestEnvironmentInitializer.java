@@ -32,6 +32,8 @@ public class TestEnvironmentInitializer implements CommandLineRunner {
         boolean isTest = Arrays.asList(this.environment.getActiveProfiles()).contains("test");
         if (isTest) {
             this.accountCreationService.createAccount("user", "0123456789");
+            this.accountCreationService.createAccount("user1", "0123456789");
+            this.accountCreationService.createAccount("user2", "0123456789");
         }
     }
 

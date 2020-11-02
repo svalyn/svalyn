@@ -19,6 +19,7 @@ type PageInfo {
 }
 
 type User {
+  id: ID!
   username: String!
 }
 
@@ -41,6 +42,8 @@ type Project {
   label: String!
   assessments(page: Int!): ProjectAssessmentsConnection!
   assessment(assessmentId: ID!): Assessment
+  ownedBy: User!
+  members: [User!]!
   createdBy: User!
   createdOn: Date!
 }
@@ -105,6 +108,8 @@ enum TestStatus {
 type Mutation {
   createProject(input: CreateProjectInput!): CreateProjectPayload!
   createAssessment(input: CreateAssessmentInput!): CreateAssessmentPayload!
+  addMemberToProject(input: AddMemberToProjectInput!): AddMemberToProjectPayload!
+  removeMemberFromProject(input: RemoveMemberFromProjectInput!): RemoveMemberFromProjectPayload!
   updateAssessmentStatus(input: UpdateAssessmentStatusInput!): UpdateAssessmentStatusPayload!
   updateTest(input: UpdateTestInput!): UpdateTestPayload!
   deleteProjects(input: DeleteProjectsInput!): DeleteProjectsPayload!
@@ -136,6 +141,28 @@ type CreateAssessmentSuccessPayload {
 }
 
 union CreateAssessmentPayload = ErrorPayload | CreateAssessmentSuccessPayload
+
+input AddMemberToProjectInput {
+  projectId: ID!
+  username: String!  
+}
+
+type AddMemberToProjectSuccessPayload {
+  project: Project!
+}
+
+union AddMemberToProjectPayload = ErrorPayload | AddMemberToProjectSuccessPayload
+
+input RemoveMemberFromProjectInput {
+  projectId: ID!
+  username: String!
+}
+
+type RemoveMemberFromProjectSuccessPayload {
+  project: Project!
+}
+
+union RemoveMemberFromProjectPayload = ErrorPayload | RemoveMemberFromProjectSuccessPayload
 
 input UpdateAssessmentStatusInput {
   assessmentId: ID!

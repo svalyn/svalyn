@@ -17,10 +17,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
 import com.svalyn.application.graphql.GraphQLDateCoercing;
+import com.svalyn.application.graphql.MutationAddMemberToProjectDataFetcher;
 import com.svalyn.application.graphql.MutationCreateAssessmentDataFetcher;
 import com.svalyn.application.graphql.MutationCreateProjectDataFetcher;
 import com.svalyn.application.graphql.MutationDeleteAssessmentsDataFetcher;
 import com.svalyn.application.graphql.MutationDeleteProjectsDataFetcher;
+import com.svalyn.application.graphql.MutationRemoveMemberFromProjectDataFetcher;
 import com.svalyn.application.graphql.MutationUpdateAssessmentStatusDataFetcher;
 import com.svalyn.application.graphql.MutationUpdateTestDataFetcher;
 import com.svalyn.application.graphql.ProjectAssessmentDataFetcher;
@@ -74,6 +76,8 @@ public class GraphQLConfiguration {
                     .type("UpdateTestPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
                     .type("DeleteProjectsPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
                     .type("DeleteAssessmentsPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
+                    .type("AddMemberToProjectPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
+                    .type("RemoveMemberFromProjectPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
                     .build();
 
             graphQLSchema = new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, runtimeWiring);
@@ -89,6 +93,8 @@ public class GraphQLConfiguration {
             QueryProjectsDataFetcher queryProjectsDataFetcher, QueryProjectDataFetcher queryProjectDataFetcher,
             ProjectAssessmentsDataFetcher projectAssessmentsDataFetcher,
             ProjectAssessmentDataFetcher projectAssessmentDataFetcher,
+            MutationAddMemberToProjectDataFetcher mutationAddMemberToProjectDataFetcher,
+            MutationRemoveMemberFromProjectDataFetcher mutationRemoveMemberFromProjectDataFetcher,
             MutationCreateProjectDataFetcher mutationCreateProjectDataFetcher,
             MutationCreateAssessmentDataFetcher mutationCreateAssessmentDataFetcher,
             MutationUpdateAssessmentStatusDataFetcher mutationUpdateAssessmentStatusDataFetcher,
@@ -102,6 +108,8 @@ public class GraphQLConfiguration {
                 .dataFetcher(coordinates("Query", "descriptions"), queryDescriptionsDataFetcher)
                 .dataFetcher(coordinates("Query", "projects"), queryProjectsDataFetcher)
                 .dataFetcher(coordinates("Query", "project"), queryProjectDataFetcher)
+                .dataFetcher(coordinates("Mutation", "addMemberToProject"), mutationAddMemberToProjectDataFetcher)
+                .dataFetcher(coordinates("Mutation", "removeMemberFromProject"), mutationRemoveMemberFromProjectDataFetcher)
                 .dataFetcher(coordinates("Mutation", "createProject"), mutationCreateProjectDataFetcher)
                 .dataFetcher(coordinates("Mutation", "createAssessment"), mutationCreateAssessmentDataFetcher)
                 .dataFetcher(coordinates("Mutation", "updateAssessmentStatus"), mutationUpdateAssessmentStatusDataFetcher)

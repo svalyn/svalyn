@@ -8,13 +8,13 @@ package com.svalyn.application.services;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
 import com.svalyn.application.dto.input.CreateProjectInput;
-import com.svalyn.application.dto.output.Account;
 import com.svalyn.application.dto.output.CreateProjectSuccessPayload;
 import com.svalyn.application.dto.output.ErrorPayload;
 import com.svalyn.application.dto.output.IPayload;
@@ -31,9 +31,13 @@ public class ProjectCreationService {
 
     private final IProjectRepository projectRepository;
 
-    public ProjectCreationService(IAccountRepository accountRepository, IProjectRepository projectRepository) {
+    private final ProjectConverter projectConverter;
+
+    public ProjectCreationService(IAccountRepository accountRepository, IProjectRepository projectRepository,
+            ProjectConverter projectConverter) {
         this.accountRepository = Objects.requireNonNull(accountRepository);
         this.projectRepository = Objects.requireNonNull(projectRepository);
+        this.projectConverter = Objects.requireNonNull(projectConverter);
     }
 
     public IPayload createProject(UUID userId, CreateProjectInput input) {
@@ -49,15 +53,13 @@ public class ProjectCreationService {
                 ProjectEntity projectEntity = new ProjectEntity();
                 projectEntity.setLabel(input.getLabel());
                 projectEntity.setCreatedBy(accountEntity);
+                projectEntity.setOwnedBy(accountEntity);
                 projectEntity.setCreatedOn(LocalDateTime.now(ZoneOffset.UTC));
+                projectEntity.setMembers(new ArrayList<>());
 
                 ProjectEntity savedProjectEntity = this.projectRepository.save(projectEntity);
 
-                AccountEntity createdByAccountEntity = savedProjectEntity.getCreatedBy();
-                Account account = new Account(createdByAccountEntity.getId(), createdByAccountEntity.getUsername());
-                Project project = new Project(savedProjectEntity.getId(), savedProjectEntity.getLabel(), account,
-                        savedProjectEntity.getCreatedOn());
-
+                Project project = this.projectConverter.convert(savedProjectEntity);
                 payload = new CreateProjectSuccessPayload(project);
             } else {
                 payload = new ErrorPayload("Invalid request");

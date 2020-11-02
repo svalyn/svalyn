@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -57,8 +58,10 @@ public class ProjectRepositoryTests {
 
         ProjectEntity projectEntity = new ProjectEntity();
         projectEntity.setLabel("label");
+        projectEntity.setOwnedBy(savedAccountEntity);
         projectEntity.setCreatedBy(savedAccountEntity);
         projectEntity.setCreatedOn(LocalDateTime.now(ZoneOffset.UTC));
+        projectEntity.setMembers(new ArrayList<>());
 
         assertThat(this.projectRepository.count()).isZero();
 

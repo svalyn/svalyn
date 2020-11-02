@@ -108,4 +108,20 @@ describe('Project - /projects/:projectId', () => {
 
     cy.get('[data-testid="Assessment 24"').should('be.visible');
   });
+
+  it('can add and remove members', () => {
+    cy.get('[data-testid=username]').type('user1');
+    cy.get('[data-testid=add-member]').click();
+    cy.get('[data-testid=members]').should('have.text', 'user1');
+
+    cy.get('[data-testid=username]').type('user2');
+    cy.get('[data-testid=add-member]').click();
+    cy.get('[data-testid=members]').should('have.text', 'user1user2');
+
+    cy.get('[data-testid=remove-member-user1]').click();
+    cy.get('[data-testid=members]').should('have.text', 'user2');
+
+    cy.get('[data-testid=remove-member-user2]').click();
+    cy.get('[data-testid=members]').should('not.be.visible');
+  });
 });

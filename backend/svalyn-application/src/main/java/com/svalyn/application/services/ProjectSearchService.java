@@ -15,9 +15,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.svalyn.application.dto.output.Account;
 import com.svalyn.application.dto.output.Project;
-import com.svalyn.application.entities.ProjectEntity;
 import com.svalyn.application.repositories.IProjectRepository;
 
 @Service
@@ -25,27 +23,24 @@ public class ProjectSearchService {
 
     private final IProjectRepository projectRepository;
 
-    public ProjectSearchService(IProjectRepository projectRepository) {
+    private final ProjectConverter projectConverter;
+
+    public ProjectSearchService(IProjectRepository projectRepository, ProjectConverter projectConverter) {
         this.projectRepository = Objects.requireNonNull(projectRepository);
+        this.projectConverter = Objects.requireNonNull(projectConverter);
     }
 
     public Optional<Project> findById(UUID projectId) {
-        return this.projectRepository.findById(projectId).map(this::convert);
+        return this.projectRepository.findById(projectId).map(this.projectConverter::convert);
     }
 
     public List<Project> findAll(Pageable pageable) {
         // @formatter:off
         return this.projectRepository.findAll(pageable)
                 .stream()
-                .map(this::convert)
+                .map(this.projectConverter::convert)
                 .collect(Collectors.toList());
         // @formatter:on
-    }
-
-    public Project convert(ProjectEntity projectEntity) {
-        Account createdBy = new Account(projectEntity.getCreatedBy().getId(),
-                projectEntity.getCreatedBy().getUsername());
-        return new Project(projectEntity.getId(), projectEntity.getLabel(), createdBy, projectEntity.getCreatedOn());
     }
 
     public long count() {

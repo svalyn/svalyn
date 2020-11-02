@@ -7,6 +7,7 @@
 package com.svalyn.application.entities;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import javax.persistence.Entity;
@@ -14,7 +15,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
 
 @Entity
@@ -25,6 +29,15 @@ public class ProjectEntity {
     private UUID id;
 
     private String label;
+
+    @ManyToOne
+    @JoinColumn(name = "ownedBy")
+    private AccountEntity ownedBy;
+
+    @ManyToMany
+    @OrderBy("username")
+    @JoinTable(name = "Project_Members", joinColumns = @JoinColumn(name = "projectId"), inverseJoinColumns = @JoinColumn(name = "accountId"))
+    private List<AccountEntity> members;
 
     @ManyToOne
     @JoinColumn(name = "createdBy")
@@ -46,6 +59,22 @@ public class ProjectEntity {
 
     public void setLabel(String label) {
         this.label = label;
+    }
+
+    public AccountEntity getOwnedBy() {
+        return this.ownedBy;
+    }
+
+    public void setOwnedBy(AccountEntity ownedBy) {
+        this.ownedBy = ownedBy;
+    }
+
+    public List<AccountEntity> getMembers() {
+        return this.members;
+    }
+
+    public void setMembers(List<AccountEntity> members) {
+        this.members = members;
     }
 
     public AccountEntity getCreatedBy() {

@@ -10,5 +10,8 @@
 	<changeSet author="sbegaudeau" id="initial schema">
 		<sqlFile path="changesets/0001-initial_schema.sql" relativeToChangelogFile="true" />
 	</changeSet>
-
+	
+	<changeSet author="sbegaudeau" id="add project membership">
+		<sqlFile path="changesets/0002-add-project-membership.sql" relativeToChangelogFile="true" />
+	</changeSet>
 </databaseChangeLog>

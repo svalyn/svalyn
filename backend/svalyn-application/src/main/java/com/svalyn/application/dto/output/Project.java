@@ -7,6 +7,7 @@
 package com.svalyn.application.dto.output;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -15,13 +16,20 @@ public class Project {
 
     private final String label;
 
+    private final Account ownedBy;
+
+    private final List<Account> members;
+
     private final Account createdBy;
 
     private final LocalDateTime createdOn;
 
-    public Project(UUID id, String label, Account createdBy, LocalDateTime createdOn) {
+    public Project(UUID id, String label, Account ownedBy, List<Account> members, Account createdBy,
+            LocalDateTime createdOn) {
         this.id = Objects.requireNonNull(id);
         this.label = Objects.requireNonNull(label);
+        this.ownedBy = Objects.requireNonNull(ownedBy);
+        this.members = Objects.requireNonNull(members);
         this.createdBy = Objects.requireNonNull(createdBy);
         this.createdOn = Objects.requireNonNull(createdOn);
     }
@@ -32,6 +40,14 @@ public class Project {
 
     public String getLabel() {
         return this.label;
+    }
+
+    public Account getOwnedBy() {
+        return this.ownedBy;
+    }
+
+    public List<Account> getMembers() {
+        return this.members;
     }
 
     public Account getCreatedBy() {

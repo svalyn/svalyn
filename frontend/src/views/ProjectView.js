@@ -8,7 +8,9 @@ import React, { useEffect } from 'react';
 import { Link as RouterLink, Redirect, useLocation, useHistory, useParams } from 'react-router-dom';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import Button from '@material-ui/core/Button';
+import CancelIcon from '@material-ui/icons/Cancel';
 import CloseIcon from '@material-ui/icons/Close';
+import Chip from '@material-ui/core/Chip';
 import Container from '@material-ui/core/Container';
 import FolderIcon from '@material-ui/icons/Folder';
 import FormControl from '@material-ui/core/FormControl';
@@ -32,7 +34,7 @@ import { useMachine } from '@xstate/react';
 
 import { AuthenticatedHeader } from '../headers/AuthenticatedHeader';
 import { EnhancedTable } from '../table/Table';
-import { newAssessmentFormMachine, projectViewMachine } from './ProjectViewMachine';
+import { newAssessmentFormMachine, membersFormMachine, projectViewMachine } from './ProjectViewMachine';
 
 const {
   loc: {
@@ -46,6 +48,10 @@ const {
     }
     project(projectId: $projectId) {
       label
+      members {
+        id
+        username
+      }
       assessments(page: $page) {
         edges {
           node {
@@ -129,6 +135,50 @@ const deleteAssessments = (variables) =>
     body: JSON.stringify({ query: deleteAssessmentsMutation, variables }),
   });
 
+const {
+  loc: {
+    source: { body: addMemberMutation },
+  },
+} = gql`
+  mutation addMemberToProject($input: AddMemberToProjectInput!) {
+    addMemberToProject(input: $input) {
+      __typename
+      ... on ErrorPayload {
+        message
+      }
+    }
+  }
+`;
+const addMember = (variables) =>
+  ajax({
+    url: '/api/graphql',
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: addMemberMutation, variables }),
+  });
+
+const {
+  loc: {
+    source: { body: removeMemberMutation },
+  },
+} = gql`
+  mutation removeMemberFromProject($input: RemoveMemberFromProjectInput!) {
+    removeMemberFromProject(input: $input) {
+      __typename
+      ... on ErrorPayload {
+        message
+      }
+    }
+  }
+`;
+const removeMember = (variables) =>
+  ajax({
+    url: '/api/graphql',
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: removeMemberMutation, variables }),
+  });
+
 const useProjectViewStyles = makeStyles((theme) => ({
   view: {
     display: 'grid',
@@ -167,7 +217,7 @@ export const ProjectView = () => {
     },
   });
   const { projectView, toast } = value;
-  const { page, label, assessments, selectedAssessmentIds, count, descriptions, message } = context;
+  const { page, label, members, assessments, selectedAssessmentIds, count, descriptions, message } = context;
 
   useEffect(() => {
     if (pageFromURL !== page) {
@@ -236,6 +286,54 @@ export const ProjectView = () => {
       .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
   };
 
+  const onAddMember = (username) => {
+    const variables = {
+      input: {
+        projectId,
+        username,
+      },
+    };
+    dispatch('ADD_MEMBER');
+    addMember(variables)
+      .pipe(
+        concatMap((ajaxResponse) => {
+          const { data, errors } = ajaxResponse.response;
+          if (errors || ajaxResponse.status !== 200) {
+            dispatch({ type: 'SHOW_TOAST', message: 'An unexpected error has occurred, please refresh the page' });
+          } else if (data.addMemberToProject.__typename === 'ErrorPayload') {
+            dispatch({ type: 'SHOW_TOAST', message: data.addMemberToProject.message });
+          }
+          return getProject({ projectId, page });
+        })
+      )
+      .pipe(catchError((error) => of(error)))
+      .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
+  };
+
+  const onRemoveMember = (username) => {
+    const variables = {
+      input: {
+        projectId,
+        username,
+      },
+    };
+    dispatch('REMOVE_MEMBER');
+    removeMember(variables)
+      .pipe(
+        concatMap((ajaxResponse) => {
+          const { data, errors } = ajaxResponse.response;
+          if (errors || ajaxResponse.status !== 200) {
+            dispatch({ type: 'SHOW_TOAST', message: 'An unexpected error has occurred, please refresh the page' });
+          } else if (data.removeMemberFromProject.__typename === 'ErrorPayload') {
+            dispatch({ type: 'SHOW_TOAST', message: data.removeMemberFromProject.message });
+          }
+          return getProject({ projectId, page });
+        })
+      )
+      .pipe(catchError((error) => of(error)))
+      .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
+  };
+
   let rightElement = null;
   if (projectView === 'error') {
     rightElement = <Message content="An error has occurred, please refresh the page" />;
@@ -287,11 +385,14 @@ export const ProjectView = () => {
               </Typography>
             </Breadcrumbs>
             <Grid container spacing={4}>
-              <Grid item xs={3}>
+              <Grid item xs={2}>
                 <NewAssessmentForm descriptions={descriptions} onNewAssessmentClick={onNewAssessmentClick} />
               </Grid>
-              <Grid item xs={9}>
+              <Grid item xs={8}>
                 {rightElement}
+              </Grid>
+              <Grid item xs={2}>
+                <MembersForm members={members} onAddMember={onAddMember} onRemoveMember={onRemoveMember} />
               </Grid>
             </Grid>
           </Container>
@@ -462,6 +563,74 @@ const Assessments = ({
         onDelete={onDelete}
       />
     </div>
+  );
+};
+
+const useMembersFormStyles = makeStyles((theme) => ({
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    paddingTop: '0.5rem',
+    paddingLeft: '1rem',
+    paddingRight: '1rem',
+    '& > *': {
+      marginBottom: theme.spacing(2),
+    },
+  },
+  members: {
+    display: 'flex',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    '& > *': {
+      margin: theme.spacing(0.5),
+    },
+  },
+}));
+
+const MembersForm = ({ members, onAddMember, onRemoveMember }) => {
+  const classes = useMembersFormStyles();
+
+  const [{ value, context }, dispatch] = useMachine(membersFormMachine);
+  const { username } = context;
+
+  const onChangeUsername = (event) => {
+    const { value } = event.target;
+    dispatch({ type: 'UPDATE_USERNAME', username: value });
+  };
+
+  const onSubmit = (event) => {
+    event.preventDefault();
+
+    dispatch('ADD_MEMBER');
+    onAddMember(username);
+  };
+
+  const onDelete = (username) => {
+    onRemoveMember(username);
+  };
+
+  return (
+    <Paper>
+      <form onSubmit={onSubmit} className={classes.form}>
+        <TextField label="Username" value={username} onChange={onChangeUsername} required data-testid="username" />
+        <Button type="submit" variant="contained" color="primary" disabled={value !== 'valid'} data-testid="add-member">
+          Add member
+        </Button>
+        {members.length > 0 ? (
+          <div className={classes.members} data-testid="members">
+            {members.map((member) => (
+              <Chip
+                size="small"
+                label={member.username}
+                key={member.id}
+                onDelete={() => onDelete(member.username)}
+                deleteIcon={<CancelIcon data-testid={`remove-member-${member.username}`} />}
+              />
+            ))}
+          </div>
+        ) : null}
+      </form>
+    </Paper>
   );
 };
 

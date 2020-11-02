@@ -100,6 +100,83 @@ export const newAssessmentFormMachine = Machine(
   }
 );
 
+export const membersFormMachine = Machine(
+  {
+    initial: 'pristine',
+    context: {
+      username: '',
+    },
+    states: {
+      pristine: {
+        on: {
+          UPDATE_USERNAME: [
+            {
+              cond: 'isUsernameInvalid',
+              target: 'invalid',
+              actions: ['updateUsername'],
+            },
+            {
+              target: 'valid',
+              actions: ['updateUsername'],
+            },
+          ],
+        },
+      },
+      invalid: {
+        on: {
+          UPDATE_USERNAME: [
+            {
+              cond: 'isUsernameInvalid',
+              target: 'invalid',
+              actions: ['updateUsername'],
+            },
+            {
+              target: 'valid',
+              actions: ['updateUsername'],
+            },
+          ],
+        },
+      },
+      valid: {
+        on: {
+          UPDATE_USERNAME: [
+            {
+              cond: 'isUsernameInvalid',
+              target: 'invalid',
+              actions: ['updateUsername'],
+            },
+            {
+              target: 'valid',
+              actions: ['updateUsername'],
+            },
+          ],
+          ADD_MEMBER: {
+            target: 'pristine',
+            actions: ['clearForm'],
+          },
+        },
+      },
+    },
+  },
+  {
+    guards: {
+      isUsernameInvalid: (_, event) => {
+        const { username } = event;
+        return (username?.length ?? 0) === 0;
+      },
+    },
+    actions: {
+      updateUsername: assign((_, event) => {
+        const { username } = event;
+        return { username };
+      }),
+      clearForm: assign((_, event) => {
+        return { username: '' };
+      }),
+    },
+  }
+);
+
 export const projectViewMachine = Machine(
   {
     id: 'ProjectView',
@@ -107,6 +184,7 @@ export const projectViewMachine = Machine(
     context: {
       page: 0,
       label: '',
+      members: [],
       assessments: [],
       selectedAssessmentIds: [],
       count: 0,
@@ -176,11 +254,23 @@ export const projectViewMachine = Machine(
               CREATE_ASSESSMENT: {
                 target: 'fetchingProject',
               },
+              ADD_MEMBER: {
+                target: 'fetchingProject',
+              },
+              REMOVE_MEMBER: {
+                target: 'fetchingProject',
+              },
             },
           },
           missing: {
             on: {
               CREATE_ASSESSMENT: {
+                target: 'fetchingProject',
+              },
+              ADD_MEMBER: {
+                target: 'fetchingProject',
+              },
+              REMOVE_MEMBER: {
                 target: 'fetchingProject',
               },
             },
@@ -190,11 +280,23 @@ export const projectViewMachine = Machine(
               CREATE_ASSESSMENT: {
                 target: 'fetchingProject',
               },
+              ADD_MEMBER: {
+                target: 'fetchingProject',
+              },
+              REMOVE_MEMBER: {
+                target: 'fetchingProject',
+              },
             },
           },
           success: {
             on: {
               CREATE_ASSESSMENT: {
+                target: 'fetchingProject',
+              },
+              ADD_MEMBER: {
+                target: 'fetchingProject',
+              },
+              REMOVE_MEMBER: {
                 target: 'fetchingProject',
               },
               FETCH_PROJECT: 'fetchingProject',
@@ -252,11 +354,12 @@ export const projectViewMachine = Machine(
           ajaxResponse: { response },
         } = event;
         const { descriptions, project } = response.data;
-        const { label, assessments } = project;
+        const { label, members, assessments } = project;
         const { count } = assessments.pageInfo;
         return {
           descriptions,
           label,
+          members,
           assessments: assessments.edges.map((edge) => edge.node),
           selectedAssessmentIds: [],
           count,
