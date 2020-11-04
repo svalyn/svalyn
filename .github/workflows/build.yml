@@ -25,8 +25,10 @@ jobs:
       - name: Run Cypress tests
         uses: cypress-io/github-action@v2
         with:
-          start: docker-compose -f ../docker-compose.yml up -d --build
+          build: docker-compose -f ../docker-compose.yml up -d --build
+          start: docker-compose -f ../docker-compose.yml ps
           wait-on: 'http://localhost:8080/login'
+          wait-on-timeout: 180
           working-directory: frontend
           record: true
         env:
