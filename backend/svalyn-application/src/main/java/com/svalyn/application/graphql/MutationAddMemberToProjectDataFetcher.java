@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.svalyn.application.dto.input.AddMemberToProjectInput;
 import com.svalyn.application.dto.output.IPayload;
 import com.svalyn.application.services.ProjectMembershipUpdateService;
+import com.svalyn.application.services.UserDetailsService;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -24,17 +25,21 @@ public class MutationAddMemberToProjectDataFetcher implements DataFetcher<IPaylo
 
     private final ObjectMapper objectMapper;
 
+    private final UserDetailsService userDetailsService;
+
     private final ProjectMembershipUpdateService projectMembershipService;
 
-    public MutationAddMemberToProjectDataFetcher(ObjectMapper objectMapper,
+    public MutationAddMemberToProjectDataFetcher(ObjectMapper objectMapper, UserDetailsService userDetailsService,
             ProjectMembershipUpdateService projectMembershipUpdateService) {
         this.objectMapper = Objects.requireNonNull(objectMapper);
+        this.userDetailsService = Objects.requireNonNull(userDetailsService);
         this.projectMembershipService = Objects.requireNonNull(projectMembershipUpdateService);
     }
 
     @Override
     public IPayload get(DataFetchingEnvironment environment) throws Exception {
         var input = this.objectMapper.convertValue(environment.getArgument(INPUT), AddMemberToProjectInput.class);
-        return this.projectMembershipService.addMember(input);
+        var userDetails = this.userDetailsService.getUserDetails(environment.getContext());
+        return this.projectMembershipService.addMember(userDetails.getId(), input);
     }
 }

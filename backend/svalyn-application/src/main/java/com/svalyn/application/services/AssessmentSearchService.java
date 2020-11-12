@@ -14,11 +14,13 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.svalyn.application.dto.output.Assessment;
 import com.svalyn.application.repositories.IAssessmentRepository;
 
 @Service
+@Transactional(readOnly = true)
 public class AssessmentSearchService {
 
     private final AssessmentConverter assessmentConverter;
@@ -31,6 +33,13 @@ public class AssessmentSearchService {
         this.assessmentRepository = Objects.requireNonNull(assessmentRepository);
     }
 
+    public Optional<Assessment> findById(UUID projectId, UUID assessmentId) {
+        // @formatter:off
+        return this.assessmentRepository.findByProjectIdAndAssessmentId(projectId, assessmentId)
+                .map(this.assessmentConverter::convert);
+        // @formatter:on
+    }
+
     public long countByProjectId(UUID projectId) {
         return this.assessmentRepository.countByProjectId(projectId);
     }
@@ -40,13 +49,6 @@ public class AssessmentSearchService {
         return this.assessmentRepository.findAllByProjectId(projectId, pageable).stream()
                 .map(this.assessmentConverter::convert)
                 .collect(Collectors.toList());
-        // @formatter:on
-    }
-
-    public Optional<Assessment> findById(UUID assessmentId) {
-        // @formatter:off
-        return this.assessmentRepository.findById(assessmentId)
-                .map(this.assessmentConverter::convert);
         // @formatter:on
     }
 }

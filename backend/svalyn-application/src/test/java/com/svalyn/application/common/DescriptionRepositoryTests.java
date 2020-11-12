@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in
  * the LICENSE file in the root directory of this source tree.
  **************************************************************/
-package com.svalyn.application.repositories;
+package com.svalyn.application.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -26,6 +26,9 @@ import com.svalyn.application.entities.CategoryEntity;
 import com.svalyn.application.entities.DescriptionEntity;
 import com.svalyn.application.entities.RequirementEntity;
 import com.svalyn.application.entities.TestEntity;
+import com.svalyn.application.repositories.IDescriptionRepository;
+import com.svalyn.application.repositories.PostgreSQLTestContainer;
+import com.svalyn.application.repositories.RepositoryTestConfiguration;
 
 @Testcontainers
 @SpringBootTest

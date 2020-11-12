@@ -40,6 +40,10 @@ const {
         node {
           id
           label
+          ownedBy {
+            id
+            username
+          }
           createdBy {
             username
           }
@@ -259,10 +263,10 @@ export const DashboardView = () => {
               </Typography>
             </Breadcrumbs>
             <Grid container spacing={4}>
-              <Grid item xs={3}>
+              <Grid item xs={2}>
                 <NewProjectForm onNewProjectClick={onNewProjectClick} />
               </Grid>
-              <Grid item xs={9}>
+              <Grid item xs={10}>
                 {rightElement}
               </Grid>
             </Grid>
@@ -347,7 +351,7 @@ const Projects = ({
   onChangePage,
   onDelete,
 }) => {
-  const headers = [{ label: 'Name' }, { label: 'Created by' }, { label: 'Created on' }];
+  const headers = [{ label: 'Name' }, { label: 'Owned by' }, { label: 'Created by' }, { label: 'Created on' }];
   const itemPropertyAccessor = (project, index) => {
     if (index === 0) {
       return (
@@ -356,8 +360,10 @@ const Projects = ({
         </Link>
       );
     } else if (index === 1) {
-      return project.createdBy.username;
+      return project.ownedBy.username;
     } else if (index === 2) {
+      return project.createdBy.username;
+    } else if (index === 3) {
       return project.createdOn;
     }
     return null;

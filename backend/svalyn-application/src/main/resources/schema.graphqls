@@ -197,6 +197,7 @@ type DeleteProjectsSuccessPayload {
 union DeleteProjectsPayload = ErrorPayload | DeleteProjectsSuccessPayload
 
 input DeleteAssessmentsInput {
+  projectId: ID!
   assessmentIds: [ID!]!
 }
 

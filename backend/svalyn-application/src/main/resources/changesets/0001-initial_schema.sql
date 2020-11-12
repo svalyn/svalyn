@@ -15,7 +15,7 @@ CREATE TABLE Project (
   createdBy UUID NOT NULL,
   createdOn TIMESTAMP NOT NULL,
   CONSTRAINT project_pk PRIMARY KEY (id),
-  CONSTRAINT project_label_unique UNIQUE (label),
+  CONSTRAINT project_label_unique UNIQUE (createdBy, label),
   CONSTRAINT project_label_length CHECK (char_length(label) > 0 AND char_length(label) <= 100),
   CONSTRAINT project_createdBy_fk FOREIGN KEY (createdBy) REFERENCES Account(id)
 );

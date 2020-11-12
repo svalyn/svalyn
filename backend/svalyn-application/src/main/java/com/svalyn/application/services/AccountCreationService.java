@@ -12,12 +12,14 @@ import java.util.Optional;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.svalyn.application.dto.output.Account;
 import com.svalyn.application.entities.AccountEntity;
 import com.svalyn.application.repositories.IAccountRepository;
 
 @Service
+@Transactional
 public class AccountCreationService {
     private final IAccountRepository accountRepository;
 
@@ -26,7 +28,6 @@ public class AccountCreationService {
     }
 
     public Optional<Account> createAccount(String username, String password) {
-
         boolean alreadyExists = this.accountRepository.findByUsername(username).isPresent();
         if (alreadyExists) {
             return Optional.empty();

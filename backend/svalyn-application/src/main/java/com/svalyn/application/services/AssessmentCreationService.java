@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.svalyn.application.dto.input.CreateAssessmentInput;
 import com.svalyn.application.dto.output.Assessment;
@@ -30,6 +31,7 @@ import com.svalyn.application.repositories.IDescriptionRepository;
 import com.svalyn.application.repositories.IProjectRepository;
 
 @Service
+@Transactional
 public class AssessmentCreationService {
 
     private final AssessmentConverter assessmentConverter;
@@ -56,7 +58,7 @@ public class AssessmentCreationService {
         IPayload payload = new ErrorPayload("An unexpected error has occurred");
 
         var opttionalAccountEntity = this.accountRepository.findById(userId);
-        var optionalProjectEntity = this.projectRepository.findById(input.getProjectId());
+        var optionalProjectEntity = this.projectRepository.findByUserIdAndProjectId(userId, input.getProjectId());
         var optionalDescriptionEntity = this.descriptionRepository.findById(input.getDescriptionId());
         boolean isValid = !input.getLabel().isBlank();
 

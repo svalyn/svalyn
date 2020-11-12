@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
 import com.svalyn.application.dto.output.Connection;
@@ -19,6 +21,7 @@ import com.svalyn.application.dto.output.Edge;
 import com.svalyn.application.dto.output.PageInfo;
 import com.svalyn.application.dto.output.Project;
 import com.svalyn.application.services.ProjectSearchService;
+import com.svalyn.application.services.UserDetailsService;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -28,9 +31,12 @@ public class QueryProjectsDataFetcher implements DataFetcher<Connection<Project>
 
     private static final String PAGE = "page";
 
+    private final UserDetailsService userDetailsService;
+
     private final ProjectSearchService projectSearchService;
 
-    public QueryProjectsDataFetcher(ProjectSearchService projectSearchService) {
+    public QueryProjectsDataFetcher(UserDetailsService userDetailsService, ProjectSearchService projectSearchService) {
+        this.userDetailsService = Objects.requireNonNull(userDetailsService);
         this.projectSearchService = Objects.requireNonNull(projectSearchService);
     }
 
@@ -41,10 +47,12 @@ public class QueryProjectsDataFetcher implements DataFetcher<Connection<Project>
             page = 0;
         }
 
+        var userDetails = this.userDetailsService.getUserDetails(environment.getContext());
+
         // @formatter:off
-        Pageable pageable = PageRequest.of(page, 20);
-        var projectCount = this.projectSearchService.count();
-        var projectEdges = this.projectSearchService.findAll(pageable).stream()
+        Pageable pageable = PageRequest.of(page, 20, Sort.by(Direction.ASC, "label"));
+        var projectCount = this.projectSearchService.count(userDetails.getId());
+        var projectEdges = this.projectSearchService.findAll(userDetails.getId(), pageable).stream()
                 .map(Edge::new)
                 .collect(Collectors.toList());
         // @formatter:on

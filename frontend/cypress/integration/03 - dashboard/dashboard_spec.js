@@ -40,7 +40,8 @@ describe('Dashboard - /', () => {
 
   it('cannot navigate to the next page', () => {
     for (let index = 0; index < 10; index++) {
-      cy.createProject(`Project ${index}`);
+      const name = `Project ${index < 10 ? '0' + index : index}`;
+      cy.createProject(name);
     }
     cy.reload();
 
@@ -49,7 +50,8 @@ describe('Dashboard - /', () => {
 
   it('can navigate to the next page', () => {
     for (let index = 0; index < 25; index++) {
-      cy.createProject(`Project ${index}`);
+      const name = `Project ${index < 10 ? '0' + index : index}`;
+      cy.createProject(name);
     }
     cy.reload();
 
@@ -65,7 +67,8 @@ describe('Dashboard - /', () => {
 
   it('cannot navigate to the previous page', () => {
     for (let index = 0; index < 10; index++) {
-      cy.createProject(`Project ${index}`);
+      const name = `Project ${index < 10 ? '0' + index : index}`;
+      cy.createProject(name);
     }
     cy.reload();
 
@@ -74,16 +77,17 @@ describe('Dashboard - /', () => {
 
   it('can navigate to the previous page', () => {
     for (let index = 0; index < 25; index++) {
-      cy.createProject(`Project ${index}`);
+      const name = `Project ${index < 10 ? '0' + index : index}`;
+      cy.createProject(name);
     }
     cy.visit('/?page=1');
 
     cy.get('[data-testid=pagination] button:nth-of-type(1)').should('not.have.attr', 'disabled');
     cy.get('[data-testid=pagination] button:nth-of-type(2)').should('have.attr', 'disabled');
-    cy.get('[data-testid="Project 1"').should('not.be.visible');
+    cy.get('[data-testid="Project 01"').should('not.be.visible');
 
     cy.get('[data-testid=pagination] button:nth-of-type(1)').click();
 
-    cy.get('[data-testid="Project 1"').should('be.visible');
+    cy.get('[data-testid="Project 01"').should('be.visible');
   });
 });

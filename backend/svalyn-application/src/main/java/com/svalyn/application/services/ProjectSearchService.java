@@ -14,11 +14,13 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.svalyn.application.dto.output.Project;
 import com.svalyn.application.repositories.IProjectRepository;
 
 @Service
+@Transactional(readOnly = true)
 public class ProjectSearchService {
 
     private final IProjectRepository projectRepository;
@@ -30,20 +32,20 @@ public class ProjectSearchService {
         this.projectConverter = Objects.requireNonNull(projectConverter);
     }
 
-    public Optional<Project> findById(UUID projectId) {
-        return this.projectRepository.findById(projectId).map(this.projectConverter::convert);
+    public Optional<Project> findById(UUID userId, UUID projectId) {
+        return this.projectRepository.findByUserIdAndProjectId(userId, projectId).map(this.projectConverter::convert);
     }
 
-    public List<Project> findAll(Pageable pageable) {
+    public List<Project> findAll(UUID userId, Pageable pageable) {
         // @formatter:off
-        return this.projectRepository.findAll(pageable)
+        return this.projectRepository.findAllByUserId(userId, pageable)
                 .stream()
                 .map(this.projectConverter::convert)
                 .collect(Collectors.toList());
         // @formatter:on
     }
 
-    public long count() {
-        return this.projectRepository.count();
+    public long count(UUID userId) {
+        return this.projectRepository.countByUserId(userId);
     }
 }

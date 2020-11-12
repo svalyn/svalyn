@@ -183,7 +183,9 @@ export const projectViewMachine = Machine(
     type: 'parallel',
     context: {
       page: 0,
+      principal: null,
       label: '',
+      ownedBy: null,
       members: [],
       assessments: [],
       selectedAssessmentIds: [],
@@ -353,12 +355,14 @@ export const projectViewMachine = Machine(
         const {
           ajaxResponse: { response },
         } = event;
-        const { descriptions, project } = response.data;
-        const { label, members, assessments } = project;
+        const { principal, descriptions, project } = response.data;
+        const { label, ownedBy, members, assessments } = project;
         const { count } = assessments.pageInfo;
         return {
           descriptions,
+          principal,
           label,
+          ownedBy,
           members,
           assessments: assessments.edges.map((edge) => edge.node),
           selectedAssessmentIds: [],

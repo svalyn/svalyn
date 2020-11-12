@@ -11,11 +11,13 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.svalyn.application.dto.output.Description;
 import com.svalyn.application.repositories.IDescriptionRepository;
 
 @Service
+@Transactional(readOnly = true)
 public class DescriptionSearchService {
 
     private final IDescriptionRepository descriptionRepository;

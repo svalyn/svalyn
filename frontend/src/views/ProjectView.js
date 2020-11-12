@@ -42,12 +42,20 @@ const {
   },
 } = gql`
   query getProject($projectId: ID!, $page: Int!) {
+    principal {
+      id
+      username
+    }
     descriptions {
       id
       label
     }
     project(projectId: $projectId) {
       label
+      ownedBy {
+        id
+        username
+      }
       members {
         id
         username
@@ -217,7 +225,20 @@ export const ProjectView = () => {
     },
   });
   const { projectView, toast } = value;
-  const { page, label, members, assessments, selectedAssessmentIds, count, descriptions, message } = context;
+  const {
+    page,
+    principal,
+    label,
+    ownedBy,
+    members,
+    assessments,
+    selectedAssessmentIds,
+    count,
+    descriptions,
+    message,
+  } = context;
+
+  const isOwner = principal?.id === ownedBy?.id;
 
   useEffect(() => {
     if (pageFromURL !== page) {
@@ -266,6 +287,7 @@ export const ProjectView = () => {
   const onDelete = () => {
     const variables = {
       input: {
+        projectId,
         assessmentIds: selectedAssessmentIds,
       },
     };
@@ -334,16 +356,16 @@ export const ProjectView = () => {
       .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
   };
 
-  let rightElement = null;
+  let centerElement = null;
   if (projectView === 'error') {
-    rightElement = <Message content="An error has occurred, please refresh the page" />;
+    centerElement = <Message content="An error has occurred, please refresh the page" />;
   } else if (projectView === 'missing') {
-    rightElement = <Message content={`No project found with the id ${projectId}`} />;
+    centerElement = <Message content={`No project found with the id ${projectId}`} />;
   } else if (projectView === 'empty') {
     if (count > 0 && page * 20 > count) {
-      rightElement = <Message content={`You are trying to view the page n°${page} but it does not exist`} />;
+      centerElement = <Message content={`You are trying to view the page n°${page} but it does not exist`} />;
     } else {
-      rightElement = <Message content="You do not have any assessments for the moment, start by creating one" />;
+      centerElement = <Message content="You do not have any assessments for the moment, start by creating one" />;
     }
   } else if (projectView === 'unauthorized') {
     return <Redirect to="/login" />;
@@ -352,7 +374,7 @@ export const ProjectView = () => {
     const onSelectAllAssessments = (event) => dispatch({ type: 'SELECT_ALL_ASSESSMENTS', target: event.target });
     const onChangePage = (_, page) => dispatch({ type: 'CHANGE_PAGE', page });
 
-    rightElement = (
+    centerElement = (
       <Assessments
         projectId={projectId}
         assessments={assessments}
@@ -389,10 +411,15 @@ export const ProjectView = () => {
                 <NewAssessmentForm descriptions={descriptions} onNewAssessmentClick={onNewAssessmentClick} />
               </Grid>
               <Grid item xs={8}>
-                {rightElement}
+                {centerElement}
               </Grid>
               <Grid item xs={2}>
-                <MembersForm members={members} onAddMember={onAddMember} onRemoveMember={onRemoveMember} />
+                <MembersForm
+                  isOwner={isOwner}
+                  members={members}
+                  onAddMember={onAddMember}
+                  onRemoveMember={onRemoveMember}
+                />
               </Grid>
             </Grid>
           </Container>
@@ -567,27 +594,44 @@ const Assessments = ({
 };
 
 const useMembersFormStyles = makeStyles((theme) => ({
+  membership: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  memberFormArea: {
+    marginBottom: theme.spacing(4),
+  },
   form: {
     display: 'flex',
     flexDirection: 'column',
-    paddingTop: '0.5rem',
-    paddingLeft: '1rem',
-    paddingRight: '1rem',
+    paddingTop: theme.spacing(1),
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
     '& > *': {
       marginBottom: theme.spacing(2),
     },
   },
   members: {
+    paddingTop: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+    paddingBottom: theme.spacing(1),
+    paddingLeft: theme.spacing(2),
+  },
+  title: {
+    paddingBottom: theme.spacing(2),
+  },
+  memberList: {
     display: 'flex',
     flexDirection: 'row',
     flexWrap: 'wrap',
     '& > *': {
-      margin: theme.spacing(0.5),
+      marginRight: theme.spacing(1),
+      marginBottom: theme.spacing(1),
     },
   },
 }));
 
-const MembersForm = ({ members, onAddMember, onRemoveMember }) => {
+const MembersForm = ({ isOwner, members, onAddMember, onRemoveMember }) => {
   const classes = useMembersFormStyles();
 
   const [{ value, context }, dispatch] = useMachine(membersFormMachine);
@@ -610,27 +654,43 @@ const MembersForm = ({ members, onAddMember, onRemoveMember }) => {
   };
 
   return (
-    <Paper>
-      <form onSubmit={onSubmit} className={classes.form}>
-        <TextField label="Username" value={username} onChange={onChangeUsername} required data-testid="username" />
-        <Button type="submit" variant="contained" color="primary" disabled={value !== 'valid'} data-testid="add-member">
-          Add member
-        </Button>
-        {members.length > 0 ? (
-          <div className={classes.members} data-testid="members">
-            {members.map((member) => (
-              <Chip
-                size="small"
-                label={member.username}
-                key={member.id}
-                onDelete={() => onDelete(member.username)}
-                deleteIcon={<CancelIcon data-testid={`remove-member-${member.username}`} />}
-              />
-            ))}
+    <div className={classes.membership}>
+      {isOwner ? (
+        <Paper className={classes.memberFormArea}>
+          <form onSubmit={onSubmit} className={classes.form}>
+            <TextField label="Username" value={username} onChange={onChangeUsername} required data-testid="username" />
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              disabled={value !== 'valid'}
+              data-testid="add-member">
+              Add member
+            </Button>
+          </form>
+        </Paper>
+      ) : null}
+      {members.length > 0 ? (
+        <Paper>
+          <div className={classes.members}>
+            <Typography variant="h5" className={classes.title}>
+              Members
+            </Typography>
+            <div className={classes.memberList} data-testid="members">
+              {members.map((member) => (
+                <Chip
+                  size="small"
+                  label={member.username}
+                  key={member.id}
+                  onDelete={isOwner ? () => onDelete(member.username) : null}
+                  deleteIcon={<CancelIcon data-testid={`remove-member-${member.username}`} />}
+                />
+              ))}
+            </div>
           </div>
-        ) : null}
-      </form>
-    </Paper>
+        </Paper>
+      ) : null}
+    </div>
   );
 };
 

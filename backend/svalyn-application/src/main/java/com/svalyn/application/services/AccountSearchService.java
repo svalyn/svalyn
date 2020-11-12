@@ -11,11 +11,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.svalyn.application.dto.output.Account;
 import com.svalyn.application.repositories.IAccountRepository;
 
 @Service
+@Transactional(readOnly = true)
 public class AccountSearchService {
 
     private final IAccountRepository accountRepository;

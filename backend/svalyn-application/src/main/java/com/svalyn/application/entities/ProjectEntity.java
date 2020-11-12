@@ -7,6 +7,7 @@
 package com.svalyn.application.entities;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,7 +38,7 @@ public class ProjectEntity {
     @ManyToMany
     @OrderBy("username")
     @JoinTable(name = "Project_Members", joinColumns = @JoinColumn(name = "projectId"), inverseJoinColumns = @JoinColumn(name = "accountId"))
-    private List<AccountEntity> members;
+    private List<AccountEntity> members = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "createdBy")

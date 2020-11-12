@@ -6,8 +6,18 @@
  **************************************************************/
 package com.svalyn.application.dto.input;
 
+import java.util.Objects;
+
 public class CreateProjectInput {
     private String label;
+
+    public CreateProjectInput() {
+        // Used by Jackson
+    }
+
+    public CreateProjectInput(String label) {
+        this.label = Objects.requireNonNull(label);
+    }
 
     public String getLabel() {
         return this.label;

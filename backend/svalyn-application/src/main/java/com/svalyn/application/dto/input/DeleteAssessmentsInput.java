@@ -10,7 +10,13 @@ import java.util.List;
 import java.util.UUID;
 
 public class DeleteAssessmentsInput {
+    private UUID projectId;
+
     private List<UUID> assessmentIds;
+
+    public UUID getProjectId() {
+        return this.projectId;
+    }
 
     public List<UUID> getAssessmentIds() {
         return this.assessmentIds;

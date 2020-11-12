@@ -40,7 +40,6 @@ public class MutationCreateAssessmentDataFetcher implements DataFetcher<IPayload
     @Override
     public IPayload get(DataFetchingEnvironment environment) throws Exception {
         var input = this.objectMapper.convertValue(environment.getArgument(INPUT), CreateAssessmentInput.class);
-
         var userDetails = this.userDetailsService.getUserDetails(environment.getContext());
         return this.assessmentCreationService.createAssessment(userDetails.getId(), input);
     }

@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.svalyn.application.dto.input.UpdateAssessmentStatusInput;
 import com.svalyn.application.dto.input.UpdateTestInput;
@@ -32,6 +33,7 @@ import com.svalyn.application.repositories.IAccountRepository;
 import com.svalyn.application.repositories.IAssessmentRepository;
 
 @Service
+@Transactional
 public class AssessmentUpdateService {
 
     private final AssessmentConverter assessmentConverter;
@@ -51,7 +53,8 @@ public class AssessmentUpdateService {
         IPayload payload = new ErrorPayload("An unexpected error has occurred");
 
         var opttionalAccountEntity = this.accountRepository.findById(userId);
-        var optionalAssessmentEntity = this.assessmentRepository.findById(input.getAssessmentId());
+        var optionalAssessmentEntity = this.assessmentRepository.findByUserIdAndAssessmentId(userId,
+                input.getAssessmentId());
         if (optionalAssessmentEntity.isPresent() && opttionalAccountEntity.isPresent()) {
             AccountEntity accountEntity = opttionalAccountEntity.get();
             AssessmentEntity assessmentEntity = optionalAssessmentEntity.get();
@@ -72,7 +75,8 @@ public class AssessmentUpdateService {
         IPayload payload = new ErrorPayload("An unexpected error has occurred");
 
         var opttionalAccountEntity = this.accountRepository.findById(userId);
-        var optionalAssessmentEntity = this.assessmentRepository.findById(input.getAssessmentId());
+        var optionalAssessmentEntity = this.assessmentRepository.findByUserIdAndAssessmentId(userId,
+                input.getAssessmentId());
         if (optionalAssessmentEntity.isPresent() && opttionalAccountEntity.isPresent()) {
             AccountEntity accountEntity = opttionalAccountEntity.get();
             AssessmentEntity assessmentEntity = optionalAssessmentEntity.get();

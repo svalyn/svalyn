@@ -12,6 +12,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import com.svalyn.application.dto.output.Assessment;
+import com.svalyn.application.dto.output.Project;
 import com.svalyn.application.services.AssessmentSearchService;
 
 import graphql.schema.DataFetcher;
@@ -30,8 +31,9 @@ public class ProjectAssessmentDataFetcher implements DataFetcher<Assessment> {
 
     @Override
     public Assessment get(DataFetchingEnvironment environment) throws Exception {
+        Project project = environment.getSource();
         UUID assessmentId = UUID.fromString(environment.getArgument(ASSESSMENT_ID));
-        return this.assessmentSearchService.findById(assessmentId).orElse(null);
+        return this.assessmentSearchService.findById(project.getId(), assessmentId).orElse(null);
     }
 
 }

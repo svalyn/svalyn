@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.svalyn.application.dto.input.DeleteAssessmentsInput;
 import com.svalyn.application.dto.output.IPayload;
 import com.svalyn.application.services.AssessmentDeletionService;
+import com.svalyn.application.services.UserDetailsService;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -25,18 +26,22 @@ public class MutationDeleteAssessmentsDataFetcher implements DataFetcher<IPayloa
 
     private final ObjectMapper objectMapper;
 
+    private final UserDetailsService userDetailsService;
+
     private final AssessmentDeletionService assessmentDeletionService;
 
-    public MutationDeleteAssessmentsDataFetcher(ObjectMapper objectMapper,
+    public MutationDeleteAssessmentsDataFetcher(ObjectMapper objectMapper, UserDetailsService userDetailsService,
             AssessmentDeletionService assessmentDeletionService) {
         this.objectMapper = Objects.requireNonNull(objectMapper);
+        this.userDetailsService = Objects.requireNonNull(userDetailsService);
         this.assessmentDeletionService = Objects.requireNonNull(assessmentDeletionService);
     }
 
     @Override
     public IPayload get(DataFetchingEnvironment environment) throws Exception {
         var input = this.objectMapper.convertValue(environment.getArgument(INPUT), DeleteAssessmentsInput.class);
-        return this.assessmentDeletionService.deleteAssessments(input);
+        var userDetails = this.userDetailsService.getUserDetails(environment.getContext());
+        return this.assessmentDeletionService.deleteAssessments(userDetails.getId(), input);
     }
 
 }

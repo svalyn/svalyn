@@ -8,14 +8,15 @@ package com.svalyn.application.repositories;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -24,14 +25,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import com.svalyn.application.entities.AccountEntity;
-import com.svalyn.application.entities.ProjectEntity;
-
 @Testcontainers
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = RepositoryTestConfiguration.class)
 public class ProjectRepositoryTests {
+
     @Container
     private static PostgreSQLTestContainer postgreSQLContainer = new PostgreSQLTestContainer();
 
@@ -46,27 +45,109 @@ public class ProjectRepositoryTests {
     private IAccountRepository accountRepository;
 
     @Autowired
+    private IDescriptionRepository descriptionRepository;
+
+    @Autowired
     private IProjectRepository projectRepository;
+
+    @Autowired
+    private IAssessmentRepository assessmentRepository;
 
     @Test
     @Transactional
-    public void testProjectCreationAndRetrieval() {
-        AccountEntity accountEntity = new AccountEntity();
-        accountEntity.setUsername("username");
-        accountEntity.setPassword("password");
-        AccountEntity savedAccountEntity = this.accountRepository.save(accountEntity);
+    public void testFindByUserIdAndProjectId() {
+        Map<String, UUID> data = new TestSetupService(this.accountRepository, this.descriptionRepository,
+                this.projectRepository, this.assessmentRepository).setup();
 
-        ProjectEntity projectEntity = new ProjectEntity();
-        projectEntity.setLabel("label");
-        projectEntity.setOwnedBy(savedAccountEntity);
-        projectEntity.setCreatedBy(savedAccountEntity);
-        projectEntity.setCreatedOn(LocalDateTime.now(ZoneOffset.UTC));
-        projectEntity.setMembers(new ArrayList<>());
+        assertThat(this.projectRepository.findByUserIdAndProjectId(data.get("Robert"), data.get("Westworld")))
+                .isPresent();
+        assertThat(this.projectRepository.findByUserIdAndProjectId(data.get("Dolores"), data.get("Westworld")))
+                .isPresent();
+        assertThat(this.projectRepository.findByUserIdAndProjectId(data.get("Robert"), data.get("Eastworld")))
+                .isPresent();
+        assertThat(this.projectRepository.findByUserIdAndProjectId(data.get("Robert"), data.get("Northworld")))
+                .isEmpty();
+    }
 
-        assertThat(this.projectRepository.count()).isZero();
+    @Test
+    @Transactional
+    public void testFindAllByUserId() {
+        Map<String, UUID> data = new TestSetupService(this.accountRepository, this.descriptionRepository,
+                this.projectRepository, this.assessmentRepository).setup();
 
-        ProjectEntity savedProjectEntity = this.projectRepository.save(projectEntity);
-        assertThat(this.projectRepository.count()).isEqualTo(1);
-        assertThat(savedProjectEntity.getId()).isNotNull();
+        assertThat(this.projectRepository.findAllByUserId(data.get("Robert"), PageRequest.of(0, 10))).hasSize(3);
+        assertThat(this.projectRepository.findAllByUserId(data.get("Dolores"), PageRequest.of(0, 10))).hasSize(3);
+        assertThat(this.projectRepository.findAllByUserId(data.get("Bernard"), PageRequest.of(0, 10))).hasSize(2);
+        assertThat(this.projectRepository.findAllByUserId(data.get("Maeve"), PageRequest.of(0, 10))).hasSize(2);
+        assertThat(this.projectRepository.findAllByUserId(data.get("Musashi"), PageRequest.of(0, 10))).hasSize(1);
+
+        assertThat(this.projectRepository.findAllByUserId(data.get("Robert"), PageRequest.of(0, 2))).hasSize(2);
+        assertThat(this.projectRepository.findAllByUserId(data.get("Robert"), PageRequest.of(1, 2))).hasSize(1);
+    }
+
+    @Test
+    @Transactional
+    public void testCountByUserId() {
+        Map<String, UUID> data = new TestSetupService(this.accountRepository, this.descriptionRepository,
+                this.projectRepository, this.assessmentRepository).setup();
+        assertThat(this.projectRepository.countByUserId(data.get("Robert"))).isEqualTo(3);
+        assertThat(this.projectRepository.countByUserId(data.get("Dolores"))).isEqualTo(3);
+        assertThat(this.projectRepository.countByUserId(data.get("Bernard"))).isEqualTo(2);
+        assertThat(this.projectRepository.countByUserId(data.get("Maeve"))).isEqualTo(2);
+        assertThat(this.projectRepository.countByUserId(data.get("Musashi"))).isEqualTo(1);
+    }
+
+    @Test
+    @Transactional
+    public void testExistsByUserIdAndLabel() {
+        Map<String, UUID> data = new TestSetupService(this.accountRepository, this.descriptionRepository,
+                this.projectRepository, this.assessmentRepository).setup();
+
+        assertThat(this.projectRepository.existsByUserIdAndLabel(data.get("Robert"), "Westworld")).isTrue();
+        assertThat(this.projectRepository.existsByUserIdAndLabel(data.get("Robert"), "Eastworld")).isTrue();
+        assertThat(this.projectRepository.existsByUserIdAndLabel(data.get("Robert"), "Northworld")).isFalse();
+        assertThat(this.projectRepository.existsByUserIdAndLabel(data.get("Robert"), "Southworld")).isFalse();
+    }
+
+    @Test
+    @Transactional
+    public void testExistsByUserIdAndProjectId() {
+        Map<String, UUID> data = new TestSetupService(this.accountRepository, this.descriptionRepository,
+                this.projectRepository, this.assessmentRepository).setup();
+
+        assertThat(this.projectRepository.isVisibleByUserIdAndProjectId(data.get("Robert"), data.get("Westworld")))
+                .isTrue();
+        assertThat(this.projectRepository.isVisibleByUserIdAndProjectId(data.get("Robert"), data.get("Eastworld")))
+                .isTrue();
+        assertThat(this.projectRepository.isVisibleByUserIdAndProjectId(data.get("Robert"), data.get("Northworld")))
+                .isFalse();
+        assertThat(this.projectRepository.isVisibleByUserIdAndProjectId(data.get("Robert"), data.get("Southworld")))
+                .isTrue();
+    }
+
+    @Test
+    @Transactional
+    public void testDeleteByUserIdAndProjectIds() {
+        Map<String, UUID> data = new TestSetupService(this.accountRepository, this.descriptionRepository,
+                this.projectRepository, this.assessmentRepository).setup();
+
+        assertThat(this.projectRepository.countByUserId(data.get("Robert"))).isEqualTo(3);
+
+        this.projectRepository.deleteByUserIdAndProjectIds(data.get("Robert"),
+                List.of(data.get("Westworld"), data.get("Eastworld")));
+
+        assertThat(this.projectRepository.countByUserId(data.get("Robert"))).isEqualTo(1);
+    }
+
+    @Test
+    @Transactional
+    public void testOwnsAllByIds() {
+        Map<String, UUID> data = new TestSetupService(this.accountRepository, this.descriptionRepository,
+                this.projectRepository, this.assessmentRepository).setup();
+
+        assertThat(this.projectRepository.ownsAllByIds(data.get("Robert"),
+                List.of(data.get("Westworld"), data.get("Eastworld")))).isTrue();
+        assertThat(this.projectRepository.ownsAllByIds(data.get("Robert"),
+                List.of(data.get("Westworld"), data.get("Eastworld"), data.get("Southworld")))).isFalse();
     }
 }

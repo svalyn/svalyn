@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.svalyn.application.dto.input.CreateProjectInput;
 import com.svalyn.application.dto.output.CreateProjectSuccessPayload;
@@ -25,6 +26,7 @@ import com.svalyn.application.repositories.IAccountRepository;
 import com.svalyn.application.repositories.IProjectRepository;
 
 @Service
+@Transactional
 public class ProjectCreationService {
 
     private final IAccountRepository accountRepository;
@@ -45,15 +47,15 @@ public class ProjectCreationService {
 
         var optionalAccountEntity = this.accountRepository.findById(userId);
         boolean isValid = !input.getLabel().isBlank();
-        boolean exists = this.projectRepository.existsByLabel(input.getLabel());
+        boolean exists = this.projectRepository.existsByUserIdAndLabel(userId, input.getLabel());
         if (!exists) {
             if (isValid && optionalAccountEntity.isPresent()) {
                 AccountEntity accountEntity = optionalAccountEntity.get();
 
                 ProjectEntity projectEntity = new ProjectEntity();
                 projectEntity.setLabel(input.getLabel());
-                projectEntity.setCreatedBy(accountEntity);
                 projectEntity.setOwnedBy(accountEntity);
+                projectEntity.setCreatedBy(accountEntity);
                 projectEntity.setCreatedOn(LocalDateTime.now(ZoneOffset.UTC));
                 projectEntity.setMembers(new ArrayList<>());
 

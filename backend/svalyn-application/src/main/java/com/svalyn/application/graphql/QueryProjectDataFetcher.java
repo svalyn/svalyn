@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.svalyn.application.dto.output.Project;
 import com.svalyn.application.services.ProjectSearchService;
+import com.svalyn.application.services.UserDetailsService;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -22,16 +23,21 @@ public class QueryProjectDataFetcher implements DataFetcher<Project> {
 
     private static final String PROJECT_ID = "projectId"; //$NON-NLS-1$
 
+    private final UserDetailsService userDetailsService;
+
     private final ProjectSearchService projectSearchService;
 
-    public QueryProjectDataFetcher(ProjectSearchService projectSearchService) {
+    public QueryProjectDataFetcher(UserDetailsService userDetailsService, ProjectSearchService projectSearchService) {
+        this.userDetailsService = Objects.requireNonNull(userDetailsService);
         this.projectSearchService = Objects.requireNonNull(projectSearchService);
     }
 
     @Override
     public Project get(DataFetchingEnvironment environment) throws Exception {
         UUID projectId = UUID.fromString(environment.getArgument(PROJECT_ID));
-        return this.projectSearchService.findById(projectId).orElse(null);
+
+        var userDetails = this.userDetailsService.getUserDetails(environment.getContext());
+        return this.projectSearchService.findById(userDetails.getId(), projectId).orElse(null);
     }
 
 }

@@ -12,12 +12,14 @@ import java.util.Objects;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.svalyn.application.repositories.IAccountRepository;
 
 import graphql.GraphQLContext;
 
 @Service
+@Transactional(readOnly = true)
 public class UserDetailsService implements org.springframework.security.core.userdetails.UserDetailsService {
 
     private final IAccountRepository accountRepository;

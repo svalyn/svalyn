@@ -6,6 +6,7 @@
  **************************************************************/
 package com.svalyn.application.entities;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,7 +32,7 @@ public class AccountEntity {
 
     @ManyToMany(mappedBy = "members")
     @OrderBy("label")
-    private List<ProjectEntity> belongingProjects;
+    private List<ProjectEntity> belongingProjects = new ArrayList<>();
 
     public UUID getId() {
         return this.id;
