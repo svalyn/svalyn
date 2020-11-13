@@ -22,6 +22,7 @@ import com.svalyn.application.graphql.MutationCreateAssessmentDataFetcher;
 import com.svalyn.application.graphql.MutationCreateProjectDataFetcher;
 import com.svalyn.application.graphql.MutationDeleteAssessmentsDataFetcher;
 import com.svalyn.application.graphql.MutationDeleteProjectsDataFetcher;
+import com.svalyn.application.graphql.MutationLeaveProjectDataFetcher;
 import com.svalyn.application.graphql.MutationRemoveMemberFromProjectDataFetcher;
 import com.svalyn.application.graphql.MutationUpdateAssessmentStatusDataFetcher;
 import com.svalyn.application.graphql.MutationUpdateTestDataFetcher;
@@ -68,6 +69,7 @@ public class GraphQLConfiguration {
                 return environment.getSchema().getObjectType(className);
             };
 
+            // @formatter:off
             var runtimeWiring = RuntimeWiring.newRuntimeWiring().codeRegistry(graphQLCodeRegistry)
                     .scalar(this.getGraphQLDate())
                     .type("CreateProjectPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
@@ -78,7 +80,9 @@ public class GraphQLConfiguration {
                     .type("DeleteAssessmentsPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
                     .type("AddMemberToProjectPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
                     .type("RemoveMemberFromProjectPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
+                    .type("LeaveProjectPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
                     .build();
+            // @formatter:on
 
             graphQLSchema = new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, runtimeWiring);
         } catch (IOException exception) {
@@ -100,7 +104,8 @@ public class GraphQLConfiguration {
             MutationUpdateAssessmentStatusDataFetcher mutationUpdateAssessmentStatusDataFetcher,
             MutationUpdateTestDataFetcher mutationUpdateTestDataFetcher,
             MutationDeleteProjectsDataFetcher mutationDeleteProjectsDataFetcher,
-            MutationDeleteAssessmentsDataFetcher mutationDeleteAssessmentsDataFetcher) {
+            MutationDeleteAssessmentsDataFetcher mutationDeleteAssessmentsDataFetcher,
+            MutationLeaveProjectDataFetcher mutationLeaveProjectDataFetcher) {
 
         // @formatter:off
         return GraphQLCodeRegistry.newCodeRegistry()
@@ -116,6 +121,7 @@ public class GraphQLConfiguration {
                 .dataFetcher(coordinates("Mutation", "updateTest"), mutationUpdateTestDataFetcher)
                 .dataFetcher(coordinates("Mutation", "deleteProjects"), mutationDeleteProjectsDataFetcher)
                 .dataFetcher(coordinates("Mutation", "deleteAssessments"), mutationDeleteAssessmentsDataFetcher)
+                .dataFetcher(coordinates("Mutation", "leaveProject"), mutationLeaveProjectDataFetcher)
                 .dataFetcher(coordinates("Project", "assessments"), projectAssessmentsDataFetcher)
                 .dataFetcher(coordinates("Project", "assessment"), projectAssessmentDataFetcher)
                 .build();

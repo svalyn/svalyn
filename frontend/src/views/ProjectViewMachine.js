@@ -288,6 +288,9 @@ export const projectViewMachine = Machine(
               REMOVE_MEMBER: {
                 target: 'fetchingProject',
               },
+              HANDLE_LEAVE_PROJECT_RESPONSE: {
+                target: 'leftProject',
+              },
             },
           },
           success: {
@@ -317,8 +320,12 @@ export const projectViewMachine = Machine(
               SELECT_ALL_ASSESSMENTS: {
                 actions: ['selectAllAssessments'],
               },
+              HANDLE_LEAVE_PROJECT_RESPONSE: {
+                target: 'leftProject',
+              },
             },
           },
+          leftProject: {},
         },
       },
     },

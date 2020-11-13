@@ -187,6 +187,28 @@ const removeMember = (variables) =>
     body: JSON.stringify({ query: removeMemberMutation, variables }),
   });
 
+const {
+  loc: {
+    source: { body: leaveMemberMutation },
+  },
+} = gql`
+  mutation leaveProject($input: LeaveProjectInput!) {
+    leaveProject(input: $input) {
+      __typename
+      ... on ErrorPayload {
+        message
+      }
+    }
+  }
+`;
+const leaveProject = (variables) =>
+  ajax({
+    url: '/api/graphql',
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: leaveMemberMutation, variables }),
+  });
+
 const useProjectViewStyles = makeStyles((theme) => ({
   view: {
     display: 'grid',
@@ -356,8 +378,21 @@ export const ProjectView = () => {
       .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
   };
 
+  const onLeaveProject = () => {
+    const variables = {
+      input: {
+        projectId,
+      },
+    };
+    leaveProject(variables)
+      .pipe(catchError((error) => of(error)))
+      .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_LEAVE_PROJECT_RESPONSE', ajaxResponse }));
+  };
+
   let centerElement = null;
-  if (projectView === 'error') {
+  if (projectView === 'leftProject') {
+    return <Redirect to="/" />;
+  } else if (projectView === 'error') {
     centerElement = <Message content="An error has occurred, please refresh the page" />;
   } else if (projectView === 'missing') {
     centerElement = <Message content={`No project found with the id ${projectId}`} />;
@@ -419,6 +454,7 @@ export const ProjectView = () => {
                   members={members}
                   onAddMember={onAddMember}
                   onRemoveMember={onRemoveMember}
+                  onLeaveProject={onLeaveProject}
                 />
               </Grid>
             </Grid>
@@ -612,13 +648,12 @@ const useMembersFormStyles = makeStyles((theme) => ({
     },
   },
   members: {
-    paddingTop: theme.spacing(2),
-    paddingRight: theme.spacing(2),
-    paddingBottom: theme.spacing(1),
-    paddingLeft: theme.spacing(2),
+    display: 'flex',
+    flexDirection: 'column',
+    padding: theme.spacing(2),
   },
   title: {
-    paddingBottom: theme.spacing(2),
+    paddingBottom: theme.spacing(1),
   },
   memberList: {
     display: 'flex',
@@ -626,12 +661,15 @@ const useMembersFormStyles = makeStyles((theme) => ({
     flexWrap: 'wrap',
     '& > *': {
       marginRight: theme.spacing(1),
-      marginBottom: theme.spacing(1),
+      marginTop: theme.spacing(1),
     },
+  },
+  leaveProject: {
+    marginTop: theme.spacing(2),
   },
 }));
 
-const MembersForm = ({ isOwner, members, onAddMember, onRemoveMember }) => {
+const MembersForm = ({ isOwner, members, onAddMember, onRemoveMember, onLeaveProject }) => {
   const classes = useMembersFormStyles();
 
   const [{ value, context }, dispatch] = useMachine(membersFormMachine);
@@ -687,6 +725,15 @@ const MembersForm = ({ isOwner, members, onAddMember, onRemoveMember }) => {
                 />
               ))}
             </div>
+            {isOwner ? null : (
+              <Button
+                className={classes.leaveProject}
+                variant="outlined"
+                onClick={onLeaveProject}
+                data-testid="leave-project">
+                Leave project
+              </Button>
+            )}
           </div>
         </Paper>
       ) : null}

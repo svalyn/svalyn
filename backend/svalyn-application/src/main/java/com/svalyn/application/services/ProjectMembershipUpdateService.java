@@ -16,10 +16,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.svalyn.application.dto.input.AddMemberToProjectInput;
+import com.svalyn.application.dto.input.LeaveProjectInput;
 import com.svalyn.application.dto.input.RemoveMemberFromProjectInput;
 import com.svalyn.application.dto.output.AddMemberToProjectSuccessPayload;
 import com.svalyn.application.dto.output.ErrorPayload;
 import com.svalyn.application.dto.output.IPayload;
+import com.svalyn.application.dto.output.LeaveProjectSuccessPayload;
 import com.svalyn.application.dto.output.Project;
 import com.svalyn.application.dto.output.RemoveMemberFromProjectSuccessPayload;
 import com.svalyn.application.entities.AccountEntity;
@@ -114,6 +116,42 @@ public class ProjectMembershipUpdateService {
                     ProjectEntity savedProjectEntity = this.projectRepository.save(projectEntity);
                     Project project = this.projectConverter.convert(savedProjectEntity);
                     payload = new RemoveMemberFromProjectSuccessPayload(project);
+                }
+            } else {
+                payload = new ErrorPayload("The user does not exist");
+            }
+        } else {
+            payload = new ErrorPayload("The project does not exist");
+        }
+
+        return payload;
+    }
+
+    public IPayload leaveProject(UUID userId, LeaveProjectInput input) {
+        var optionalMemberToRemove = this.accountRepository.findById(userId);
+        var optionalProjectEntity = this.projectRepository.findByUserIdAndProjectId(userId, input.getProjectId());
+
+        IPayload payload = new ErrorPayload("An unexpected error has occurred");
+        if (optionalProjectEntity.isPresent()) {
+            if (optionalMemberToRemove.isPresent()) {
+                ProjectEntity projectEntity = optionalProjectEntity.get();
+                AccountEntity memberToRemove = optionalMemberToRemove.get();
+                var members = Optional.ofNullable(projectEntity.getMembers()).orElse(new ArrayList<>());
+
+                // @formatter:off
+                var newMembers = members.stream()
+                        .filter(member -> !member.getId().equals(memberToRemove.getId()))
+                        .collect(Collectors.toList());
+                // @formatter:on
+
+                var isCurrentUserTheOwner = projectEntity.getOwnedBy().getId().equals(userId);
+
+                if (isCurrentUserTheOwner) {
+                    payload = new ErrorPayload("Delete the project instead");
+                } else {
+                    projectEntity.setMembers(newMembers);
+                    this.projectRepository.save(projectEntity);
+                    payload = new LeaveProjectSuccessPayload();
                 }
             } else {
                 payload = new ErrorPayload("The user does not exist");

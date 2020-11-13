@@ -114,6 +114,7 @@ type Mutation {
   updateTest(input: UpdateTestInput!): UpdateTestPayload!
   deleteProjects(input: DeleteProjectsInput!): DeleteProjectsPayload!
   deleteAssessments(input: DeleteAssessmentsInput!): DeleteAssessmentsPayload!
+  leaveProject(input: LeaveProjectInput!): LeaveProjectPayload!
 }
 
 type ErrorPayload {
@@ -205,3 +206,12 @@ type DeleteAssessmentsSuccessPayload {
 }
 
 union DeleteAssessmentsPayload = ErrorPayload | DeleteAssessmentsSuccessPayload
+
+input LeaveProjectInput {
+  projectId: ID!
+}
+
+type LeaveProjectSuccessPayload {
+}
+
+union LeaveProjectPayload = ErrorPayload | LeaveProjectSuccessPayload
