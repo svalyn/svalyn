@@ -13,7 +13,6 @@ import Link from '@material-ui/core/Link';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Toolbar from '@material-ui/core/Toolbar';
-import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import { gql } from 'graphql.macro';
@@ -56,6 +55,14 @@ const useStyles = makeStyles((theme) => ({
   title: {
     flexGrow: 1,
   },
+  user: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  username: {
+    marginRight: theme.spacing(2),
+  },
 }));
 
 export const AuthenticatedHeader = () => {
@@ -92,7 +99,10 @@ export const AuthenticatedHeader = () => {
             <Typography variant="h4">Svalyn</Typography>
           </Link>
           {principal ? (
-            <Tooltip title={principal.username}>
+            <div className={classes.user}>
+              <Typography variant="h4" className={classes.username}>
+                {principal.username}
+              </Typography>
               <IconButton
                 edge="end"
                 aria-label="account of current user"
@@ -103,7 +113,7 @@ export const AuthenticatedHeader = () => {
                 data-testid="account">
                 <AccountCircle />
               </IconButton>
-            </Tooltip>
+            </div>
           ) : null}
         </Toolbar>
       </AppBar>
