@@ -100,6 +100,63 @@ export const newAssessmentFormMachine = Machine(
   }
 );
 
+export const ownerFormMachine = Machine(
+  {
+    initial: 'pristine',
+    context: {
+      ownerId: null,
+      selectedOwnerId: '',
+    },
+    states: {
+      pristine: {
+        on: {
+          UPDATE_OWNER: [
+            {
+              cond: 'isNewOwner',
+              target: 'valid',
+              actions: ['updateOwner'],
+            },
+            {
+              target: 'pristine',
+              actions: ['updateOwner'],
+            },
+          ],
+        },
+      },
+      valid: {
+        on: {
+          UPDATE_OWNER: [
+            {
+              cond: 'isNewOwner',
+              target: 'valid',
+              actions: ['updateOwner'],
+            },
+            {
+              target: 'pristine',
+              actions: ['updateOwner'],
+            },
+          ],
+        },
+      },
+    },
+  },
+  {
+    guards: {
+      isNewOwner: (context, event) => {
+        const { ownerId } = context;
+        const { selectedOwnerId } = event;
+        return ownerId !== selectedOwnerId;
+      },
+    },
+    actions: {
+      updateOwner: assign((_, event) => {
+        const { selectedOwnerId } = event;
+        return { selectedOwnerId };
+      }),
+    },
+  }
+);
+
 export const membersFormMachine = Machine(
   {
     initial: 'pristine',
@@ -262,6 +319,9 @@ export const projectViewMachine = Machine(
               REMOVE_MEMBER: {
                 target: 'fetchingProject',
               },
+              CHANGE_PROJECT_OWNER: {
+                target: 'fetchingProject',
+              },
             },
           },
           missing: {
@@ -273,6 +333,9 @@ export const projectViewMachine = Machine(
                 target: 'fetchingProject',
               },
               REMOVE_MEMBER: {
+                target: 'fetchingProject',
+              },
+              CHANGE_PROJECT_OWNER: {
                 target: 'fetchingProject',
               },
             },
@@ -290,6 +353,9 @@ export const projectViewMachine = Machine(
               },
               HANDLE_LEAVE_PROJECT_RESPONSE: {
                 target: 'leftProject',
+              },
+              CHANGE_PROJECT_OWNER: {
+                target: 'fetchingProject',
               },
             },
           },
@@ -322,6 +388,9 @@ export const projectViewMachine = Machine(
               },
               HANDLE_LEAVE_PROJECT_RESPONSE: {
                 target: 'leftProject',
+              },
+              CHANGE_PROJECT_OWNER: {
+                target: 'fetchingProject',
               },
             },
           },

@@ -141,4 +141,30 @@ describe('Project - /projects/:projectId', () => {
 
     cy.url().should('eq', Cypress.config().baseUrl + '/');
   });
+
+  it('can transfer the ownership of the project', () => {
+    cy.get('[data-testid=username]').type('user1');
+    cy.get('[data-testid=add-member]').click();
+
+    cy.get('[data-testid=leave-project]').should('not.be.visible');
+
+    cy.get('[data-testid=owner]').click();
+    cy.get('[data-testid=user1]').click();
+    cy.get('[data-testid=change-owner]').click();
+
+    cy.get('[data-testid=leave-project]').should('be.visible');
+
+    cy.logout();
+
+    cy.login('user1', '0123456789');
+    cy.reload();
+
+    cy.get('[data-testid=leave-project]').should('not.be.visible');
+
+    cy.get('[data-testid=owner]').click();
+    cy.get('[data-testid=user]').click();
+    cy.get('[data-testid=change-owner]').click();
+
+    cy.get('[data-testid=leave-project]').should('be.visible');
+  });
 });

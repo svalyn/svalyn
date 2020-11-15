@@ -7,6 +7,7 @@
 package com.svalyn.application.services;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,9 +17,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.svalyn.application.dto.input.AddMemberToProjectInput;
+import com.svalyn.application.dto.input.ChangeProjectOwnerInput;
 import com.svalyn.application.dto.input.LeaveProjectInput;
 import com.svalyn.application.dto.input.RemoveMemberFromProjectInput;
 import com.svalyn.application.dto.output.AddMemberToProjectSuccessPayload;
+import com.svalyn.application.dto.output.ChangeProjectOwnerSuccessPayload;
 import com.svalyn.application.dto.output.ErrorPayload;
 import com.svalyn.application.dto.output.IPayload;
 import com.svalyn.application.dto.output.LeaveProjectSuccessPayload;
@@ -152,6 +155,59 @@ public class ProjectMembershipUpdateService {
                     projectEntity.setMembers(newMembers);
                     this.projectRepository.save(projectEntity);
                     payload = new LeaveProjectSuccessPayload();
+                }
+            } else {
+                payload = new ErrorPayload("The user does not exist");
+            }
+        } else {
+            payload = new ErrorPayload("The project does not exist");
+        }
+
+        return payload;
+    }
+
+    public IPayload changeOwner(UUID userId, ChangeProjectOwnerInput input) {
+        var optionalAccount = this.accountRepository.findById(userId);
+        var optionalProjectEntity = this.projectRepository.findByUserIdAndProjectId(userId, input.getProjectId());
+
+        var optionalNewOwner = this.accountRepository.findById(input.getNewOwnerId());
+
+        IPayload payload = new ErrorPayload("An unexpected error has occurred");
+        if (optionalProjectEntity.isPresent()) {
+            if (optionalAccount.isPresent() && optionalNewOwner.isPresent()) {
+                ProjectEntity projectEntity = optionalProjectEntity.get();
+                AccountEntity account = optionalAccount.get();
+                AccountEntity newOwner = optionalNewOwner.get();
+
+                boolean exists = this.projectRepository.existsByUserIdAndLabel(input.getNewOwnerId(),
+                        projectEntity.getLabel());
+
+                boolean isOwner = projectEntity.getOwnedBy().getId().equals(account.getId());
+                // @formatter:off
+                boolean isNewOwnerAnExistingMember = projectEntity.getMembers().stream()
+                        .map(AccountEntity::getId)
+                        .anyMatch(newOwner.getId()::equals);
+                // @formatter:on
+
+                if (!isOwner) {
+                    payload = new ErrorPayload("You are not authorized to perform this action");
+                } else if (!isNewOwnerAnExistingMember) {
+                    payload = new ErrorPayload("The new owner must be an existing member");
+                } else if (exists) {
+                    payload = new ErrorPayload("The new owner already has a project with this name");
+                } else {
+                    List<AccountEntity> newMembers = new ArrayList<>();
+                    // @formatter:off
+                    Optional.ofNullable(projectEntity.getMembers()).orElse(new ArrayList<>()).stream()
+                            .filter(member -> !member.getId().equals(newOwner.getId()))
+                            .forEach(newMembers::add);
+                    // @formatter:on
+                    newMembers.add(account);
+
+                    projectEntity.setOwnedBy(newOwner);
+                    projectEntity.setMembers(newMembers);
+                    this.projectRepository.save(projectEntity);
+                    payload = new ChangeProjectOwnerSuccessPayload();
                 }
             } else {
                 payload = new ErrorPayload("The user does not exist");

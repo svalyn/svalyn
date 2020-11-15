@@ -18,6 +18,7 @@ import org.springframework.core.io.ClassPathResource;
 
 import com.svalyn.application.graphql.GraphQLDateCoercing;
 import com.svalyn.application.graphql.MutationAddMemberToProjectDataFetcher;
+import com.svalyn.application.graphql.MutationChangeProjectOwnerDataFetcher;
 import com.svalyn.application.graphql.MutationCreateAssessmentDataFetcher;
 import com.svalyn.application.graphql.MutationCreateProjectDataFetcher;
 import com.svalyn.application.graphql.MutationDeleteAssessmentsDataFetcher;
@@ -81,6 +82,7 @@ public class GraphQLConfiguration {
                     .type("AddMemberToProjectPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
                     .type("RemoveMemberFromProjectPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
                     .type("LeaveProjectPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
+                    .type("ChangeProjectOwnerPayload", typeWiring -> typeWiring.typeResolver(defaultTypeResolver))
                     .build();
             // @formatter:on
 
@@ -105,7 +107,8 @@ public class GraphQLConfiguration {
             MutationUpdateTestDataFetcher mutationUpdateTestDataFetcher,
             MutationDeleteProjectsDataFetcher mutationDeleteProjectsDataFetcher,
             MutationDeleteAssessmentsDataFetcher mutationDeleteAssessmentsDataFetcher,
-            MutationLeaveProjectDataFetcher mutationLeaveProjectDataFetcher) {
+            MutationLeaveProjectDataFetcher mutationLeaveProjectDataFetcher,
+            MutationChangeProjectOwnerDataFetcher mutationChangeProjectOwnerDataFetcher) {
 
         // @formatter:off
         return GraphQLCodeRegistry.newCodeRegistry()
@@ -122,6 +125,7 @@ public class GraphQLConfiguration {
                 .dataFetcher(coordinates("Mutation", "deleteProjects"), mutationDeleteProjectsDataFetcher)
                 .dataFetcher(coordinates("Mutation", "deleteAssessments"), mutationDeleteAssessmentsDataFetcher)
                 .dataFetcher(coordinates("Mutation", "leaveProject"), mutationLeaveProjectDataFetcher)
+                .dataFetcher(coordinates("Mutation", "changeProjectOwner"), mutationChangeProjectOwnerDataFetcher)
                 .dataFetcher(coordinates("Project", "assessments"), projectAssessmentsDataFetcher)
                 .dataFetcher(coordinates("Project", "assessment"), projectAssessmentDataFetcher)
                 .build();

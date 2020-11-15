@@ -34,7 +34,12 @@ import { useMachine } from '@xstate/react';
 
 import { AuthenticatedHeader } from '../headers/AuthenticatedHeader';
 import { EnhancedTable } from '../table/Table';
-import { newAssessmentFormMachine, membersFormMachine, projectViewMachine } from './ProjectViewMachine';
+import {
+  newAssessmentFormMachine,
+  ownerFormMachine,
+  membersFormMachine,
+  projectViewMachine,
+} from './ProjectViewMachine';
 
 const {
   loc: {
@@ -207,6 +212,28 @@ const leaveProject = (variables) =>
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query: leaveMemberMutation, variables }),
+  });
+
+const {
+  loc: {
+    source: { body: changeProjectOwnerMutation },
+  },
+} = gql`
+  mutation changeProjectOwner($input: ChangeProjectOwnerInput!) {
+    changeProjectOwner(input: $input) {
+      __typename
+      ... on ErrorPayload {
+        message
+      }
+    }
+  }
+`;
+const changeProjectOwner = (variables) =>
+  ajax({
+    url: '/api/graphql',
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: changeProjectOwnerMutation, variables }),
   });
 
 const useProjectViewStyles = makeStyles((theme) => ({
@@ -389,6 +416,30 @@ export const ProjectView = () => {
       .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_LEAVE_PROJECT_RESPONSE', ajaxResponse }));
   };
 
+  const onChangeProjectOwner = (newOwnerId) => {
+    const variables = {
+      input: {
+        projectId,
+        newOwnerId,
+      },
+    };
+    dispatch('CHANGE_PROJECT_OWNER');
+    changeProjectOwner(variables)
+      .pipe(
+        concatMap((ajaxResponse) => {
+          const { data, errors } = ajaxResponse.response;
+          if (errors || ajaxResponse.status !== 200) {
+            dispatch({ type: 'SHOW_TOAST', message: 'An unexpected error has occurred, please refresh the page' });
+          } else if (data.changeProjectOwner.__typename === 'ErrorPayload') {
+            dispatch({ type: 'SHOW_TOAST', message: data.changeProjectOwner.message });
+          }
+          return getProject({ projectId, page });
+        })
+      )
+      .pipe(catchError((error) => of(error)))
+      .subscribe((ajaxResponse) => dispatch({ type: 'HANDLE_RESPONSE', ajaxResponse }));
+  };
+
   let centerElement = null;
   if (projectView === 'leftProject') {
     return <Redirect to="/" />;
@@ -449,13 +500,17 @@ export const ProjectView = () => {
                 {centerElement}
               </Grid>
               <Grid item xs={2}>
-                <MembersForm
-                  isOwner={isOwner}
-                  members={members}
-                  onAddMember={onAddMember}
-                  onRemoveMember={onRemoveMember}
-                  onLeaveProject={onLeaveProject}
-                />
+                {ownedBy ? (
+                  <MembersForm
+                    isOwner={isOwner}
+                    owner={ownedBy}
+                    members={members}
+                    onAddMember={onAddMember}
+                    onRemoveMember={onRemoveMember}
+                    onLeaveProject={onLeaveProject}
+                    onChangeProjectOwner={onChangeProjectOwner}
+                  />
+                ) : null}
               </Grid>
             </Grid>
           </Container>
@@ -634,6 +689,9 @@ const useMembersFormStyles = makeStyles((theme) => ({
     display: 'flex',
     flexDirection: 'column',
   },
+  ownerFormArea: {
+    marginBottom: theme.spacing(4),
+  },
   memberFormArea: {
     marginBottom: theme.spacing(4),
   },
@@ -669,21 +727,47 @@ const useMembersFormStyles = makeStyles((theme) => ({
   },
 }));
 
-const MembersForm = ({ isOwner, members, onAddMember, onRemoveMember, onLeaveProject }) => {
+const MembersForm = ({
+  isOwner,
+  owner,
+  members,
+  onAddMember,
+  onRemoveMember,
+  onLeaveProject,
+  onChangeProjectOwner,
+}) => {
   const classes = useMembersFormStyles();
 
-  const [{ value, context }, dispatch] = useMachine(membersFormMachine);
-  const { username } = context;
+  const [
+    {
+      value: memberFormValue,
+      context: { username },
+    },
+    dispatchMemberForm,
+  ] = useMachine(membersFormMachine);
+
+  const [
+    {
+      value: ownerFormValue,
+      context: { selectedOwnerId },
+    },
+    dispatchOwnerForm,
+  ] = useMachine(ownerFormMachine, {
+    context: {
+      ownerId: owner.id,
+      selectedOwnerId: owner.id,
+    },
+  });
 
   const onChangeUsername = (event) => {
     const { value } = event.target;
-    dispatch({ type: 'UPDATE_USERNAME', username: value });
+    dispatchMemberForm({ type: 'UPDATE_USERNAME', username: value });
   };
 
-  const onSubmit = (event) => {
+  const onSubmitAddMember = (event) => {
     event.preventDefault();
 
-    dispatch('ADD_MEMBER');
+    dispatchMemberForm('ADD_MEMBER');
     onAddMember(username);
   };
 
@@ -691,17 +775,61 @@ const MembersForm = ({ isOwner, members, onAddMember, onRemoveMember, onLeavePro
     onRemoveMember(username);
   };
 
+  const onChangeOwnerId = (event) => {
+    const {
+      target: { value },
+    } = event;
+    dispatchOwnerForm({ type: 'UPDATE_OWNER', selectedOwnerId: value });
+  };
+
+  const onSubmitChangerOwner = (event) => {
+    event.preventDefault();
+
+    onChangeProjectOwner(selectedOwnerId);
+  };
+
   return (
     <div className={classes.membership}>
       {isOwner ? (
+        <Paper className={classes.ownerFormArea}>
+          <form onSubmit={onSubmitChangerOwner} className={classes.form}>
+            <FormControl>
+              <InputLabel id="owner-label">Owner</InputLabel>
+              <Select
+                labelId="owner-label"
+                id="owner"
+                value={selectedOwnerId}
+                onChange={onChangeOwnerId}
+                label="Owner"
+                required
+                data-testid="owner">
+                {[owner].concat(members).map((member) => (
+                  <MenuItem value={member.id} key={member.id} data-testid={member.username}>
+                    {member.username}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              disabled={ownerFormValue !== 'valid'}
+              data-testid="change-owner">
+              Change owner
+            </Button>
+          </form>
+        </Paper>
+      ) : null}
+      {isOwner ? (
         <Paper className={classes.memberFormArea}>
-          <form onSubmit={onSubmit} className={classes.form}>
+          <form onSubmit={onSubmitAddMember} className={classes.form}>
             <TextField label="Username" value={username} onChange={onChangeUsername} required data-testid="username" />
             <Button
               type="submit"
               variant="contained"
               color="primary"
-              disabled={value !== 'valid'}
+              disabled={memberFormValue !== 'valid'}
               data-testid="add-member">
               Add member
             </Button>
