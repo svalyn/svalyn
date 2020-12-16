@@ -51,10 +51,6 @@ const {
       id
       username
     }
-    descriptions {
-      id
-      label
-    }
     project(projectId: $projectId) {
       label
       ownedBy {
@@ -64,6 +60,10 @@ const {
       members {
         id
         username
+      }
+      descriptions {
+        id
+        label
       }
       assessments(page: $page) {
         edges {

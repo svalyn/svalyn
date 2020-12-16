@@ -12,8 +12,8 @@ describe('Assessment - /projects/:projectId/assessments/:assessmentId', () => {
     cy.createProject('NewProject').then((res) => {
       const projectId = res.body.data.createProject.project.id;
 
-      cy.getDescriptions().then((res) => {
-        const descriptionId = res.body.data.descriptions[0].id;
+      cy.getDescriptions(projectId).then((res) => {
+        const descriptionId = res.body.data.project.descriptions[0].id;
 
         cy.createAssessment(projectId, descriptionId, 'NewAssessment').then((res) => {
           const assessmentId = res.body.data.createAssessment.assessment.id;

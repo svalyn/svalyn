@@ -7,7 +7,6 @@ scalar Date
 
 type Query {
   principal: User!
-  descriptions: [Description!]!
   projects(page: Int!): QueryProjectsConnection!
   project(projectId: ID!): Project
 }
@@ -46,6 +45,7 @@ type Project {
   members: [User!]!
   createdBy: User!
   createdOn: Date!
+  descriptions: [Description!]!
 }
 
 type ProjectAssessmentsConnection {

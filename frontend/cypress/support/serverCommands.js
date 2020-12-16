@@ -102,20 +102,26 @@ Cypress.Commands.add('createProject', (label) => {
   });
 });
 
-Cypress.Commands.add('getDescriptions', () => {
+Cypress.Commands.add('getDescriptions', (projectId) => {
   const getDescriptionsQuery = `
-  query getDescriptions {
-    descriptions {
-      id
-      label
+  query getDescriptions($projectId: ID!) {
+    project(projectId: $projectId) {
+      descriptions {
+        id
+        label
+      }
     }
   }`;
+
+  const variables = {
+    projectId,
+  };
 
   return cy.request({
     method: 'POST',
     mode: 'cors',
     url,
-    body: { query: getDescriptionsQuery },
+    body: { query: getDescriptionsQuery, variables },
   });
 });
 

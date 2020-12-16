@@ -431,8 +431,8 @@ export const projectViewMachine = Machine(
         const {
           ajaxResponse: { response },
         } = event;
-        const { principal, descriptions, project } = response.data;
-        const { label, ownedBy, members, assessments } = project;
+        const { principal, project } = response.data;
+        const { label, ownedBy, members, descriptions, assessments } = project;
         const { count } = assessments.pageInfo;
         return {
           descriptions,

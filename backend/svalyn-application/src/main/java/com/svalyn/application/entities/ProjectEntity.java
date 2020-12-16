@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -19,6 +20,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 
@@ -45,6 +47,10 @@ public class ProjectEntity {
     private AccountEntity createdBy;
 
     private LocalDateTime createdOn;
+
+    @OrderBy("label")
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
+    private List<DescriptionEntity> descriptions;
 
     public UUID getId() {
         return this.id;
@@ -92,6 +98,14 @@ public class ProjectEntity {
 
     public void setCreatedOn(LocalDateTime createdOn) {
         this.createdOn = createdOn;
+    }
+
+    public List<DescriptionEntity> getDescriptions() {
+        return this.descriptions;
+    }
+
+    public void setDescriptions(List<DescriptionEntity> descriptions) {
+        this.descriptions = descriptions;
     }
 
 }

@@ -6,6 +6,7 @@
  **************************************************************/
 package com.svalyn.application.repositories;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,5 +16,5 @@ import com.svalyn.application.entities.DescriptionEntity;
 
 @Repository
 public interface IDescriptionRepository extends JpaRepository<DescriptionEntity, UUID> {
-    boolean existsByLabel(String label);
+    List<DescriptionEntity> findAllByProjectId(UUID projectId);
 }

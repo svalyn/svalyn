@@ -14,6 +14,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -23,6 +25,10 @@ public class DescriptionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
+
+    @ManyToOne
+    @JoinColumn(name = "projectId")
+    private ProjectEntity project;
 
     private String label;
 
@@ -35,6 +41,14 @@ public class DescriptionEntity {
 
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    public ProjectEntity getProject() {
+        return this.project;
+    }
+
+    public void setProject(ProjectEntity project) {
+        this.project = project;
     }
 
     public String getLabel() {
