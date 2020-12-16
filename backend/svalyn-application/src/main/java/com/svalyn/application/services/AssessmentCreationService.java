@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -27,7 +28,6 @@ import com.svalyn.application.entities.DescriptionEntity;
 import com.svalyn.application.entities.ProjectEntity;
 import com.svalyn.application.repositories.IAccountRepository;
 import com.svalyn.application.repositories.IAssessmentRepository;
-import com.svalyn.application.repositories.IDescriptionRepository;
 import com.svalyn.application.repositories.IProjectRepository;
 
 @Service
@@ -40,17 +40,13 @@ public class AssessmentCreationService {
 
     private final IProjectRepository projectRepository;
 
-    private final IDescriptionRepository descriptionRepository;
-
     private final IAssessmentRepository assessmentRepository;
 
     public AssessmentCreationService(AssessmentConverter assessmentConverter, IAccountRepository accountRepository,
-            IProjectRepository projectRepository, IDescriptionRepository descriptionRepository,
-            IAssessmentRepository assessmentRepository) {
+            IProjectRepository projectRepository, IAssessmentRepository assessmentRepository) {
         this.assessmentConverter = Objects.requireNonNull(assessmentConverter);
         this.accountRepository = Objects.requireNonNull(accountRepository);
         this.projectRepository = Objects.requireNonNull(projectRepository);
-        this.descriptionRepository = Objects.requireNonNull(descriptionRepository);
         this.assessmentRepository = Objects.requireNonNull(assessmentRepository);
     }
 
@@ -59,13 +55,19 @@ public class AssessmentCreationService {
 
         var opttionalAccountEntity = this.accountRepository.findById(userId);
         var optionalProjectEntity = this.projectRepository.findByUserIdAndProjectId(userId, input.getProjectId());
-        var optionalDescriptionEntity = this.descriptionRepository.findById(input.getDescriptionId());
         boolean isValid = !input.getLabel().isBlank();
 
         if (optionalProjectEntity.isPresent()) {
+            ProjectEntity projectEntity = optionalProjectEntity.get();
+
+            // @formatter:off
+            Optional<DescriptionEntity> optionalDescriptionEntity = projectEntity.getDescriptions().stream()
+                    .filter(description -> description.getId().equals(input.getDescriptionId()))
+                    .findFirst();
+            // @formatter:on
+
             if (isValid && opttionalAccountEntity.isPresent() && optionalDescriptionEntity.isPresent()) {
                 AccountEntity accountEntity = opttionalAccountEntity.get();
-                ProjectEntity projectEntity = optionalProjectEntity.get();
                 DescriptionEntity descriptionEntity = optionalDescriptionEntity.get();
 
                 AssessmentEntity assessmentEntity = new AssessmentEntity();

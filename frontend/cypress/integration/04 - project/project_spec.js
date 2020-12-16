@@ -46,8 +46,8 @@ describe('Project - /projects/:projectId', () => {
 
   it('cannot navigate to the next page', function () {
     const projectId = this.projectId;
-    cy.getDescriptions().then((res) => {
-      const descriptionId = res.body.data.descriptions[0].id;
+    cy.getDescriptions(projectId).then((res) => {
+      const descriptionId = res.body.data.project.descriptions[0].id;
       for (let index = 0; index < 10; index++) {
         cy.createAssessment(projectId, descriptionId, `Assessment ${index}`);
       }
@@ -59,8 +59,8 @@ describe('Project - /projects/:projectId', () => {
 
   it('can navigate to the next page', function () {
     const projectId = this.projectId;
-    cy.getDescriptions().then((res) => {
-      const descriptionId = res.body.data.descriptions[0].id;
+    cy.getDescriptions(projectId).then((res) => {
+      const descriptionId = res.body.data.project.descriptions[0].id;
       for (let index = 0; index < 25; index++) {
         cy.createAssessment(projectId, descriptionId, `Assessment ${index}`);
       }
@@ -79,8 +79,9 @@ describe('Project - /projects/:projectId', () => {
 
   it('cannot navigate to the previous page', function () {
     const projectId = this.projectId;
-    cy.getDescriptions().then((res) => {
-      const descriptionId = res.body.data.descriptions[0].id;
+    cy.getDescriptions(projectId).then((res) => {
+      console.log(res.body.data);
+      const descriptionId = res.body.data.project.descriptions[0].id;
       for (let index = 0; index < 10; index++) {
         cy.createAssessment(projectId, descriptionId, `Assessment ${index}`);
       }
@@ -92,8 +93,8 @@ describe('Project - /projects/:projectId', () => {
 
   it('can navigate to the previous page', function () {
     const projectId = this.projectId;
-    cy.getDescriptions().then((res) => {
-      const descriptionId = res.body.data.descriptions[0].id;
+    cy.getDescriptions(projectId).then((res) => {
+      const descriptionId = res.body.data.project.descriptions[0].id;
       for (let index = 0; index < 25; index++) {
         cy.createAssessment(projectId, descriptionId, `Assessment ${index}`);
       }

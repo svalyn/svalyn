@@ -4,52 +4,40 @@
  * This source code is licensed under the MIT license found in
  * the LICENSE file in the root directory of this source tree.
  **************************************************************/
-package com.svalyn.application.runners;
+package com.svalyn.application.services;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.svalyn.application.dto.input.DescriptionInput;
-import com.svalyn.application.repositories.IDescriptionRepository;
-import com.svalyn.application.services.DescriptionConverter;
 
 @Component
-public class DefaultDescriptionInitializer implements CommandLineRunner {
+public class DefaultDescriptionProvider {
 
     private final ObjectMapper objectMapper;
 
-    private final DescriptionConverter descriptionConverter;
+    private final Logger logger = LoggerFactory.getLogger(DefaultDescriptionProvider.class);
 
-    private final IDescriptionRepository descriptionRepository;
-
-    private final Logger logger = LoggerFactory.getLogger(DefaultDescriptionInitializer.class);
-
-    public DefaultDescriptionInitializer(ObjectMapper objectMapper, DescriptionConverter descriptionConverter,
-            IDescriptionRepository descriptionRepository) {
+    public DefaultDescriptionProvider(ObjectMapper objectMapper) {
         this.objectMapper = Objects.requireNonNull(objectMapper);
-        this.descriptionConverter = Objects.requireNonNull(descriptionConverter);
-        this.descriptionRepository = Objects.requireNonNull(descriptionRepository);
     }
 
-    @Override
-    public void run(String... args) throws Exception {
+    public List<DescriptionInput> getDescriptions() {
         // @formatter:off
-        List.of("/description/park.json", "/description/software.json").stream()
+        return List.of("/description/park.json", "/description/software.json").stream()
             .map(this::getDescription)
             .flatMap(Optional::stream)
-            .map(this.descriptionConverter::convertToEntity)
-            .filter(descriptionEntity -> !this.descriptionRepository.existsByLabel(descriptionEntity.getLabel()))
-            .forEach(this.descriptionRepository::save);
+            .collect(Collectors.toList());
         // @formatter:on
     }
 
@@ -63,5 +51,4 @@ public class DefaultDescriptionInitializer implements CommandLineRunner {
         }
         return optionalDescriptionInput;
     }
-
 }

@@ -8,6 +8,7 @@ package com.svalyn.application.services;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -26,9 +27,9 @@ public class DescriptionSearchService {
         this.descriptionRepository = Objects.requireNonNull(descriptionRepository);
     }
 
-    public List<Description> getDescriptions() {
+    public List<Description> getDescriptions(UUID projectId) {
         // @formatter:off
-        return this.descriptionRepository.findAll().stream()
+        return this.descriptionRepository.findAllByProjectId(projectId).stream()
                 .map(descriptionEntity -> new Description(descriptionEntity.getId(), descriptionEntity.getLabel()))
                 .collect(Collectors.toList());
         // @formatter:on

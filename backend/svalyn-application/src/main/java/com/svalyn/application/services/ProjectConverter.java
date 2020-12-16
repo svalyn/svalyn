@@ -36,4 +36,5 @@ public class ProjectConverter {
     private Account convert(AccountEntity accountEntity) {
         return new Account(accountEntity.getId(), accountEntity.getUsername());
     }
+
 }
