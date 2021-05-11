@@ -9,19 +9,15 @@ package com.svalyn.application.graphql;
 import java.util.Objects;
 import java.util.UUID;
 
-import org.springframework.stereotype.Service;
-
+import com.netflix.graphql.dgs.DgsComponent;
+import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.InputArgument;
 import com.svalyn.application.dto.output.Project;
 import com.svalyn.application.services.ProjectSearchService;
 import com.svalyn.application.services.UserDetailsService;
 
-import graphql.schema.DataFetcher;
-import graphql.schema.DataFetchingEnvironment;
-
-@Service
-public class QueryProjectDataFetcher implements DataFetcher<Project> {
-
-    private static final String PROJECT_ID = "projectId"; //$NON-NLS-1$
+@DgsComponent
+public class QueryProjectDataFetcher {
 
     private final UserDetailsService userDetailsService;
 
@@ -32,11 +28,9 @@ public class QueryProjectDataFetcher implements DataFetcher<Project> {
         this.projectSearchService = Objects.requireNonNull(projectSearchService);
     }
 
-    @Override
-    public Project get(DataFetchingEnvironment environment) throws Exception {
-        UUID projectId = UUID.fromString(environment.getArgument(PROJECT_ID));
-
-        var userDetails = this.userDetailsService.getUserDetails(environment.getContext());
+    @DgsData(parentType = "Query", field = "project")
+    public Project get(@InputArgument("projectId") UUID projectId) {
+        var userDetails = this.userDetailsService.getUserDetails();
         return this.projectSearchService.findById(userDetails.getId(), projectId).orElse(null);
     }
 

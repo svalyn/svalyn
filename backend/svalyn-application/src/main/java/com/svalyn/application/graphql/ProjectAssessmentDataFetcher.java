@@ -9,19 +9,16 @@ package com.svalyn.application.graphql;
 import java.util.Objects;
 import java.util.UUID;
 
-import org.springframework.stereotype.Service;
-
+import com.netflix.graphql.dgs.DgsComponent;
+import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.DgsDataFetchingEnvironment;
+import com.netflix.graphql.dgs.InputArgument;
 import com.svalyn.application.dto.output.Assessment;
 import com.svalyn.application.dto.output.Project;
 import com.svalyn.application.services.AssessmentSearchService;
 
-import graphql.schema.DataFetcher;
-import graphql.schema.DataFetchingEnvironment;
-
-@Service
-public class ProjectAssessmentDataFetcher implements DataFetcher<Assessment> {
-
-    private static final String ASSESSMENT_ID = "assessmentId"; //$NON-NLS-1$
+@DgsComponent
+public class ProjectAssessmentDataFetcher {
 
     private final AssessmentSearchService assessmentSearchService;
 
@@ -29,10 +26,9 @@ public class ProjectAssessmentDataFetcher implements DataFetcher<Assessment> {
         this.assessmentSearchService = Objects.requireNonNull(assessmentSearchService);
     }
 
-    @Override
-    public Assessment get(DataFetchingEnvironment environment) throws Exception {
+    @DgsData(parentType = "Project", field = "assessment")
+    public Assessment get(DgsDataFetchingEnvironment environment, @InputArgument("assessmentId") UUID assessmentId) {
         Project project = environment.getSource();
-        UUID assessmentId = UUID.fromString(environment.getArgument(ASSESSMENT_ID));
         return this.assessmentSearchService.findById(project.getId(), assessmentId).orElse(null);
     }
 

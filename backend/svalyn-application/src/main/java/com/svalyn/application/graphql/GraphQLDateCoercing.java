@@ -12,12 +12,13 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
+import com.netflix.graphql.dgs.DgsScalar;
+
 import graphql.language.StringValue;
 import graphql.schema.Coercing;
-import graphql.schema.CoercingParseLiteralException;
 import graphql.schema.CoercingParseValueException;
-import graphql.schema.CoercingSerializeException;
 
+@DgsScalar(name = "Date")
 public class GraphQLDateCoercing implements Coercing<LocalDateTime, String> {
 
     private Optional<LocalDateTime> convert(Object input) {
@@ -34,7 +35,7 @@ public class GraphQLDateCoercing implements Coercing<LocalDateTime, String> {
     }
 
     @Override
-    public String serialize(Object result) throws CoercingSerializeException {
+    public String serialize(Object result) {
         if (result instanceof LocalDateTime) {
             LocalDateTime localDateTime = (LocalDateTime) result;
             return DateTimeFormatter.ISO_LOCAL_DATE.format(ZonedDateTime.of(localDateTime, ZoneOffset.UTC));
@@ -43,13 +44,13 @@ public class GraphQLDateCoercing implements Coercing<LocalDateTime, String> {
     }
 
     @Override
-    public LocalDateTime parseValue(Object input) throws CoercingParseValueException {
+    public LocalDateTime parseValue(Object input) {
         return this.convert(input).orElseThrow(
                 () -> new CoercingParseValueException("The value " + input + " is not a valid LocalDateTime"));
     }
 
     @Override
-    public LocalDateTime parseLiteral(Object input) throws CoercingParseLiteralException {
+    public LocalDateTime parseLiteral(Object input) {
         // @formatter:off
         return Optional.of(input).filter(StringValue.class::isInstance)
                 .map(StringValue.class::cast)

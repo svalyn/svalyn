@@ -59,7 +59,7 @@ const {
 
 const getProjects = (variables) =>
   ajax({
-    url: '/api/graphql',
+    url: '/graphql',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query: getProjectsQuery, variables }),
@@ -86,7 +86,7 @@ const {
 `;
 const createProject = (variables) =>
   ajax({
-    url: '/api/graphql',
+    url: '/graphql',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query: createProjectMutation, variables }),
@@ -108,7 +108,7 @@ const {
 `;
 const deleteProjects = (variables) =>
   ajax({
-    url: '/api/graphql',
+    url: '/graphql',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query: deleteProjectsMutation, variables }),

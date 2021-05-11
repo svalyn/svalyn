@@ -14,8 +14,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.stereotype.Service;
 
+import com.netflix.graphql.dgs.DgsComponent;
+import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.InputArgument;
 import com.svalyn.application.dto.output.Connection;
 import com.svalyn.application.dto.output.Edge;
 import com.svalyn.application.dto.output.PageInfo;
@@ -23,13 +25,8 @@ import com.svalyn.application.dto.output.Project;
 import com.svalyn.application.services.ProjectSearchService;
 import com.svalyn.application.services.UserDetailsService;
 
-import graphql.schema.DataFetcher;
-import graphql.schema.DataFetchingEnvironment;
-
-@Service
-public class QueryProjectsDataFetcher implements DataFetcher<Connection<Project>> {
-
-    private static final String PAGE = "page";
+@DgsComponent
+public class QueryProjectsDataFetcher {
 
     private final UserDetailsService userDetailsService;
 
@@ -40,17 +37,17 @@ public class QueryProjectsDataFetcher implements DataFetcher<Connection<Project>
         this.projectSearchService = Objects.requireNonNull(projectSearchService);
     }
 
-    @Override
-    public Connection<Project> get(DataFetchingEnvironment environment) throws Exception {
-        int page = environment.getArgumentOrDefault(PAGE, 0).intValue();
-        if (page < 0) {
-            page = 0;
+    @DgsData(parentType = "Query", field = "projects")
+    public Connection<Project> get(@InputArgument("page") int page) {
+        int sanitizedPage = page;
+        if (sanitizedPage < 0) {
+            sanitizedPage = 0;
         }
 
-        var userDetails = this.userDetailsService.getUserDetails(environment.getContext());
+        var userDetails = this.userDetailsService.getUserDetails();
 
         // @formatter:off
-        Pageable pageable = PageRequest.of(page, 20, Sort.by(Direction.ASC, "label"));
+        Pageable pageable = PageRequest.of(sanitizedPage, 20, Sort.by(Direction.ASC, "label"));
         var projectCount = this.projectSearchService.count(userDetails.getId());
         var projectEdges = this.projectSearchService.findAll(userDetails.getId(), pageable).stream()
                 .map(Edge::new)

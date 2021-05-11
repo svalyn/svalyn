@@ -7,6 +7,7 @@
 package com.svalyn.application.services;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -16,6 +17,8 @@ import com.svalyn.application.dto.input.DeleteAssessmentsInput;
 import com.svalyn.application.dto.output.DeleteAssessmentsSuccessPayload;
 import com.svalyn.application.dto.output.ErrorPayload;
 import com.svalyn.application.dto.output.IPayload;
+import com.svalyn.application.dto.output.Project;
+import com.svalyn.application.entities.ProjectEntity;
 import com.svalyn.application.repositories.IAssessmentRepository;
 import com.svalyn.application.repositories.IProjectRepository;
 
@@ -27,13 +30,17 @@ public class AssessmentDeletionService {
 
     private final IAssessmentRepository assessmentRepository;
 
-    public AssessmentDeletionService(IProjectRepository projectRepository, IAssessmentRepository assessmentRepository) {
+    private final ProjectConverter projectConverter;
+
+    public AssessmentDeletionService(IProjectRepository projectRepository, IAssessmentRepository assessmentRepository,
+            ProjectConverter projectConverter) {
         this.projectRepository = Objects.requireNonNull(projectRepository);
         this.assessmentRepository = Objects.requireNonNull(assessmentRepository);
+        this.projectConverter = Objects.requireNonNull(projectConverter);
     }
 
     public IPayload deleteAssessments(UUID userId, DeleteAssessmentsInput input) {
-        IPayload payload = new DeleteAssessmentsSuccessPayload();
+        IPayload payload = new ErrorPayload("The project does not exist");
         if (!input.getAssessmentIds().isEmpty()) {
             if (!this.projectRepository.isVisibleByUserIdAndProjectId(userId, input.getProjectId())) {
                 payload = new ErrorPayload("The project does not exist");
@@ -41,7 +48,14 @@ public class AssessmentDeletionService {
                 payload = new ErrorPayload("Some assessments are not in the project");
             } else {
                 this.assessmentRepository.deleteWithIds(userId, input.getAssessmentIds());
-                payload = new DeleteAssessmentsSuccessPayload();
+
+                Optional<ProjectEntity> optionalProjectEntity = this.projectRepository.findByUserIdAndProjectId(userId,
+                        input.getProjectId());
+                if (optionalProjectEntity.isPresent()) {
+                    ProjectEntity projectEntity = optionalProjectEntity.get();
+                    Project project = this.projectConverter.convert(projectEntity);
+                    payload = new DeleteAssessmentsSuccessPayload(project);
+                }
             }
         }
         return payload;

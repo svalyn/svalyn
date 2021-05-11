@@ -8,39 +8,30 @@ package com.svalyn.application.graphql;
 
 import java.util.Objects;
 
-import org.springframework.stereotype.Service;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.graphql.dgs.DgsComponent;
+import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.InputArgument;
 import com.svalyn.application.dto.input.ChangeProjectOwnerInput;
 import com.svalyn.application.dto.output.IPayload;
 import com.svalyn.application.services.ProjectMembershipUpdateService;
 import com.svalyn.application.services.UserDetailsService;
 
-import graphql.schema.DataFetcher;
-import graphql.schema.DataFetchingEnvironment;
-
-@Service
-public class MutationChangeProjectOwnerDataFetcher implements DataFetcher<IPayload> {
-
-    private static final String INPUT = "input";
-
-    private final ObjectMapper objectMapper;
+@DgsComponent
+public class MutationChangeProjectOwnerDataFetcher {
 
     private final UserDetailsService userDetailsService;
 
     private final ProjectMembershipUpdateService projectMembershipUpdateService;
 
-    public MutationChangeProjectOwnerDataFetcher(ObjectMapper objectMapper, UserDetailsService userDetailsService,
+    public MutationChangeProjectOwnerDataFetcher(UserDetailsService userDetailsService,
             ProjectMembershipUpdateService projectMembershipUpdateService) {
-        this.objectMapper = Objects.requireNonNull(objectMapper);
         this.userDetailsService = Objects.requireNonNull(userDetailsService);
         this.projectMembershipUpdateService = Objects.requireNonNull(projectMembershipUpdateService);
     }
 
-    @Override
-    public IPayload get(DataFetchingEnvironment environment) throws Exception {
-        var input = this.objectMapper.convertValue(environment.getArgument(INPUT), ChangeProjectOwnerInput.class);
-        var userDetails = this.userDetailsService.getUserDetails(environment.getContext());
+    @DgsData(parentType = "Mutation", field = "changeProjectOwner")
+    public IPayload get(@InputArgument("input") ChangeProjectOwnerInput input) {
+        var userDetails = this.userDetailsService.getUserDetails();
         return this.projectMembershipUpdateService.changeOwner(userDetails.getId(), input);
     }
 

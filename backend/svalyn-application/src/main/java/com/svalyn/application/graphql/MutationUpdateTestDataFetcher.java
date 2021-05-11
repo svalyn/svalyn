@@ -8,40 +8,30 @@ package com.svalyn.application.graphql;
 
 import java.util.Objects;
 
-import org.springframework.stereotype.Service;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.graphql.dgs.DgsComponent;
+import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.InputArgument;
 import com.svalyn.application.dto.input.UpdateTestInput;
 import com.svalyn.application.dto.output.IPayload;
 import com.svalyn.application.services.AssessmentUpdateService;
 import com.svalyn.application.services.UserDetailsService;
 
-import graphql.schema.DataFetcher;
-import graphql.schema.DataFetchingEnvironment;
-
-@Service
-public class MutationUpdateTestDataFetcher implements DataFetcher<IPayload> {
-
-    private static final String INPUT = "input";
-
-    private final ObjectMapper objectMapper;
+@DgsComponent
+public class MutationUpdateTestDataFetcher {
 
     private final UserDetailsService userDetailsService;
 
     private final AssessmentUpdateService assessmentUpdateService;
 
-    public MutationUpdateTestDataFetcher(ObjectMapper objectMapper, UserDetailsService userDetailsService,
+    public MutationUpdateTestDataFetcher(UserDetailsService userDetailsService,
             AssessmentUpdateService assessmentUpdateService) {
-        this.objectMapper = Objects.requireNonNull(objectMapper);
         this.userDetailsService = Objects.requireNonNull(userDetailsService);
         this.assessmentUpdateService = Objects.requireNonNull(assessmentUpdateService);
     }
 
-    @Override
-    public IPayload get(DataFetchingEnvironment environment) throws Exception {
-        var input = this.objectMapper.convertValue(environment.getArgument(INPUT), UpdateTestInput.class);
-
-        var userDetails = this.userDetailsService.getUserDetails(environment.getContext());
+    @DgsData(parentType = "Mutation", field = "updateTest")
+    public IPayload get(@InputArgument("input") UpdateTestInput input) {
+        var userDetails = this.userDetailsService.getUserDetails();
         return this.assessmentUpdateService.updateTest(userDetails.getId(), input);
     }
 

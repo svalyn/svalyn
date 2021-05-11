@@ -6,6 +6,18 @@
  **************************************************************/
 package com.svalyn.application.dto.output;
 
+import java.util.Objects;
+
+import com.svalyn.application.services.UserDetails;
+
 public class LeaveProjectSuccessPayload implements IPayload {
-    // Nothing on purpose
+    private final UserDetails principal;
+
+    public LeaveProjectSuccessPayload(UserDetails principal) {
+        this.principal = Objects.requireNonNull(principal);
+    }
+
+    public UserDetails getPrincipal() {
+        return this.principal;
+    }
 }

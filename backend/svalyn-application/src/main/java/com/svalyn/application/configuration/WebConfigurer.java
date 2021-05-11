@@ -28,7 +28,7 @@ public class WebConfigurer implements WebMvcConfigurer {
         boolean devProfileActive = Arrays.asList(this.environment.getActiveProfiles()).contains("dev");
         if (devProfileActive) {
             // @formatter:off
-            registry.addMapping("/api/graphql")
+            registry.addMapping("/graphql")
                 .allowedOrigins("http://localhost:3000")
                 .allowedMethods("POST");
             // @formatter:on

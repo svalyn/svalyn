@@ -8,40 +8,31 @@ package com.svalyn.application.graphql;
 
 import java.util.Objects;
 
-import org.springframework.stereotype.Service;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.graphql.dgs.DgsComponent;
+import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.InputArgument;
 import com.svalyn.application.dto.input.LeaveProjectInput;
 import com.svalyn.application.dto.output.IPayload;
 import com.svalyn.application.services.ProjectMembershipUpdateService;
 import com.svalyn.application.services.UserDetailsService;
 
-import graphql.schema.DataFetcher;
-import graphql.schema.DataFetchingEnvironment;
-
-@Service
-public class MutationLeaveProjectDataFetcher implements DataFetcher<IPayload> {
-
-    private static final String INPUT = "input";
-
-    private final ObjectMapper objectMapper;
+@DgsComponent
+public class MutationLeaveProjectDataFetcher {
 
     private final UserDetailsService userDetailsService;
 
     private final ProjectMembershipUpdateService projectMembershipUpdateService;
 
-    public MutationLeaveProjectDataFetcher(ObjectMapper objectMapper, UserDetailsService userDetailsService,
+    public MutationLeaveProjectDataFetcher(UserDetailsService userDetailsService,
             ProjectMembershipUpdateService projectMembershipUpdateService) {
-        this.objectMapper = Objects.requireNonNull(objectMapper);
         this.userDetailsService = Objects.requireNonNull(userDetailsService);
         this.projectMembershipUpdateService = Objects.requireNonNull(projectMembershipUpdateService);
     }
 
-    @Override
-    public IPayload get(DataFetchingEnvironment environment) throws Exception {
-        var input = this.objectMapper.convertValue(environment.getArgument(INPUT), LeaveProjectInput.class);
-        var userDetails = this.userDetailsService.getUserDetails(environment.getContext());
-        return this.projectMembershipUpdateService.leaveProject(userDetails.getId(), input);
+    @DgsData(parentType = "Mutation", field = "leaveProject")
+    public IPayload get(@InputArgument("input") LeaveProjectInput input) {
+        var userDetails = this.userDetailsService.getUserDetails();
+        return this.projectMembershipUpdateService.leaveProject(userDetails, input);
     }
 
 }

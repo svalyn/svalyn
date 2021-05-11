@@ -22,6 +22,7 @@
 
 	<properties>
 		<java.version>15</java.version>
+		<dgs.framework.version>3.12.1</dgs.framework.version>
 	</properties>
 
 	<dependencies>
@@ -55,10 +56,10 @@
 			<artifactId>liquibase-core</artifactId>
 		</dependency>
 		<dependency>
-        	<groupId>com.graphql-java</groupId>
-        	<artifactId>graphql-java</artifactId>
-        	<version>14.0</version>
-    	</dependency>
+			<groupId>com.netflix.graphql.dgs</groupId>
+			<artifactId>graphql-dgs-spring-boot-starter</artifactId>
+			<version>${dgs.framework.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -69,13 +70,13 @@
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>1.14.3</version>
+			<version>1.15.3</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>junit-jupiter</artifactId>
-			<version>1.14.3</version>
+			<version>1.15.3</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

@@ -130,9 +130,10 @@ public class ProjectMembershipUpdateService {
         return payload;
     }
 
-    public IPayload leaveProject(UUID userId, LeaveProjectInput input) {
-        var optionalMemberToRemove = this.accountRepository.findById(userId);
-        var optionalProjectEntity = this.projectRepository.findByUserIdAndProjectId(userId, input.getProjectId());
+    public IPayload leaveProject(UserDetails userDetails, LeaveProjectInput input) {
+        var optionalMemberToRemove = this.accountRepository.findById(userDetails.getId());
+        var optionalProjectEntity = this.projectRepository.findByUserIdAndProjectId(userDetails.getId(),
+                input.getProjectId());
 
         IPayload payload = new ErrorPayload("An unexpected error has occurred");
         if (optionalProjectEntity.isPresent()) {
@@ -147,14 +148,15 @@ public class ProjectMembershipUpdateService {
                         .collect(Collectors.toList());
                 // @formatter:on
 
-                var isCurrentUserTheOwner = projectEntity.getOwnedBy().getId().equals(userId);
+                var isCurrentUserTheOwner = projectEntity.getOwnedBy().getId().equals(userDetails.getId());
 
                 if (isCurrentUserTheOwner) {
                     payload = new ErrorPayload("Delete the project instead");
                 } else {
                     projectEntity.setMembers(newMembers);
                     this.projectRepository.save(projectEntity);
-                    payload = new LeaveProjectSuccessPayload();
+
+                    payload = new LeaveProjectSuccessPayload(userDetails);
                 }
             } else {
                 payload = new ErrorPayload("The user does not exist");
@@ -207,7 +209,9 @@ public class ProjectMembershipUpdateService {
                     projectEntity.setOwnedBy(newOwner);
                     projectEntity.setMembers(newMembers);
                     this.projectRepository.save(projectEntity);
-                    payload = new ChangeProjectOwnerSuccessPayload();
+
+                    Project project = this.projectConverter.convert(projectEntity);
+                    payload = new ChangeProjectOwnerSuccessPayload(project);
                 }
             } else {
                 payload = new ErrorPayload("The user does not exist");

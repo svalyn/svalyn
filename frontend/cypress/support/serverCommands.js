@@ -5,7 +5,7 @@
  * the LICENSE file in the root directory of this source tree.
  ***************************************************************/
 
-const url = Cypress.env('baseAPIUrl') + '/api/graphql';
+const url = Cypress.env('baseAPIUrl') + '/graphql';
 
 Cypress.Commands.add('login', (username, password) => {
   cy.request({

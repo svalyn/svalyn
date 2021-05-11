@@ -7,7 +7,6 @@
 package com.svalyn.application.services;
 
 import java.util.Objects;
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,14 +27,14 @@ public class ProjectDeletionService {
         this.projectRepository = Objects.requireNonNull(projectRepository);
     }
 
-    public IPayload deleteProjects(UUID userId, DeleteProjectsInput input) {
-        IPayload payload = new DeleteProjectsSuccessPayload();
+    public IPayload deleteProjects(UserDetails userDetails, DeleteProjectsInput input) {
+        IPayload payload = new DeleteProjectsSuccessPayload(userDetails);
         if (!input.getProjectIds().isEmpty()) {
-            if (!this.projectRepository.ownsAllByIds(userId, input.getProjectIds())) {
+            if (!this.projectRepository.ownsAllByIds(userDetails.getId(), input.getProjectIds())) {
                 payload = new ErrorPayload("Projects can only be deleted by their owner");
             } else {
-                this.projectRepository.deleteByUserIdAndProjectIds(userId, input.getProjectIds());
-                payload = new DeleteProjectsSuccessPayload();
+                this.projectRepository.deleteByUserIdAndProjectIds(userDetails.getId(), input.getProjectIds());
+                payload = new DeleteProjectsSuccessPayload(userDetails);
             }
         }
 

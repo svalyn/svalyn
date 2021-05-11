@@ -59,7 +59,7 @@ public class TestSetupService {
         ProjectEntity northworld = this.createProject("Northworld", bernard, bernard, List.of(dolores));
         ProjectEntity southworld = this.createProject("Southworld", bernard, bernard, List.of(robert, dolores));
 
-        DescriptionEntity descriptionEntity = this.createDescription();
+        DescriptionEntity descriptionEntity = this.createDescription(westworld);
         AssessmentEntity westworldOpeningAssessment = this.createAssessment(descriptionEntity, westworld, robert,
                 robert);
         AssessmentEntity westworldMidSeasonAssessment = this.createAssessment(descriptionEntity, westworld, dolores,
@@ -90,9 +90,10 @@ public class TestSetupService {
         return this.accountRepository.save(accountEntity);
     }
 
-    private DescriptionEntity createDescription() {
+    private DescriptionEntity createDescription(ProjectEntity projectEntity) {
         DescriptionEntity descriptionEntity = new DescriptionEntity();
         descriptionEntity.setLabel("label");
+        descriptionEntity.setProject(projectEntity);
 
         CategoryEntity categoryEntity = new CategoryEntity();
         categoryEntity.setLabel("label");

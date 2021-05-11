@@ -36,7 +36,7 @@ const {
 `;
 const getPrincipal = () =>
   ajax({
-    url: '/api/graphql',
+    url: '/graphql',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query: getPrincipalQuery }),

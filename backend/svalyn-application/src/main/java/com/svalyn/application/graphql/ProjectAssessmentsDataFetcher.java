@@ -14,8 +14,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.stereotype.Service;
 
+import com.netflix.graphql.dgs.DgsComponent;
+import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.DgsDataFetchingEnvironment;
+import com.netflix.graphql.dgs.InputArgument;
 import com.svalyn.application.dto.output.Assessment;
 import com.svalyn.application.dto.output.Connection;
 import com.svalyn.application.dto.output.Edge;
@@ -23,13 +26,8 @@ import com.svalyn.application.dto.output.PageInfo;
 import com.svalyn.application.dto.output.Project;
 import com.svalyn.application.services.AssessmentSearchService;
 
-import graphql.schema.DataFetcher;
-import graphql.schema.DataFetchingEnvironment;
-
-@Service
-public class ProjectAssessmentsDataFetcher implements DataFetcher<Connection<Assessment>> {
-
-    private static final String PAGE = "page";
+@DgsComponent
+public class ProjectAssessmentsDataFetcher {
 
     private final AssessmentSearchService assessmentSearchService;
 
@@ -37,17 +35,17 @@ public class ProjectAssessmentsDataFetcher implements DataFetcher<Connection<Ass
         this.assessmentSearchService = Objects.requireNonNull(assessmentSearchService);
     }
 
-    @Override
-    public Connection<Assessment> get(DataFetchingEnvironment environment) throws Exception {
+    @DgsData(parentType = "Project", field = "assessments")
+    public Connection<Assessment> get(DgsDataFetchingEnvironment environment, @InputArgument("page") int page) {
         Project project = environment.getSource();
 
-        int page = environment.getArgumentOrDefault(PAGE, 0).intValue();
-        if (page < 0) {
-            page = 0;
+        int sanitizedPage = page;
+        if (sanitizedPage < 0) {
+            sanitizedPage = 0;
         }
 
         // @formatter:off
-        Pageable pageable = PageRequest.of(page, 20, Sort.by(Direction.DESC, "createdOn"));
+        Pageable pageable = PageRequest.of(sanitizedPage, 20, Sort.by(Direction.DESC, "createdOn"));
         var assessmentCount = this.assessmentSearchService.countByProjectId(project.getId());
         var assessmentEdges = this.assessmentSearchService.findAllByProjectId(project.getId(), pageable).stream()
                 .map(Edge::new)

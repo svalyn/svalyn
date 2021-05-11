@@ -9,17 +9,15 @@ package com.svalyn.application.graphql;
 import java.util.List;
 import java.util.Objects;
 
-import org.springframework.stereotype.Service;
-
+import com.netflix.graphql.dgs.DgsComponent;
+import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.DgsDataFetchingEnvironment;
 import com.svalyn.application.dto.output.Description;
 import com.svalyn.application.dto.output.Project;
 import com.svalyn.application.services.DescriptionSearchService;
 
-import graphql.schema.DataFetcher;
-import graphql.schema.DataFetchingEnvironment;
-
-@Service
-public class ProjectDescriptionsDataFetcher implements DataFetcher<List<Description>> {
+@DgsComponent
+public class ProjectDescriptionsDataFetcher {
 
     private final DescriptionSearchService descriptionSearchService;
 
@@ -27,8 +25,8 @@ public class ProjectDescriptionsDataFetcher implements DataFetcher<List<Descript
         this.descriptionSearchService = Objects.requireNonNull(descriptionSearchService);
     }
 
-    @Override
-    public List<Description> get(DataFetchingEnvironment environment) throws Exception {
+    @DgsData(parentType = "Project", field = "descriptions")
+    public List<Description> get(DgsDataFetchingEnvironment environment) {
         Project project = environment.getSource();
         return this.descriptionSearchService.getDescriptions(project.getId());
     }

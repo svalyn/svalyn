@@ -8,41 +8,31 @@ package com.svalyn.application.graphql;
 
 import java.util.Objects;
 
-import org.springframework.stereotype.Service;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.graphql.dgs.DgsComponent;
+import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.InputArgument;
 import com.svalyn.application.dto.input.DeleteProjectsInput;
 import com.svalyn.application.dto.output.IPayload;
 import com.svalyn.application.services.ProjectDeletionService;
 import com.svalyn.application.services.UserDetailsService;
 
-import graphql.schema.DataFetcher;
-import graphql.schema.DataFetchingEnvironment;
-
-@Service
-public class MutationDeleteProjectsDataFetcher implements DataFetcher<IPayload> {
-
-    private static final String INPUT = "input";
-
-    private final ObjectMapper objectMapper;
+@DgsComponent
+public class MutationDeleteProjectsDataFetcher {
 
     private final UserDetailsService userDetailsService;
 
     private final ProjectDeletionService projectDeletionService;
 
-    public MutationDeleteProjectsDataFetcher(ObjectMapper objectMapper, UserDetailsService userDetailsService,
+    public MutationDeleteProjectsDataFetcher(UserDetailsService userDetailsService,
             ProjectDeletionService projectDeletionService) {
-        this.objectMapper = Objects.requireNonNull(objectMapper);
         this.userDetailsService = Objects.requireNonNull(userDetailsService);
         this.projectDeletionService = Objects.requireNonNull(projectDeletionService);
     }
 
-    @Override
-    public IPayload get(DataFetchingEnvironment environment) throws Exception {
-        var input = this.objectMapper.convertValue(environment.getArgument(INPUT), DeleteProjectsInput.class);
-
-        var userDetails = this.userDetailsService.getUserDetails(environment.getContext());
-        return this.projectDeletionService.deleteProjects(userDetails.getId(), input);
+    @DgsData(parentType = "Mutation", field = "deleteProjects")
+    public IPayload get(@InputArgument("input") DeleteProjectsInput input) {
+        var userDetails = this.userDetailsService.getUserDetails();
+        return this.projectDeletionService.deleteProjects(userDetails, input);
     }
 
 }
