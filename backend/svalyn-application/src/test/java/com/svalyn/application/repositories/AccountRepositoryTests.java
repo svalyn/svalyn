@@ -21,11 +21,12 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import com.svalyn.application.entities.AccountEntity;
+import com.svalyn.application.services.IntegrationTestConfiguration;
 
 @Testcontainers
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = RepositoryTestConfiguration.class)
+@ContextConfiguration(classes = IntegrationTestConfiguration.class)
 public class AccountRepositoryTests {
     @Container
     private static PostgreSQLTestContainer postgreSQLContainer = new PostgreSQLTestContainer();

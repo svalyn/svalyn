@@ -93,7 +93,7 @@ const {
 `;
 const getProject = (variables) =>
   ajax({
-    url: '/api/graphql',
+    url: '/graphql',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query: getProjectQuery, variables }),
@@ -120,7 +120,7 @@ const {
 `;
 const createAssessment = (variables) =>
   ajax({
-    url: '/api/graphql',
+    url: '/graphql',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query: createAssessmentMutation, variables }),
@@ -142,7 +142,7 @@ const {
 `;
 const deleteAssessments = (variables) =>
   ajax({
-    url: '/api/graphql',
+    url: '/graphql',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query: deleteAssessmentsMutation, variables }),
@@ -164,7 +164,7 @@ const {
 `;
 const addMember = (variables) =>
   ajax({
-    url: '/api/graphql',
+    url: '/graphql',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query: addMemberMutation, variables }),
@@ -186,7 +186,7 @@ const {
 `;
 const removeMember = (variables) =>
   ajax({
-    url: '/api/graphql',
+    url: '/graphql',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query: removeMemberMutation, variables }),
@@ -208,7 +208,7 @@ const {
 `;
 const leaveProject = (variables) =>
   ajax({
-    url: '/api/graphql',
+    url: '/graphql',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query: leaveMemberMutation, variables }),
@@ -230,7 +230,7 @@ const {
 `;
 const changeProjectOwner = (variables) =>
   ajax({
-    url: '/api/graphql',
+    url: '/graphql',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query: changeProjectOwnerMutation, variables }),

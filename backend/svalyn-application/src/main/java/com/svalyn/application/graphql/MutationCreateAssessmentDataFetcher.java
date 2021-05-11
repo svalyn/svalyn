@@ -8,39 +8,30 @@ package com.svalyn.application.graphql;
 
 import java.util.Objects;
 
-import org.springframework.stereotype.Service;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.graphql.dgs.DgsComponent;
+import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.InputArgument;
 import com.svalyn.application.dto.input.CreateAssessmentInput;
 import com.svalyn.application.dto.output.IPayload;
 import com.svalyn.application.services.AssessmentCreationService;
 import com.svalyn.application.services.UserDetailsService;
 
-import graphql.schema.DataFetcher;
-import graphql.schema.DataFetchingEnvironment;
-
-@Service
-public class MutationCreateAssessmentDataFetcher implements DataFetcher<IPayload> {
-
-    private static final String INPUT = "input";
-
-    private final ObjectMapper objectMapper;
+@DgsComponent
+public class MutationCreateAssessmentDataFetcher {
 
     private final UserDetailsService userDetailsService;
 
     private final AssessmentCreationService assessmentCreationService;
 
-    public MutationCreateAssessmentDataFetcher(ObjectMapper objectMapper, UserDetailsService userDetailsService,
+    public MutationCreateAssessmentDataFetcher(UserDetailsService userDetailsService,
             AssessmentCreationService assessmentCreationService) {
-        this.objectMapper = Objects.requireNonNull(objectMapper);
         this.userDetailsService = Objects.requireNonNull(userDetailsService);
         this.assessmentCreationService = Objects.requireNonNull(assessmentCreationService);
     }
 
-    @Override
-    public IPayload get(DataFetchingEnvironment environment) throws Exception {
-        var input = this.objectMapper.convertValue(environment.getArgument(INPUT), CreateAssessmentInput.class);
-        var userDetails = this.userDetailsService.getUserDetails(environment.getContext());
+    @DgsData(parentType = "Mutation", field = "createAssessment")
+    public IPayload get(@InputArgument("input") CreateAssessmentInput input) {
+        var userDetails = this.userDetailsService.getUserDetails();
         return this.assessmentCreationService.createAssessment(userDetails.getId(), input);
     }
 

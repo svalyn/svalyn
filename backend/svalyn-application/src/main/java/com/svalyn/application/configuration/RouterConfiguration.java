@@ -20,22 +20,25 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.servlet.function.RouterFunction;
 import org.springframework.web.servlet.function.ServerResponse;
 
-import com.svalyn.application.handlers.GraphQLHandlerFunction;
 import com.svalyn.application.handlers.NewAccountHandlerFunction;
 
 @Configuration
 public class RouterConfiguration {
     @Bean
     public RouterFunction<ServerResponse> router(Environment environment,
-            NewAccountHandlerFunction newAccountHandlerFunction, GraphQLHandlerFunction graphQLHandlerFunction) {
+            NewAccountHandlerFunction newAccountHandlerFunction) {
         var staticResources = resources("/**", new ClassPathResource("static/")); //$NON-NLS-1$ //$NON-NLS-2$
         var newAccount = route(POST("/new/account"), newAccountHandlerFunction); //$NON-NLS-1$
-        var api = route(POST("/api/graphql"), graphQLHandlerFunction); //$NON-NLS-1$
-        var routerFunction = staticResources.and(newAccount).and(api);
+        var routerFunction = staticResources.and(newAccount);
 
         boolean isDevProfileActive = Arrays.asList(environment.getActiveProfiles()).contains("dev");
         if (!isDevProfileActive) {
-            var redirectToFrontend = resources(req -> Optional.of(new ClassPathResource("static/index.html")));
+            var redirectToFrontend = resources(req -> {
+                if (!req.path().equals("/graphql")) {
+                    return Optional.of(new ClassPathResource("static/index.html"));
+                }
+                return Optional.empty();
+            });
             routerFunction = routerFunction.and(redirectToFrontend);
         }
 

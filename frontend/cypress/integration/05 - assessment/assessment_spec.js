@@ -30,6 +30,7 @@ describe('Assessment - /projects/:projectId/assessments/:assessmentId', () => {
   it('Can complete an assessment', () => {
     cy.get('[data-testid="results"]').should('have.text', `Total ${22} · Success ${0} · Failure ${0}`);
 
+    cy.get('[data-testid="The hosts should be diagnosticable"]').click();
     cy.get('[data-testid="Motor functions can be freezed-success"]').click();
     cy.get('[data-testid="results"').should('have.text', `Total ${22} · Success ${1} · Failure ${0}`);
 
@@ -141,6 +142,7 @@ describe('Assessment - /projects/:projectId/assessments/:assessmentId', () => {
     cy.get('[data-testid="The hosts should be diagnosticable-success"').should('not.be.visible');
     cy.get('[data-testid="The hosts should be diagnosticable-failure"').should('not.be.visible');
 
+    cy.get('[data-testid="The hosts should be diagnosticable"]').click();
     cy.get('[data-testid="Motor functions can be freezed-success"').click();
 
     cy.get('[data-testid="The hosts should be diagnosticable-success"').should('be.visible');
@@ -159,6 +161,7 @@ describe('Assessment - /projects/:projectId/assessments/:assessmentId', () => {
 
     cy.logout();
 
+    cy.get('[data-testid="The hosts should be diagnosticable"]').click();
     cy.get('[data-testid="Motor functions can be freezed-success"').click();
     cy.get('[data-testid="snackbar"]').should('be.visible');
     cy.get('[data-testid="results"').should('have.text', `Total ${22} · Success ${0} · Failure ${0}`);

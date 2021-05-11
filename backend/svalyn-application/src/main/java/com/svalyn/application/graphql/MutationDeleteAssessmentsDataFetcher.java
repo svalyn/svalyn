@@ -8,39 +8,30 @@ package com.svalyn.application.graphql;
 
 import java.util.Objects;
 
-import org.springframework.stereotype.Service;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.graphql.dgs.DgsComponent;
+import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.InputArgument;
 import com.svalyn.application.dto.input.DeleteAssessmentsInput;
 import com.svalyn.application.dto.output.IPayload;
 import com.svalyn.application.services.AssessmentDeletionService;
 import com.svalyn.application.services.UserDetailsService;
 
-import graphql.schema.DataFetcher;
-import graphql.schema.DataFetchingEnvironment;
-
-@Service
-public class MutationDeleteAssessmentsDataFetcher implements DataFetcher<IPayload> {
-
-    private static final String INPUT = "input";
-
-    private final ObjectMapper objectMapper;
+@DgsComponent
+public class MutationDeleteAssessmentsDataFetcher {
 
     private final UserDetailsService userDetailsService;
 
     private final AssessmentDeletionService assessmentDeletionService;
 
-    public MutationDeleteAssessmentsDataFetcher(ObjectMapper objectMapper, UserDetailsService userDetailsService,
+    public MutationDeleteAssessmentsDataFetcher(UserDetailsService userDetailsService,
             AssessmentDeletionService assessmentDeletionService) {
-        this.objectMapper = Objects.requireNonNull(objectMapper);
         this.userDetailsService = Objects.requireNonNull(userDetailsService);
         this.assessmentDeletionService = Objects.requireNonNull(assessmentDeletionService);
     }
 
-    @Override
-    public IPayload get(DataFetchingEnvironment environment) throws Exception {
-        var input = this.objectMapper.convertValue(environment.getArgument(INPUT), DeleteAssessmentsInput.class);
-        var userDetails = this.userDetailsService.getUserDetails(environment.getContext());
+    @DgsData(parentType = "Mutation", field = "deleteAssessments")
+    public IPayload get(@InputArgument("input") DeleteAssessmentsInput input) {
+        var userDetails = this.userDetailsService.getUserDetails();
         return this.assessmentDeletionService.deleteAssessments(userDetails.getId(), input);
     }
 

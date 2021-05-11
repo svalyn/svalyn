@@ -83,7 +83,7 @@ const {
 
 const getAssessment = (variables) =>
   ajax({
-    url: '/api/graphql',
+    url: '/graphql',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query: getAssessmentQuery, variables }),
@@ -137,7 +137,7 @@ const {
 
 const updateAssessmentStatus = (variables) =>
   ajax({
-    url: '/api/graphql',
+    url: '/graphql',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query: updateAssessmentStatusQuery, variables }),

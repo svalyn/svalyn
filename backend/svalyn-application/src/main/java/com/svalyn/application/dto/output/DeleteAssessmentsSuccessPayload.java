@@ -6,6 +6,16 @@
  **************************************************************/
 package com.svalyn.application.dto.output;
 
+import java.util.Objects;
+
 public class DeleteAssessmentsSuccessPayload implements IPayload {
-    // Do nothing for now
+    private final Project project;
+
+    public DeleteAssessmentsSuccessPayload(Project project) {
+        this.project = Objects.requireNonNull(project);
+    }
+
+    public Project getProject() {
+        return this.project;
+    }
 }

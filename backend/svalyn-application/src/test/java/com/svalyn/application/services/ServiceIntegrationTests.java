@@ -33,7 +33,7 @@ import com.svalyn.application.repositories.PostgreSQLTestContainer;
 @Testcontainers
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = ServiceTestConfiguration.class)
+@ContextConfiguration(classes = IntegrationTestConfiguration.class)
 public class ServiceIntegrationTests {
     @Container
     private static PostgreSQLTestContainer postgreSQLContainer = new PostgreSQLTestContainer();
