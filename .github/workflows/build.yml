@@ -24,6 +24,9 @@ jobs:
           distribution: 'zulu'
           java-version: 15
 
+      - name: Review the pull request
+        uses: sbegaudeau/pull-request-validator@main
+
       - name: Build the server
         run: ./build.sh
 
